@@ -1,0 +1,16 @@
+//
+// Prefix header for all source files of the 'TheoryLessons' target in the 'TheoryLessons' project
+//
+
+#import <Availability.h>
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+    #import <Foundation/Foundation.h>
+    #import <QuartzCore/QuartzCore.h>
+#endif
+
+#include <CoreFoundation/CoreFoundation.h>
+#include <CoreGraphics/CoreGraphics.h>
+#include "SwiftCore.h"
+
