@@ -27,9 +27,15 @@
 
 - (id) initWithData:(NSData *)data
 {
+    return [self initWithData:data parserOptions:SwiftParserOptionsDefault];
+}
+
+
+- (id) initWithData:(NSData *)data parserOptions:(SwiftParserOptions)parserOptions
+{
     if ((self = [super init])) {
         m_data = [data retain];
-
+        
         m_objects      = [[NSMutableDictionary alloc] init];
         m_shapes       = [[NSMutableDictionary alloc] init];
         m_sprites      = [[NSMutableDictionary alloc] init];
@@ -37,8 +43,11 @@
         m_dynamicTexts = [[NSMutableDictionary alloc] init];
         m_staticTexts  = [[NSMutableDictionary alloc] init];
         
+        SwiftColor white = { 1.0, 1.0, 1.0, 1.0 };
+        m_backgroundColor = white;
+
         clock_t c = clock();
-        SwiftParser *parser = SwiftParserCreate([data bytes], [data length]);
+        SwiftParser *parser = SwiftParserCreate([data bytes], [data length], parserOptions);
         if (parser) {
             CGRect rect;
             SwiftParserReadRect(parser, &rect);
@@ -177,6 +186,9 @@
         }
         
         [text release];
+
+    } else if (tag == SwiftTagSetBackgroundColor) {
+        SwiftParserReadColorRGB(parser, &m_backgroundColor);
 
     } else {
         [super _parser:parser didFindTag:tag version:version];

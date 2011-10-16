@@ -10,24 +10,22 @@
 
 @interface SwiftPlacedObject : NSObject <NSCopying> {
 @private
-    NSInteger           m_objectID;
-    NSString           *m_instanceName;
-    NSInteger           m_depth;
-    NSInteger           m_clipDepth;
-    CGFloat             m_ratio;
-    CGAffineTransform   m_affineTransform;
-    SwiftColorTransform m_colorTransform;
-    BOOL                m_hasAffineTransform;
-    BOOL                m_hasColorTransform;
+    UInt16               m_objectID;
+    UInt16               m_depth;
+    UInt16               m_clipDepth;
+    UInt16               m_ratio;
+    NSString            *m_instanceName;
+    SwiftColorTransform *m_colorTransformPtr;
+    CGAffineTransform    m_affineTransform;
 }
 
 - (id) initWithDepth:(NSInteger)depth;
 
 @property (nonatomic, retain, readonly) NSString *instanceName;
-@property (nonatomic, assign, readonly) NSInteger objectID;
-@property (nonatomic, assign, readonly) NSInteger depth;
-@property (nonatomic, assign, readonly) NSInteger clipDepth;
-@property (nonatomic, assign, readonly) CGFloat   ratio;
+@property (nonatomic, assign, readonly) UInt16 objectID;
+@property (nonatomic, assign, readonly) UInt16 depth;
+@property (nonatomic, assign, readonly) UInt16 clipDepth;
+@property (nonatomic, assign, readonly) CGFloat ratio;
 @property (nonatomic, assign, readonly) CGAffineTransform affineTransform;
 @property (nonatomic, assign, readonly) SwiftColorTransform colorTransform;
 

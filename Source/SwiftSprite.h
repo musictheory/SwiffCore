@@ -11,13 +11,14 @@
 @class SwiftFrame, SwiftMovie, SwiftSceneAndFrameLabelData;
 
 @interface SwiftSprite : NSObject <SwiftPlacableObject> {
+@private
+    CFMutableDictionaryRef m_depthToPlacedObjectMap;
+    SwiftFrame      *m_lastFrame;
+    NSInteger        m_libraryID;
+
 @protected
-    NSInteger       m_libraryID;
-    NSMutableArray *m_frames;
-    NSDictionary   *m_labelToFrameMap;
-    SwiftFrame     *m_workingFrame;
-    SwiftFrame     *m_lastFrame;
-    
+    NSMutableArray  *m_frames;
+    NSDictionary    *m_labelToFrameMap;
     SwiftSceneAndFrameLabelData *m_sceneAndFrameLabelData;
 }
 

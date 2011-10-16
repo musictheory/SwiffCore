@@ -37,7 +37,6 @@
 #import "SwiftPlacedObject.h"
 #import "SwiftShape.h"
 #import "SwiftPath.h"
-#import "SwiftPathOperation.h"
 
 
 typedef struct _SwiftRendererState {
@@ -191,14 +190,16 @@ static void sDrawShape(SwiftShape *shape, SwiftRendererState *state)
         CGPoint lastMove = { NAN, NAN };
         CGPoint location = { NAN, NAN };
 
-        for (SwiftPathOperation *operation in [path operations]) {
-            SwiftPathOperationType type = [operation type];
+        CGFloat *operations = [path operations];
+        BOOL     isDone     = (operations == nil);
 
-            CGPoint toPoint      = [operation toPoint];
-            CGPoint controlPoint = [operation controlPoint];
-        
-            toPoint      = CGPointApplyAffineTransform(toPoint,      state->affineTransform);
-            controlPoint = CGPointApplyAffineTransform(controlPoint, state->affineTransform);
+        while (!isDone) {
+            CGFloat  type    = *operations++;
+            CGFloat  toX     = *operations++;
+            CGFloat  toY     = *operations++;
+            CGPoint  toPoint = { toX, toY };
+
+            toPoint = CGPointApplyAffineTransform(toPoint, state->affineTransform);
 
             if (shouldRound) {
                 CGFloat (^roundForHairline)(CGFloat, BOOL) = ^(CGFloat inValue, BOOL flipped) {
@@ -209,28 +210,37 @@ static void sDrawShape(SwiftShape *shape, SwiftRendererState *state)
                     }
                 };
 
-                toPoint.x   = roundForHairline(toPoint.x, (state->affineTransform.a < 0));
-                toPoint.y   = roundForHairline(toPoint.y, (state->affineTransform.d < 0));
+                toPoint.x = roundForHairline(toPoint.x, (state->affineTransform.a < 0));
+                toPoint.y = roundForHairline(toPoint.y, (state->affineTransform.d < 0));
             }
 
-            if (type == SwiftPathOperationTypeCurve) {
-                CGContextAddQuadCurveToPoint(context, controlPoint.x, controlPoint.y, toPoint.x, toPoint.y);
-
-            } else if (type == SwiftPathOperationTypeLine) {
-                CGContextAddLineToPoint(context, toPoint.x, toPoint.y);
-
-            } else {
+            if (type == SwiftPathOperationMove) {
                 if (shouldClose && (lastMove.x == location.x) && (lastMove.y == location.y)) {
                     CGContextClosePath(context);
                 }
 
                 CGContextMoveToPoint(context, toPoint.x, toPoint.y);
                 lastMove = toPoint;
-            }
+                
+            } else if (type == SwiftPathOperationLine) {
+                CGContextAddLineToPoint(context, toPoint.x, toPoint.y);
             
+            } else if (type == SwiftPathOperationCurve) {
+                CGFloat controlX = *operations++;
+                CGFloat controlY = *operations++;
+                CGPoint controlPoint = CGPointMake(controlX, controlY);
+
+                controlPoint = CGPointApplyAffineTransform(controlPoint, state->affineTransform);
+
+                CGContextAddQuadCurveToPoint(context, controlPoint.x, controlPoint.y, toPoint.x, toPoint.y);
+            
+            } else {
+                isDone = YES;
+            }
+
             location = toPoint;
         }
-        
+
         if (shouldClose && (lastMove.x == location.x) && (lastMove.y == location.y)) {
             CGContextClosePath(context);
         }

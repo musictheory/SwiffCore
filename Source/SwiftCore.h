@@ -23,7 +23,6 @@
 #import "SwiftMovieView.h"
 #import "SwiftParser.h"
 #import "SwiftPath.h"
-#import "SwiftPathOperation.h"
 #import "SwiftPlacedObject.h"
 #import "SwiftRenderer.h"
 #import "SwiftShape.h"

@@ -12,7 +12,8 @@
 @interface SwiftShape : NSObject {
 @private
     NSInteger  m_libraryID;
-    NSArray   *m_operationGroups;
+    NSData    *m_tagData;
+    CFArrayRef m_groups;
     NSArray   *m_fillStyles;
     NSArray   *m_lineStyles;
     NSArray   *m_paths;

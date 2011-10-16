@@ -19,8 +19,12 @@ struct _SwiftParser {
     const UInt8  *buffer;
     const UInt8  *end;
     const UInt8  *b;
+    const UInt8  *currentTagB;
     const UInt8  *nextTagB;
     const UInt8  *nextTagInSpriteB;
+    const UInt8  *startOfHeader;
+    const UInt8  *endOfHeader;
+    
     UInt32        length;
 
     UInt8         bitPosition;
@@ -79,8 +83,10 @@ static BOOL sSwiftParserAdvanceToNextTag(SwiftParser *parser, BOOL inSprite)
             parser->b = parser->nextTagB;
         }
     }
-
+    
     SwiftParserByteAlign(parser);
+
+    parser->currentTagB = parser->b;
     SwiftParserReadUInt16(parser, &tagCodeAndLength);
 
     SwiftTag  tag     = (tagCodeAndLength >> 6);
@@ -161,13 +167,19 @@ NSInteger SwiftParserGetCurrentTagVersion(SwiftParser *parser)
 }
 
 
+NSData *SwiftParserGetCurrentTagData(SwiftParser *parser)
+{
+    return [NSData dataWithBytes:parser->currentTagB length:(parser->nextTagB - parser->currentTagB)];
+}
+
+
 NSInteger SwiftParserGetMovieVersion(SwiftParser *parser)
 {
     return parser->movieVersion;
 }
 
 
-SwiftParser *SwiftParserCreate(const UInt8 *buffer, UInt32 length)
+SwiftParser *SwiftParserCreate(const UInt8 *buffer, UInt32 length, SwiftParserOptions options)
 {
     if (length < 8) return NULL;
     
@@ -264,6 +276,12 @@ UInt32 SwiftParserGetBytesRemainingInCurrentTag(SwiftParser *parser)
 BOOL SwiftParserIsValid(SwiftParser *parser)
 {
     return parser->isValid;
+}
+
+
+NSData *SwiftParserGetHeaderData(SwiftParser *parser)
+{
+    return [NSData dataWithBytes:parser->startOfHeader length:(parser->endOfHeader - parser->startOfHeader)];
 }
 
 

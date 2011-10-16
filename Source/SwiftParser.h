@@ -7,10 +7,18 @@
 //
 
 #import <CoreFoundation/CoreFoundation.h>
-#import <CoreGraphics/CoreGraphics.h>
 
-extern SwiftParser *SwiftParserCreate(const UInt8 *buffer, UInt32 length);
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+#import <CoreGraphics/CoreGraphics.h>
+#else
+#import <ApplicationServices/ApplicationServices.h>
+#endif
+
+
+extern SwiftParser *SwiftParserCreate(const UInt8 *buffer, UInt32 length, SwiftParserOptions options);
 extern void SwiftParserFree(SwiftParser *reader);
+
+extern NSData *SwiftParserGetHeaderData(SwiftParser *parser);
 
 extern BOOL SwiftParserIsValid(SwiftParser *parser);
 
@@ -19,6 +27,7 @@ extern BOOL SwiftParserAdvanceToNextTagInSprite(SwiftParser *parser);
 
 extern SwiftTag  SwiftParserGetCurrentTag(SwiftParser *parser);
 extern NSInteger SwiftParserGetCurrentTagVersion(SwiftParser *parser);
+extern NSData   *SwiftParserGetCurrentTagData(SwiftParser *parser);
 extern NSInteger SwiftParserGetMovieVersion(SwiftParser *parser);
 
 extern void SwiftParserByteAlign(SwiftParser *parser);
