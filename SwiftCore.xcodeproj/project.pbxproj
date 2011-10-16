@@ -61,7 +61,6 @@
 		5516B4C41446D0EA00231D67 /* libSwiftCoreMac.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSwiftCoreMac.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		5516B4C51446D0EA00231D67 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		5516B4C81446D0EA00231D67 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
-		5516B4C91446D0EA00231D67 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		5516B4CA1446D0EA00231D67 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		5516B4D51446D12F00231D67 /* MacDebug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = MacDebug.xcconfig; path = Config/MacDebug.xcconfig; sourceTree = "<group>"; };
 		5516B4D61446D13500231D67 /* MacRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = MacRelease.xcconfig; path = Config/MacRelease.xcconfig; sourceTree = "<group>"; };
@@ -147,7 +146,6 @@
 			isa = PBXGroup;
 			children = (
 				5516B4C81446D0EA00231D67 /* AppKit.framework */,
-				5516B4C91446D0EA00231D67 /* CoreData.framework */,
 				5516B4CA1446D0EA00231D67 /* Foundation.framework */,
 			);
 			name = "Other Frameworks";
