@@ -24,8 +24,7 @@
 {
     if ((self = [super init])) {
         m_affineTransform = CGAffineTransformIdentity;
-        m_colorTransform  = SwiftColorTransformIdentity;
-        m_depth           = depth;
+        m_depth = depth;
     }
 
     return self;
@@ -34,6 +33,11 @@
 
 - (void) dealloc
 {
+    if (m_colorTransformPtr) {
+        free(m_colorTransformPtr);
+        m_colorTransformPtr = NULL;
+    }
+
     [m_instanceName release];
     m_instanceName = nil;
     
@@ -44,10 +48,20 @@
 - (id) copyWithZone:(NSZone *)zone
 {
     SwiftPlacedObject *result = NSCopyObject(self, 0, zone);
+
+    if (m_colorTransformPtr) {
+        result->m_colorTransformPtr = NULL;
+        [result setColorTransform:*m_colorTransformPtr];
+    }
+
     result->m_instanceName = [m_instanceName copy];
+
     return result;
 }
 
+
+#pragma mark -
+#pragma mark Accessors
 
 - (CGAffineTransform *) affineTransformPointer
 {
@@ -55,25 +69,37 @@
 }
 
 
-- (SwiftColorTransform *) colorTransformPointer
-{
-    return &m_colorTransform;
-}
-
-
-- (void) setAffineTransform:(CGAffineTransform)affineTransform
-{
-    if (m_hasAffineTransform || !CGAffineTransformIsIdentity(affineTransform)) {
-        m_affineTransform = affineTransform;
-        m_hasAffineTransform = YES;
-    }
-}
-
-
 - (void) setColorTransform:(SwiftColorTransform)colorTransform
 {
-    m_colorTransform = colorTransform;
-    m_hasColorTransform = YES;
+    if (!m_colorTransformPtr) {
+        m_colorTransformPtr = malloc(sizeof(SwiftColorTransform));
+    }
+
+    *m_colorTransformPtr = colorTransform;
+}
+
+
+- (SwiftColorTransform) colorTransform
+{
+    return m_colorTransformPtr ? *m_colorTransformPtr : SwiftColorTransformIdentity;
+}
+
+
+- (SwiftColorTransform *) colorTransformPointer
+{
+    return m_colorTransformPtr ? m_colorTransformPtr : &SwiftColorTransformIdentity;
+}
+
+
+- (void) setRatio:(CGFloat)ratio
+{
+    m_ratio = ratio * 65535.0;
+}
+
+
+- (CGFloat) ratio
+{
+    return m_ratio / 65535.0;
 }
 
 
@@ -81,9 +107,7 @@
             objectID           = m_objectID,
             depth              = m_depth,
             clipDepth          = m_clipDepth,
-            ratio              = m_ratio,
             affineTransform    = m_affineTransform,
-            colorTransform     = m_colorTransform,
             hasAffineTransform = m_hasAffineTransform,
             hasColorTransform  = m_hasColorTransform;
 

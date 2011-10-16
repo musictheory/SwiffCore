@@ -12,8 +12,6 @@
 
 @interface SwiftFrame : NSObject <NSCopying> {
 @private
-    NSMutableDictionary *m_depthToPlacedObjectMap;
-
     NSInteger    m_indexInScene;
     SwiftScene  *m_parentScene;
     SwiftSprite *m_parentSprite;
@@ -23,10 +21,6 @@
     NSArray     *m_placedObjects;
     SwiftColor   m_backgroundColor;
 }
-
-- (void) setPlacedObject:(SwiftPlacedObject *)object atDepth:(NSInteger)depth;
-- (void) removePlacedObjectAtDepth:(NSInteger)depth;
-- (SwiftPlacedObject *) placedObjectAtDepth:(NSInteger)depth;
 
 @property (nonatomic, assign) SwiftSprite *parentSprite;
 @property (nonatomic, assign) SwiftScene  *parentScene;

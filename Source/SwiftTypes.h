@@ -105,6 +105,12 @@ enum _SwiftTag {
 };
 typedef NSInteger SwiftTag;
 
+enum {
+    SwiftParserOptionsDefault = 0,
+    SwiftParserOptionNoHeader = (1 << 1)
+};
+typedef NSInteger SwiftParserOptions;
+
 typedef NSInteger SwiftVersion;
 
 typedef struct _SwiftParser SwiftParser;

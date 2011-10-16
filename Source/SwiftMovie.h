@@ -28,9 +28,11 @@
     CGPoint              m_stageOrigin;
     CGSize               m_stageSize;
     CGFloat              m_frameRate;
+    SwiftColor           m_backgroundColor;
 }
 
 - (id) initWithData:(NSData *)data;
+- (id) initWithData:(NSData *)data parserOptions:(SwiftParserOptions)parserOptions;
 
 - (id) objectWithID:(NSInteger)objectID;
 

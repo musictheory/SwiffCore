@@ -11,8 +11,62 @@
 #import "SwiftLineStyle.h"
 #import "SwiftParser.h"
 #import "SwiftPath.h"
-#import "SwiftPathOperation.h"
 
+
+extern void SwiftPathAddOperation(SwiftPath *path, CGFloat type, CGPoint *toPoint, CGPoint *controlPoint);
+
+enum {
+    _SwiftShapeOperationTypeHeader = 0,
+    _SwiftShapeOperationTypeLine   = 1,
+    _SwiftShapeOperationTypeCurve  = 2,
+    _SwiftShapeOperationTypeEnd    = 3
+};
+
+
+typedef struct _SwiftShapeOperation {
+    UInt8      type;
+    BOOL       duplicate;
+    UInt16     lineStyleIndex;
+    UInt16     fillStyleIndex;
+    union {
+        struct {
+            SwiftPoint fromPoint;
+            SwiftPoint controlPoint;
+            SwiftPoint toPoint;
+        };
+        struct {
+            NSUInteger operationCount;
+        };
+    };
+} _SwiftShapeOperation;
+
+
+static void sPathAddShapeOperation(SwiftPath *path, _SwiftShapeOperation *op, SwiftPoint *position)
+{
+    if ((op->fromPoint.x != position->x) ||
+        (op->fromPoint.y != position->y))
+    {
+        CGPoint toPoint = {
+            op->fromPoint.x / 20.0,
+            op->fromPoint.y / 20.0
+        };
+    
+        SwiftPathAddOperation(path, SwiftPathOperationMove, &toPoint, NULL);
+    }
+    
+    if (op->type == _SwiftShapeOperationTypeLine) {
+        CGPoint toPoint = CGPointMake(op->toPoint.x / 20.0, op->toPoint.y / 20.0);
+        SwiftPathAddOperation(path, SwiftPathOperationLine, &toPoint, NULL);
+    
+    } else if (op->type == _SwiftShapeOperationTypeCurve) {
+        CGPoint toPoint      = CGPointMake(op->toPoint.x      / 20.0, op->toPoint.y      / 20.0);
+        CGPoint controlPoint = CGPointMake(op->controlPoint.x / 20.0, op->controlPoint.y / 20.0);
+        SwiftPathAddOperation(path, SwiftPathOperationCurve, &toPoint, &controlPoint);
+    }
+    
+    *position = op->toPoint;
+}
+ 
 
 @implementation SwiftShape
 
@@ -57,23 +111,19 @@
         __block UInt16 fillStyleIndex0 = 0;
         __block UInt16 fillStyleIndex1 = 0;
 
-        NSMutableArray *fillStyles      = [[NSMutableArray alloc] init];
-        NSMutableArray *lineStyles      = [[NSMutableArray alloc] init];
-        NSMutableArray *operationGroups = [[NSMutableArray alloc] init];
+        NSMutableArray *fillStyles = [[NSMutableArray alloc] init];
+        NSMutableArray *lineStyles = [[NSMutableArray alloc] init];
 
-        __block NSMutableArray *operations = [[NSMutableArray alloc] init];
-        [operationGroups addObject:operations];
+        __block _SwiftShapeOperation *operations = NULL;
+        __block NSUInteger operationsCount = 0;
+        __block NSUInteger operationsCapacity = 0;
+
+        CFMutableArrayRef groups = CFArrayCreateMutable(NULL, 0, NULL);
 
         m_fillStyles = fillStyles;
         m_lineStyles = lineStyles;
-        m_operationGroups = operationGroups;
+        m_groups     = groups;
         
-        void (^flushOperations)() = ^{
-            [operations release];
-            operations = [[NSMutableArray alloc] init];
-            [operationGroups addObject:operations];
-        };
-
         void (^readStyles)() = ^{
             fillStyleOffset = [m_fillStyles count];
             lineStyleOffset = [m_lineStyles count];
@@ -82,33 +132,45 @@
             [lineStyles addObjectsFromArray:[SwiftLineStyle lineStyleArrayWithParser:parser tag:tag version:version]];
         };
         
-        void (^addOperation)(SwiftPathOperationType, SwiftPoint, SwiftPoint, SwiftPoint) = ^(SwiftPathOperationType type, SwiftPoint from, SwiftPoint control, SwiftPoint to) {
-            CGPoint fromCGPoint    = CGPointMake(from.x    / 20.0, from.y    / 20.0);
-            CGPoint controlCGPoint = CGPointMake(control.x / 20.0, control.y / 20.0);
-            CGPoint toCGPoint      = CGPointMake(to.x      / 20.0, to.y      / 20.0);
+        _SwiftShapeOperation *(^nextOperation)() = ^{
+            if (operationsCount == operationsCapacity) {
+                operationsCapacity *= 2;
+                if (!operationsCapacity) operationsCapacity = 32;
+                operations = realloc(operations, operationsCapacity * sizeof(_SwiftShapeOperation));
+            }
+    
+            return &operations[operationsCount++];
+        };
+        
+        void (^addEndOperation)() = ^{
+            _SwiftShapeOperation *o = nextOperation();
 
+            o->type = _SwiftShapeOperationTypeEnd;
+            o->fillStyleIndex = UINT16_MAX;
+            o->lineStyleIndex = UINT16_MAX;
+        };
+        
+        void (^addOperation)(NSInteger, SwiftPoint, SwiftPoint, SwiftPoint) = ^(NSInteger type, SwiftPoint from, SwiftPoint control, SwiftPoint to) {
             {
-                SwiftPathOperation *o = [[SwiftPathOperation alloc] initWithType:type fromPoint:fromCGPoint controlPoint:controlCGPoint toPoint:toCGPoint];
-                [operations addObject:o];
-                o->m_fillStyleIndex = fillStyleIndex0;
-                o->m_lineStyleIndex = lineStyleIndex;
-                o->m_fromSwiftPoint = from;
-                o->m_toSwiftPoint   = to;
-                
-                [o release];
+                _SwiftShapeOperation *o = nextOperation();
+                o->fromPoint      = from;
+                o->controlPoint   = control;
+                o->toPoint        = to;
+                o->fillStyleIndex = fillStyleIndex0;
+                o->lineStyleIndex = lineStyleIndex;
+                o->type           = type;
+                o->duplicate      = NO;
             }
 
             if (fillStyleIndex1) {
-                SwiftPathOperation *o = [[SwiftPathOperation alloc] initWithType:type fromPoint:toCGPoint controlPoint:controlCGPoint toPoint:fromCGPoint];
-                [operations addObject:o];
-
-                o->m_fillStyleIndex = fillStyleIndex1;
-                o->m_lineStyleIndex = lineStyleIndex;
-                o->m_fromSwiftPoint = to;
-                o->m_toSwiftPoint   = from;
-                o->m_duplicate      = YES;
-
-                [o release];
+                _SwiftShapeOperation *o = nextOperation();
+                o->fromPoint      = to;
+                o->controlPoint   = control;
+                o->toPoint        = from;
+                o->fillStyleIndex = fillStyleIndex1;
+                o->lineStyleIndex = lineStyleIndex;
+                o->type           = type;
+                o->duplicate      = YES;
             }
         };
 
@@ -170,7 +232,14 @@
                     }
 
                     if (newStyles) {
-                        flushOperations();
+                        if (operations) {
+                            addEndOperation();
+                            CFArrayAppendValue(groups, operations);
+                        }
+                        operations         = NULL;
+                        operationsCount    = 0;
+                        operationsCapacity = 0;
+
                         readStyles();
                         SwiftParserReadUBits(parser, 4, &fillBits);
                         SwiftParserReadUBits(parser, 4, &lineBits);
@@ -206,7 +275,7 @@
                     position.x += deltaX;
                     position.y += deltaY;
 
-                    addOperation( SwiftPathOperationTypeLine, from, control, position );
+                    addOperation( _SwiftShapeOperationTypeLine, from, control, position );
                 
                 // CURVEDEDGERECORD
                 } else {
@@ -226,7 +295,7 @@
                     position.x = control.x + anchorDeltaX;
                     position.y = control.y + anchorDeltaY;
 
-                    addOperation( SwiftPathOperationTypeCurve, from, control, position );
+                    addOperation( _SwiftShapeOperationTypeCurve, from, control, position );
                 }
             }
             
@@ -239,8 +308,11 @@
             //
             // SwiftParserByteAlign(parser);
         }
-        
-        [operations release];
+
+        if (operations) {
+            addEndOperation();
+            CFArrayAppendValue(groups, operations);
+        }
     }
 
     return self;
@@ -249,10 +321,8 @@
 
 - (void) dealloc
 {
-    [m_operationGroups release];  m_operationGroups = nil;
-    [m_fillStyles      release];  m_fillStyles      = nil;
-    [m_lineStyles      release];  m_lineStyles      = nil;
-    [m_paths           release];  m_paths           = nil;
+    [m_tagData release];  m_tagData = nil;
+    [m_paths   release];  m_paths  = nil;
 
     [super dealloc];
 }
@@ -261,147 +331,169 @@
 #pragma mark -
 #pragma mark Private Methods
 
-- (NSArray *) _linePathsForOperations:(NSArray *)inOperations
+- (NSArray *) _linePathsForOperations:(_SwiftShapeOperation *)inOperations
 {
-    SwiftLineStyle *(^getLineStyleAtIndex1)(NSUInteger) = ^(NSUInteger i) {
-        if (i >= 1 && i <= [m_lineStyles count]) {
-            return [m_lineStyles objectAtIndex:(i - 1)];
-        } else {
-            return nil;
-        }
-    };
-
     UInt16 index;
     NSMutableArray *result = [NSMutableArray array];
-    
-    NSUInteger lineStyleCount = [m_lineStyles count];
-    
-    for (index = 1; index <= lineStyleCount; index++) {
-        NSMutableArray *outOperations = [[NSMutableArray alloc] init];
 
-        for (SwiftPathOperation *o in inOperations) {
-            BOOL   isDuplicate    = o->m_duplicate;
-            UInt16 lineStyleIndex = o->m_lineStyleIndex; 
+    NSUInteger lineStyleCount = [m_lineStyles count];
+
+    for (index = 1; index <= lineStyleCount; index++) {
+        _SwiftShapeOperation *operation = inOperations;
+        SwiftPoint position = { NSIntegerMax, NSIntegerMax };
+        SwiftPath *path = nil;
+        
+        while (operation->type != _SwiftShapeOperationTypeEnd) {
+            BOOL   isDuplicate    = operation->duplicate;
+            UInt16 lineStyleIndex = operation->lineStyleIndex; 
             
             if (!isDuplicate && (lineStyleIndex == index)) {
-                [outOperations addObject:o];
-            }
-        }
+                if (!path) {
+                    SwiftLineStyle *lineStyle = [m_lineStyles objectAtIndex:(index - 1)];
+                    path = [[SwiftPath alloc] initWithLineStyle:lineStyle fillStyle:nil];
+                }
 
-        if ([outOperations count]) {
-            SwiftLineStyle *lineStyle = getLineStyleAtIndex1(index);
+                sPathAddShapeOperation(path, operation, &position);
+            }
             
-            SwiftPath *path = [[SwiftPath alloc] initWithPathOperations:outOperations lineStyle:lineStyle fillStyle:nil];
+            operation++;
+        }
+        
+        if (path) {
+            CGPoint nanPoint = { NAN, NAN };
+            SwiftPathAddOperation(path, SwiftPathOperationEnd, &nanPoint, NULL);
+
             [result addObject:path];
             [path release];
         }
-        
-        [outOperations release];
     }
     
     return result;
 }
 
 
-- (NSArray *) _fillPathsForOperations:(NSArray *)inOperations
+- (NSArray *) _fillPathsForOperations:(_SwiftShapeOperation *)inOperations
 {
-    SwiftFillStyle *(^getFillStyleAtIndex1)(NSUInteger) = ^(NSUInteger i) {
-        if (i >= 1 && i <= [m_fillStyles count]) {
-            return [m_fillStyles objectAtIndex:(i - 1)];
-        } else {
-            return nil;
-        }
-    };
-
-    NSMutableArray      *results       = [NSMutableArray array];
-    NSMutableDictionary *operationsMap = [[NSMutableDictionary alloc] init];
-
+    NSMutableArray *results = [NSMutableArray array];
+    CFMutableDictionaryRef map = CFDictionaryCreateMutable(NULL, 0, NULL, &kCFTypeDictionaryValueCallBacks);
+    
     // Collect operations by fill style
-    for (SwiftPathOperation *inOperation in inOperations) {
-        NSNumber       *number     = [[NSNumber alloc] initWithInteger:(NSInteger)inOperation->m_fillStyleIndex];
-        NSMutableArray *operations = [operationsMap objectForKey:number];
-        
-        if (!operations) {
-            operations = [[NSMutableArray alloc] init];
-            [operationsMap setObject:operations forKey:number];
-            [operations release];
+    _SwiftShapeOperation *operation = inOperations;
+    while (operation->type != _SwiftShapeOperationTypeEnd) {
+        const void *key = (const void *)operation->fillStyleIndex;
+        if (!key) {
+            operation++;
+            continue;
         }
 
-        [operations addObject:inOperation];
-        [number release];
+        CFMutableArrayRef operations = (CFMutableArrayRef)CFDictionaryGetValue(map, key);
+
+        if (!operations) {
+            operations = CFArrayCreateMutable(NULL, 0, NULL);
+            CFDictionarySetValue(map, key, operations);
+            CFRelease(operations);
+        }
+    
+        CFArrayAppendValue(operations, operation);
+        operation++;
     }
 
-    for (NSNumber *number in [[operationsMap allKeys] sortedArrayUsingSelector:@selector(compare:)]) {
-        SwiftLog(@"Shape: sorting fillStyle %@: %@", number, getFillStyleAtIndex1([number integerValue]));
-        
-        NSMutableArray     *operations       = [operationsMap objectForKey:number];
-        NSMutableArray     *sortedOperations = [[NSMutableArray alloc] init];
-        SwiftPathOperation *currentOperation = [operations objectAtIndex:0];
-        SwiftPathOperation *firstOperation   = nil;
-        
-        [sortedOperations addObject:currentOperation];
-        [operations removeObjectAtIndex:0];
+    CFIndex      i, j;
+    CFIndex      count  = CFDictionaryGetCount(map);
+    CFIndex     jCount;
+    const void **keys   = malloc(count * sizeof(void *));
+    const void **values = malloc(count * sizeof(void *));
+
+    CFDictionaryGetKeysAndValues(map, keys, values);
+    
+    for (i = 0; i < count; i++) {
+        NSInteger fillStyleIndex = (NSInteger)keys[i];
+        CFMutableArrayRef operations = (CFMutableArrayRef)values[i];
+
+        CFMutableArrayRef sortedOperations = CFArrayCreateMutable(NULL, 0, NULL);
+
+        _SwiftShapeOperation *currentOperation = (_SwiftShapeOperation *)CFArrayGetValueAtIndex(operations, 0);
+        _SwiftShapeOperation *firstOperation   = NULL;
+
+        CFArrayAppendValue(sortedOperations, currentOperation);
+        CFArrayRemoveValueAtIndex(operations, 0);
         firstOperation = currentOperation;
-
-        SwiftLog(@"Shape: currentOperation = %@", currentOperation);
-
-        while ([operations count]) {
-            for (SwiftPathOperation *o in operations) {
-                SwiftPoint point1 = o->m_fromSwiftPoint;
-                SwiftPoint point2 = currentOperation->m_toSwiftPoint;
+        
+        while ((jCount = CFArrayGetCount(operations)) > 0) {
+            for (j = 0; j < jCount; j++) {
+                _SwiftShapeOperation *o = (_SwiftShapeOperation *)CFArrayGetValueAtIndex(operations, j);
+                SwiftPoint point1 = o->fromPoint;
+                SwiftPoint point2 = currentOperation->toPoint;
                 
                 if ((point1.x == point2.x) && (point1.y == point2.y)) {
                     SwiftLog(@"Shape: Found connecting path operation");
 
-                    [sortedOperations addObject:o];
+                    CFArrayAppendValue(sortedOperations, o);
                     currentOperation = o;
-                    SwiftLog(@"Shape: currentOperation = %@", currentOperation);
+                    SwiftLog(@"Shape: currentOperation = %p", currentOperation);
                     break;
                 }
             }
             
-            if ([operations containsObject:currentOperation]) {            
-                [operations removeObject:currentOperation];
+            
+            CFRange entireRange = { 0, CFArrayGetCount(operations) };
+            CFIndex indexOfCurrent = CFArrayGetFirstIndexOfValue(operations, entireRange, currentOperation);
+            if (indexOfCurrent != kCFNotFound) {
+                CFArrayRemoveValueAtIndex(operations, indexOfCurrent);
 
             } else {
-                while ([operations count]) {
-                    currentOperation = [operations objectAtIndex:0];
-                    [operations removeObjectAtIndex:0];
+                while ((jCount = CFArrayGetCount(operations)) > 0) {
+                    currentOperation = (_SwiftShapeOperation *)CFArrayGetValueAtIndex(operations, 0);
+                    CFArrayRemoveValueAtIndex(operations, 0);
 
                     SwiftLog(@"Shape: No connecting path operation found");
-                    SwiftLog(@"Shape: currentOperation = %@", currentOperation);
+                    SwiftLog(@"Shape: currentOperation = %p", currentOperation);
 
-                    SwiftPoint point1 = firstOperation->m_fromSwiftPoint;
-                    SwiftPoint point2 = currentOperation->m_toSwiftPoint;
+                    SwiftPoint point1 = firstOperation->fromPoint;
+                    SwiftPoint point2 = currentOperation->toPoint;
 
                     if ((point1.x == point2.x) && (point1.y == point2.y)) {
-                        [sortedOperations insertObject:currentOperation atIndex:0];
+                        CFArrayInsertValueAtIndex(sortedOperations, 0, currentOperation);
                         firstOperation = currentOperation;
-                        SwiftLog(@"Shape: firstOperation = %@", firstOperation);
+                        SwiftLog(@"Shape: firstOperation = %p", firstOperation);
 
                     } else {
-                        [sortedOperations addObject:currentOperation];
-                        SwiftLog(@"Shape: No join found, moving to:\n    %@\n", currentOperation);
+                        CFArrayAppendValue(sortedOperations, currentOperation);
+                        SwiftLog(@"Shape: No join found, moving to:\n    %p\n", currentOperation);
                         break;
                     }
                 }
             }
         }
-    
-        if ([sortedOperations count]) {
-            SwiftFillStyle *fillStyle = getFillStyleAtIndex1([number integerValue]);
-
+        
+        jCount = CFArrayGetCount(sortedOperations);
+        if (jCount > 0) {
+            SwiftFillStyle *fillStyle = [m_fillStyles objectAtIndex:(fillStyleIndex - 1)];
+            
             if (fillStyle) {
-                SwiftPath *path = [[SwiftPath alloc] initWithPathOperations:sortedOperations lineStyle:nil fillStyle:fillStyle];
+                SwiftPath *path = [[SwiftPath alloc] initWithLineStyle:nil fillStyle:fillStyle];
+                SwiftPoint position = { NSIntegerMax, NSIntegerMax };
+
+                for (j = 0; j < jCount; j++) {
+                    _SwiftShapeOperation *op = (_SwiftShapeOperation *)CFArrayGetValueAtIndex(sortedOperations, j);
+                    sPathAddShapeOperation(path, op, &position);
+                }
+
+                CGPoint nanPoint = { NAN, NAN };
+                SwiftPathAddOperation(path, SwiftPathOperationEnd, &nanPoint, NULL);
+
                 [results addObject:path];
                 [path release];
             }
         }
 
-        [sortedOperations release];
+        CFRelease(sortedOperations);
     }
-
-    [operationsMap release];
+    
+    CFRelease(map);
+    
+    if (keys) free(keys);
+    if (values) free(values);
 
     return results;
 }
@@ -412,18 +504,21 @@
 
 - (NSArray *) paths
 {
-    if (!m_paths) {
+    if (!m_paths && m_groups) {
         @autoreleasepool {
             NSMutableArray *result = [[NSMutableArray alloc] init];
 
-            for (NSArray *operations in m_operationGroups) {
+            CFIndex length = CFArrayGetCount(m_groups);
+            for (CFIndex i = 0; i < length; i++) {
+                _SwiftShapeOperation *operations = (_SwiftShapeOperation *)CFArrayGetValueAtIndex(m_groups, i);
+               
                 [result addObjectsFromArray:[self _fillPathsForOperations:operations]];
                 [result addObjectsFromArray:[self _linePathsForOperations:operations]];
+            
+                free(operations);
             }
             
-            [m_operationGroups release];
-            m_operationGroups = nil;
-
+            CFRelease(m_groups);
             m_paths = result;
         }
     }

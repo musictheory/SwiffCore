@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+
 @class SwiftLayer, SwiftMovie, SwiftScene, SwiftFrame;
 
 @protocol SwiftMovieViewDelegate;
@@ -63,3 +65,4 @@
 - (void) movieView:(SwiftMovieView *)movieView didDisplayScene:(SwiftScene *)scene  frame:(SwiftFrame *)frame;
 @end
 
+#endif

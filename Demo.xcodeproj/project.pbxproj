@@ -32,6 +32,13 @@
 			remoteGlobalIDString = 5595A5E81442BFFA00DECD41;
 			remoteInfo = SwiftCore;
 		};
+		55BA68DB144A492C00D83AA8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 550B60361446B42900F8C138 /* SwiftCore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5516B4C41446D0EA00231D67;
+			remoteInfo = SwiftCoreMac;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -112,6 +119,7 @@
 			isa = PBXGroup;
 			children = (
 				550B603E1446B42900F8C138 /* libSwiftCore.a */,
+				55BA68DC144A492C00D83AA8 /* libSwiftCoreMac.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -174,6 +182,13 @@
 			fileType = archive.ar;
 			path = libSwiftCore.a;
 			remoteRef = 550B603D1446B42900F8C138 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		55BA68DC144A492C00D83AA8 /* libSwiftCoreMac.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSwiftCoreMac.a;
+			remoteRef = 55BA68DB144A492C00D83AA8 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */

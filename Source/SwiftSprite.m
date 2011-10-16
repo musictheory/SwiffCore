@@ -24,6 +24,10 @@
 @end
 
 
+@interface SwiftFrame ()
+- (id) _initWithSortedPlacedObjects:(NSArray *)placedObjects;
+@end
+
 @interface SwiftSprite ()
 - (void) _parser:(SwiftParser *)parser didFindTag:(SwiftTag)tag version:(NSInteger)version;
 @end
@@ -34,7 +38,7 @@
 {
     if ((self = [super init])) {
         m_frames = [[NSMutableArray alloc] init];
-        m_workingFrame = [[SwiftFrame alloc] init];
+        m_depthToPlacedObjectMap = CFDictionaryCreateMutable(NULL, 0, NULL, &kCFTypeDictionaryValueCallBacks);
     }
     
     return self;
@@ -65,6 +69,11 @@
             m_sceneAndFrameLabelData = nil;
         }
 
+        if (m_depthToPlacedObjectMap) {
+            CFRelease(m_depthToPlacedObjectMap);
+            m_depthToPlacedObjectMap = NULL;
+        }
+
         SwiftLog(@"END");
     
         if (!SwiftParserIsValid(parser)) {
@@ -78,12 +87,16 @@
 
 - (void) dealloc
 {
+    if (m_depthToPlacedObjectMap) {
+        CFRelease(m_depthToPlacedObjectMap);
+        m_depthToPlacedObjectMap = NULL;
+    }
+
     [m_frames makeObjectsPerformSelector:@selector(setParentSprite:) withObject:nil];
     [m_frames makeObjectsPerformSelector:@selector(setNextFrame:)    withObject:nil];
 
     [m_frames          release];  m_frames          = nil;
     [m_labelToFrameMap release];  m_labelToFrameMap = nil;
-    [m_workingFrame    release];  m_workingFrame    = nil;
                                   m_lastFrame       = nil;
     
     [m_sceneAndFrameLabelData release];
@@ -95,16 +108,6 @@
 
 #pragma mark -
 #pragma mark Tag Handlers
-
-- (void) _parser:(SwiftParser *)parser didFindSetBackgroundColorTag:(SwiftTag)tag version:(NSInteger)version
-{
-    SwiftColor color;
-    SwiftParserReadColorRGB(parser, &color);
-
-    [m_workingFrame setBackgroundColor:color];
-    m_lastFrame = nil;
-}
-
 
 - (void) _parser:(SwiftParser *)parser didFindPlaceObjectTag:(SwiftTag)tag version:(NSInteger)version
 {
@@ -157,7 +160,7 @@
     SwiftPlacedObject *placedObject = nil;
 
     if (move) {
-        placedObject = [[m_workingFrame placedObjectAtDepth:depth] copy];
+        placedObject = [(SwiftPlacedObject *)CFDictionaryGetValue(m_depthToPlacedObjectMap, (const void *)depth) copy];
     } else {
         placedObject = [[SwiftPlacedObject alloc] initWithDepth:depth];
     }
@@ -167,7 +170,10 @@
     if (hasName)           [placedObject setInstanceName:name];
     if (hasRatio)          [placedObject setRatio:ratio];
     if (hasColorTransform) [placedObject setColorTransform:colorTransform];
-    if (hasMatrix)         [placedObject setAffineTransform:matrix];
+    if (hasMatrix) {
+        [placedObject setAffineTransform:matrix];
+    }
+
 
     if (SwiftShouldLog()) {
         if (move) {
@@ -177,7 +183,7 @@
         }
     }
 
-    [m_workingFrame setPlacedObject:placedObject atDepth:depth];
+    CFDictionarySetValue(m_depthToPlacedObjectMap, (void *)depth, placedObject);
     m_lastFrame = nil;
 
     [placedObject release];
@@ -203,7 +209,7 @@
         }
     }
 
-    [m_workingFrame removePlacedObjectAtDepth:depth];
+    CFDictionaryRemoveValue(m_depthToPlacedObjectMap, (void *)depth);
     m_lastFrame = nil;
 }
 
@@ -215,21 +221,33 @@
         [m_frames addObject:m_lastFrame];
 
     } else {
-        NSString   *label = [m_workingFrame label];
-        SwiftFrame *frame = [m_workingFrame copy];
+        CFIndex count = CFDictionaryGetCount(m_depthToPlacedObjectMap);
+        NSMutableArray *placedObjects = nil;
+
+        if (count > 0) {
+            void **values = (void **)calloc(count, sizeof(void *));
+            CFDictionaryGetKeysAndValues(m_depthToPlacedObjectMap, NULL, (const void **)values);
+            
+            placedObjects = [[NSMutableArray alloc] initWithObjects:(const id *)values count:count];
+            [placedObjects sortUsingComparator:^(id a, id b) {
+                NSInteger aDepth = [((SwiftPlacedObject *)a) depth];
+                NSInteger bDepth = [((SwiftPlacedObject *)b) depth];
+                return aDepth - bDepth;
+            }];
+            
+            free(values);
+        }
+
+        SwiftFrame *frame = [[SwiftFrame alloc] _initWithSortedPlacedObjects:placedObjects];
 
         [frame setParentSprite:self];
         [[m_frames lastObject] setNextFrame:frame];
         [m_frames addObject:frame];
 
-        if (label) {
-            [m_workingFrame setLabel:nil];
-            m_lastFrame = nil;
-        } else {
-            m_lastFrame = frame;
-        }
+        m_lastFrame = frame;
 
         [frame release];
+        [placedObjects release];
     }
 
     if (SwiftShouldLog()) {
@@ -238,17 +256,12 @@
 }
 
 
-- (void) _parser:(SwiftParser *)parser didFindDefineSceneAndFrameLabelDataTag:(SwiftTag)tag version:(NSInteger)version
-{
-}
-
-
 - (void) _parser:(SwiftParser *)parser didFindFrameLabelTag:(SwiftTag)tag version:(NSInteger)version
 {
     NSString *label = nil;
     SwiftParserReadString(parser, &label);
 
-    [m_workingFrame setLabel:label];
+//    [m_workingFrame setLabel:label];
 }
 
 
@@ -257,9 +270,6 @@
     if (tag == SwiftTagDefineSceneAndFrameLabelData) {
         [m_sceneAndFrameLabelData release];
         m_sceneAndFrameLabelData = [[SwiftSceneAndFrameLabelData alloc] initWithParser:parser tag:tag version:version];
-
-    } else if (tag == SwiftTagSetBackgroundColor) {
-        [self _parser:parser didFindSetBackgroundColorTag:tag version:version];
 
     } else if (tag == SwiftTagPlaceObject) {
         [self _parser:parser didFindPlaceObjectTag:tag version:version];
