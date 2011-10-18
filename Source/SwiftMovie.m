@@ -94,7 +94,7 @@
                 [m_sceneAndFrameLabelData release];
                 m_sceneAndFrameLabelData = nil;
             } else {
-                SwiftScene *scene = [[SwiftScene alloc] initWithName:nil frames:m_frames];
+                SwiftScene *scene = [[SwiftScene alloc] initWithName:nil indexInMovie:0 frames:m_frames];
                 m_scenes = [[NSArray alloc] initWithObjects:scene, nil];
                 [scene release];
             }
@@ -257,6 +257,7 @@
     
     return font;
 }
+
 
 - (SwiftStaticText *) staticTextWithID:(NSInteger)textID
 {

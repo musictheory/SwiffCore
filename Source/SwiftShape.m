@@ -48,16 +48,9 @@ typedef struct _SwiftShapeOperation {
     BOOL       duplicate;
     UInt16     lineStyleIndex;
     UInt16     fillStyleIndex;
-    union {
-        struct {
-            SwiftPoint fromPoint;
-            SwiftPoint controlPoint;
-            SwiftPoint toPoint;
-        };
-        struct {
-            NSUInteger operationCount;
-        };
-    };
+    SwiftPoint fromPoint;
+    SwiftPoint controlPoint;
+    SwiftPoint toPoint;
 } _SwiftShapeOperation;
 
 

@@ -24,6 +24,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
 #import <Foundation/Foundation.h>
 
 @interface SwiftTextRecord : NSObject {
@@ -31,11 +32,11 @@
     NSInteger m_fontID;
     NSInteger m_glyphCount;
 
-    CGPoint m_offset;
-    CGFloat m_height;
+    CGPoint    m_offset;
+    CGFloat    m_height;
     SwiftColor m_color;
-    BOOL m_hasFont;
-    BOOL m_hasColor;
+    BOOL       m_hasFont;
+    BOOL       m_hasColor;
     
     UInt16  *m_glyphIndex;
     CGFloat *m_glyphAdvance;

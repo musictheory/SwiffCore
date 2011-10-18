@@ -34,3 +34,6 @@ extern void SwiftEnableLogging(void);
 #define SwiftWarn(...) { _SwiftLog(4, __VA_ARGS__); }
 
 extern SwiftColor SwiftColorApplyColorTransform(SwiftColor color, SwiftColorTransform transform);
+
+// CFArrayRef values must be valid (SwiftColorTransform *).  If stack is NULL, color is returned
+extern SwiftColor SwiftColorApplyColorTransformStack(SwiftColor color, CFArrayRef stack);

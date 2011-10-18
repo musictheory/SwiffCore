@@ -34,14 +34,17 @@
     NSString     *m_name;
     NSArray      *m_frames;
     NSDictionary *m_labelToFrameMap;
+    NSUInteger    m_indexInMovie;
 }
 
-- (id) initWithName:(NSString *)name frames:(NSArray *)frames;
+- (id) initWithName:(NSString *)name indexInMovie:(NSUInteger)indexInMovie frames:(NSArray *)frames;
 
 - (SwiftFrame *) frameWithLabel:(NSString *)label;
 
-- (SwiftFrame *) frameAtIndex1:(NSInteger)index1;
-- (NSInteger) index1OfFrame:(SwiftFrame *)frame;
+- (SwiftFrame *) frameAtIndex1:(NSUInteger)index1;
+- (NSUInteger) index1OfFrame:(SwiftFrame *)frame;
+
+@property (nonatomic, assign, readonly) NSUInteger indexInMovie;
 
 @property (nonatomic, assign, readonly) NSString *name;
 @property (nonatomic, assign, readonly) NSArray *frames;

@@ -103,7 +103,7 @@
         NSRange     range       = NSMakeRange(startOffset, endOffset - startOffset);
         NSArray    *sceneFrames = [frames subarrayWithRange:range];
 
-        SwiftScene *scene = [[SwiftScene alloc] initWithName:name frames:sceneFrames];
+        SwiftScene *scene = [[SwiftScene alloc] initWithName:name indexInMovie:startOffset frames:sceneFrames];
         [result addObject:scene];
         [scene release];
     };

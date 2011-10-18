@@ -30,17 +30,17 @@
 
 @implementation SwiftScene
 
-- (id) initWithName:(NSString *)name frames:(NSArray *)frames
+- (id) initWithName:(NSString *)name indexInMovie:(NSUInteger)indexInMovie frames:(NSArray *)frames
 {
     if ((self = [super init])) {
-        m_name = [name retain];
-
-        m_frames = [frames retain];
+        m_name         = [name   retain];
+        m_frames       = [frames retain];
+        m_indexInMovie = indexInMovie;
         
-        NSInteger i = 0;
+        NSInteger i = 1;
         for (SwiftFrame *frame in frames) {
-            [frame setParentScene:self];
-            [frame setIndexInScene:i++];
+            [frame setScene:self];
+            [frame setIndex1InScene:i++];
         }
     }
     
@@ -50,7 +50,7 @@
 
 - (void) dealloc
 {
-    [m_frames makeObjectsPerformSelector:@selector(setParentScene:) withObject:nil];
+    [m_frames makeObjectsPerformSelector:@selector(setScene:) withObject:nil];
 
     [m_name            release];  m_name            = nil;
     [m_frames          release];  m_frames          = nil;
@@ -84,7 +84,7 @@
 }
 
 
-- (SwiftFrame *) frameAtIndex1:(NSInteger)index1
+- (SwiftFrame *) frameAtIndex1:(NSUInteger)index1
 {
     if (index1 > 0 && index1 <= [m_frames count]) {
         return [m_frames objectAtIndex:(index1 - 1)];
@@ -94,7 +94,7 @@
 }
 
 
-- (NSInteger) index1OfFrame:(SwiftFrame *)frame
+- (NSUInteger) index1OfFrame:(SwiftFrame *)frame
 {
     NSUInteger index = [m_frames indexOfObject:frame];
 
@@ -106,7 +106,8 @@
 }
 
 
-@synthesize name   = m_name,
-            frames = m_frames;
+@synthesize name         = m_name,
+            frames       = m_frames,
+            indexInMovie = m_indexInMovie;
 
 @end

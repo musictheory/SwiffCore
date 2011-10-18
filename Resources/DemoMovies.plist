@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>movies</key>
+	<array>
+		<dict>
+			<key>url</key>
+			<string>http://www.potterpuppetpals.com/Potter.swf</string>
+			<key>name</key>
+			<string>Potter Puppet Pals - Bothering Snape</string>
+			<key>author</key>
+			<string>Neil Cicierega</string>
+		</dict>
+		<dict>
+			<key>url</key>
+			<string>http://www.potterpuppetpals.com/Potter2.swf</string>
+			<key>name</key>
+			<string>Potter Puppet Pals - Trouble at Hogwarts</string>
+			<key>author</key>
+			<string>Neil Cicierega</string>
+		</dict>
+		<dict>
+			<key>url</key>
+			<string>bundle:TestSuite.swf</string>
+			<key>name</key>
+			<string>Test Suite</string>
+			<key>author</key>
+			<string>SwiftCore</string>
+		</dict>
+	</array>
+</dict>
+</plist>

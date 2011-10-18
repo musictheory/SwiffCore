@@ -1,5 +1,5 @@
 /*
-    SwiftMovieView.h
+    DemoMovieController.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,52 +25,23 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <UIKit/UIKit.h>
-#import <QuartzCore/QuartzCore.h>
+#import <Foundation/Foundation.h>
 
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-
-@class SwiftLayer, SwiftMovie, SwiftScene, SwiftFrame, SwiftPlayhead;
-
-@protocol SwiftMovieViewDelegate;
-
-@interface SwiftMovieView : UIView {
+@interface DemoMovieController : UIViewController <SwiftMovieViewDelegate> {
 @private
-    id<SwiftMovieViewDelegate> m_delegate;
+    NSURL           *m_movieURL;
+    NSURLConnection *m_urlConnection;
+    NSData          *m_movieData;
+    SwiftMovie      *m_movie;
+    SwiftMovieView  *m_movieView;
 
-    SwiftLayer    *m_layer;
-    SwiftMovie    *m_movie;
-    SwiftPlayhead *m_playhead;
-    SwiftScene    *m_currentScene;
-    SwiftFrame    *m_currentFrame;
-    CADisplayLink *m_displayLink;
-    CFTimeInterval m_playStart;
-    long           m_playIndex;
-    CFTimeInterval m_framesPerSecond;
-    
-    BOOL m_usesAcceleratedRendering;
-    BOOL m_interpolatesFrames;
-    BOOL m_playing;
-    BOOL m_delegate_movieView_willDisplayScene_frame;
-    BOOL m_delegate_movieView_didDisplayScene_frame;
+    UIButton        *m_playButton;
+    UISlider        *m_timelineSlider;
+    NSInteger        m_frameNumber;
 }
 
-@property (nonatomic, retain) SwiftMovie *movie;
-@property (nonatomic, assign) id<SwiftMovieViewDelegate> delegate;
+- (id) initWithURL:(NSURL *)url;
 
-@property (nonatomic, retain, readonly) SwiftPlayhead *playhead;
-
-@property (nonatomic, assign, getter=isPlaying) BOOL playing;
-@property (nonatomic, assign) BOOL usesAcceleratedRendering;
-@property (nonatomic, assign) BOOL interpolatesFrames;
+- (void) gotoFrameNumber:(NSInteger)frameNumber;
 
 @end
-
-
-@protocol SwiftMovieViewDelegate <NSObject>
-@optional
-- (void) movieView:(SwiftMovieView *)movieView willDisplayScene:(SwiftScene *)scene frame:(SwiftFrame *)frame;
-- (void) movieView:(SwiftMovieView *)movieView didDisplayScene:(SwiftScene *)scene  frame:(SwiftFrame *)frame;
-@end
-
-#endif

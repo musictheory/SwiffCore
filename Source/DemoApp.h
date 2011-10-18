@@ -27,15 +27,17 @@
 
 #import <Foundation/Foundation.h>
 
-@interface DemoViewController : UIViewController {
+@interface DemoTableViewController : UITableViewController {
 @private
-    NSURLConnection *m_urlConnection;
+    id               m_moviesPlist;
     NSData          *m_movieData;
     SwiftMovie      *m_movie;
     SwiftMovieView  *m_movieView;
 }
 
 @end
+
+
 
 
 @interface DemoAppDelegate : UIResponder <UIApplicationDelegate> {

@@ -26,70 +26,130 @@
 */
 
 #import "DemoApp.h"
+#import "DemoMovieController.h"
 
-static NSString * const sDemoURLString = @"http://www.potterpuppetpals.com/Potter.swf";
-static NSString * const sDemoDataKey   = @"DemoData";
+static NSString *sCurrentMovieKey = @"CurrentMovie";
 
-@implementation DemoViewController
+@interface DemoTableViewController ()
+- (void) _pushMovieWithURLString:(NSString *)inURLString animated:(BOOL)animated;
+@end
 
-- (void) _loadMovie
+
+@implementation DemoTableViewController
+
+- (id)initWithStyle:(UITableViewStyle)style
 {
-    m_movie = [[SwiftMovie alloc] initWithData:m_movieData];
-    [m_movieView setMovie:m_movie];
-    [m_movieView play];
+    if ((self = [super initWithStyle:style])) {
+        NSString *plistPath = [[NSBundle mainBundle] pathForResource:@"DemoMovies" ofType:@"plist"];
+        NSData   *plistData =  [NSData dataWithContentsOfFile:plistPath];
+        
+        NSError *error = nil;
+        m_moviesPlist = [[NSPropertyListSerialization propertyListWithData:plistData options:NSPropertyListImmutable format:NULL error:&error] retain];
+
+        [self setTitle:@"Movies"];
+    }
+    
+    return self;
 }
 
 
-- (void) _loadDemoData
+#pragma mark -
+#pragma mark Superclass Overrides
+
+- (void) viewWillAppear:(BOOL)animated
 {
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        NSURL         *url      = [NSURL URLWithString:sDemoURLString];
-        NSError       *error    = nil;
-        NSURLResponse *response = nil;
-        NSURLRequest  *request  = [NSURLRequest requestWithURL:url];
-
-        NSData *movieData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-    
-        dispatch_async(dispatch_get_main_queue(), ^{
-            m_movieData = [movieData retain];
-            [[NSUserDefaults standardUserDefaults] setObject:m_movieData forKey:sDemoDataKey];
-            [[NSUserDefaults standardUserDefaults] synchronize];
-
-            if ([m_movieData length]) {
-                [self _loadMovie];
-            };
-        });
-    });
-}
-
-- (void) viewDidLoad
-{
-    [super viewDidLoad];
-    
-    UIView *selfView = [self view];
-
-    m_movieView = [[SwiftMovieView alloc] initWithFrame:[selfView bounds]];
-    [m_movieView setContentMode:UIViewContentModeScaleToFill];
-    [m_movieView setUsesAcceleratedRendering:YES];
-    [m_movieView setInterpolatesFrames:YES];
-    [m_movieView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-
-    [selfView addSubview:m_movieView];
-
-    m_movieData = [[[NSUserDefaults standardUserDefaults] objectForKey:sDemoDataKey] retain];
-    if ([m_movieData length]) {
-        [self _loadMovie];
-    } else {
-        [self _loadDemoData];
+    NSString *currentURLString = [[NSUserDefaults standardUserDefaults] objectForKey:sCurrentMovieKey];
+    if (currentURLString) {
+        [self _pushMovieWithURLString:currentURLString animated:NO];
     }
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+
+- (void) viewDidAppear:(BOOL)animated
+{
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:sCurrentMovieKey];
+}
+
+
+- (BOOL) shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
 {
     return UIInterfaceOrientationIsLandscape(toInterfaceOrientation);
 }
 
+
+#pragma mark -
+#pragma mark Private Methods
+
+- (NSArray *) _movieDictionaries
+{
+    return [m_moviesPlist objectForKey:@"movies"];
+}
+
+
+- (void) _pushMovieWithURLString:(NSString *)inURLString animated:(BOOL)animated
+{
+    NSArray *movieDictionaries = [self _movieDictionaries];
+
+    for (NSDictionary *dictionary in movieDictionaries) {
+        NSString *urlString = [dictionary objectForKey:@"url"];
+
+        if ([urlString isEqualToString:inURLString]) {
+            NSURL    *url   = [NSURL URLWithString:urlString];
+            NSString *title = [dictionary objectForKey:@"name"];
+
+            DemoMovieController *vc = [[DemoMovieController alloc] initWithURL:url];
+            [vc setTitle:title];
+            [[self navigationController] pushViewController:vc animated:animated];
+            [vc release];
+
+            [[NSUserDefaults standardUserDefaults] setObject:urlString forKey:sCurrentMovieKey];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+
+            break;
+        }
+    }
+}
+
+
+#pragma mark -
+#pragma mark UITableview Delegate Methods
+
+- (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [[self _movieDictionaries] count];
+}
+
+
+- (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSDictionary *dictionary = [[self _movieDictionaries] objectAtIndex:[indexPath row]];
+
+    NSString *urlString = [dictionary objectForKey:@"url"];
+    [[NSUserDefaults standardUserDefaults] setObject:urlString forKey:sCurrentMovieKey];
+    [self _pushMovieWithURLString:urlString animated:YES];
+}
+
+
+- (UITableViewCell *) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSString *identifier = @"cell";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
+    
+    if (!cell) {
+        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier] autorelease];
+    }
+
+    NSDictionary *dictionary = [[self _movieDictionaries] objectAtIndex:[indexPath row]];
+
+    [[cell textLabel] setText:[dictionary objectForKey:@"name"]];
+    [[cell detailTextLabel] setText:[dictionary objectForKey:@"author"]];
+
+    return cell;
+}
+
+
 @end
+
 
 
 
@@ -107,7 +167,11 @@ static NSString * const sDemoDataKey   = @"DemoData";
 {
     m_window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
-    m_viewController = [[DemoViewController alloc] init];
+    DemoTableViewController *vc = [[DemoTableViewController alloc] initWithStyle:UITableViewStylePlain];
+    UINavigationController  *nc = [[UINavigationController  alloc] initWithRootViewController:vc];
+    [vc release];
+
+    m_viewController = nc;
 
     [m_window setRootViewController:m_viewController];
     [m_window makeKeyAndVisible];

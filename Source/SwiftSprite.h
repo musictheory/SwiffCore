@@ -45,8 +45,8 @@
 
 - (SwiftFrame *) frameWithLabel:(NSString *)label;
 
-- (SwiftFrame *) frameAtIndex1:(NSInteger)index1;
-- (NSInteger) index1OfFrame:(SwiftFrame *)frame;
+- (SwiftFrame *) frameAtIndex1:(NSUInteger)index1;
+- (NSUInteger) index1OfFrame:(SwiftFrame *)frame;
 
 @property (nonatomic, retain, readonly) NSArray *frames;
 @property (nonatomic, assign, readonly) NSInteger libraryID;

@@ -32,22 +32,18 @@
 
 @interface SwiftFrame : NSObject <NSCopying> {
 @private
-    NSInteger    m_indexInScene;
-    SwiftScene  *m_parentScene;
-    SwiftSprite *m_parentSprite;
-    SwiftFrame  *m_nextFrame;
+    SwiftScene  *m_scene;
+    NSUInteger   m_index1InScene;
 
     NSString    *m_label;
     NSArray     *m_placedObjects;
     SwiftColor   m_backgroundColor;
 }
 
-@property (nonatomic, assign) SwiftSprite *parentSprite;
-@property (nonatomic, assign) SwiftScene  *parentScene;
-@property (nonatomic, assign) SwiftFrame  *nextFrame;
-
 @property (nonatomic, copy) NSString *label;
-@property (nonatomic, assign) NSInteger indexInScene;
+
+@property (nonatomic, assign) SwiftScene *scene;
+@property (nonatomic, assign) NSUInteger index1InScene;
 
 // Sorted by ascending depth 
 @property (nonatomic, assign) SwiftColor backgroundColor;
