@@ -78,24 +78,41 @@ void _SwiftLog(NSInteger level, NSString *format, ...)
     va_end(v);
 }
 
-
-extern SwiftColor SwiftColorApplyColorTransform(SwiftColor color, SwiftColorTransform transform)
+static void sSwiftColorApplyColorTransformPointer(SwiftColor *color, SwiftColorTransform *transform)
 {
-    color.red = (color.red * transform.redMultiply) + transform.redAdd;
-    if      (color.red < 0.0) color.red = 0.0;
-    else if (color.red > 1.0) color.red = 1.0;
+    color->red = (color->red * transform->redMultiply) + transform->redAdd;
+    if      (color->red < 0.0) color->red = 0.0;
+    else if (color->red > 1.0) color->red = 1.0;
     
-    color.green = (color.green * transform.greenMultiply) + transform.greenAdd;
-    if      (color.green < 0.0) color.green = 0.0;
-    else if (color.green > 1.0) color.green = 1.0;
+    color->green = (color->green * transform->greenMultiply) + transform->greenAdd;
+    if      (color->green < 0.0) color->green = 0.0;
+    else if (color->green > 1.0) color->green = 1.0;
 
-    color.blue  = (color.blue * transform.blueMultiply)  + transform.blueAdd;
-    if      (color.blue < 0.0) color.blue = 0.0;
-    else if (color.blue > 1.0) color.blue = 1.0;
+    color->blue  = (color->blue * transform->blueMultiply)  + transform->blueAdd;
+    if      (color->blue < 0.0) color->blue = 0.0;
+    else if (color->blue > 1.0) color->blue = 1.0;
     
-    color.alpha = (color.alpha * transform.alphaMultiply) + transform.alphaAdd;
-    if      (color.alpha < 0.0) color.alpha = 0.0;
-    else if (color.alpha > 1.0) color.alpha = 1.0;
+    color->alpha = (color->alpha * transform->alphaMultiply) + transform->alphaAdd;
+    if      (color->alpha < 0.0) color->alpha = 0.0;
+    else if (color->alpha > 1.0) color->alpha = 1.0;
+}
 
+
+SwiftColor SwiftColorApplyColorTransform(SwiftColor color, SwiftColorTransform transform)
+{
+    sSwiftColorApplyColorTransformPointer(&color, &transform);
     return color;
 }
+
+
+SwiftColor SwiftColorApplyColorTransformStack(SwiftColor color, CFArrayRef stack)
+{
+    if (!stack) return color;
+    for (CFIndex i = 0, count = CFArrayGetCount(stack); i < count; i++) {
+        SwiftColorTransform *transformPtr = (SwiftColorTransform *)CFArrayGetValueAtIndex(stack, i);
+        sSwiftColorApplyColorTransformPointer(&color, transformPtr);
+    }
+    
+    return color;
+}
+

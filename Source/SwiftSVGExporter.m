@@ -98,18 +98,6 @@ static char *sDoubleStr(CGFloat d)
 }
 
 
-static SwiftColor sGetTransformedColor(SwiftSVGExporterState *state, SwiftColor color)
-{
-    CFArrayRef transforms = state->colorTransforms;
-    for (CFIndex i, count = CFArrayGetCount(transforms); i < count; i++) {
-        SwiftColorTransform *transform = (SwiftColorTransform *)CFArrayGetValueAtIndex(transforms, i);
-        color = SwiftColorApplyColorTransform(color, *transform);
-    }
-
-    return color;
-}
-
-
 static NSString *sGetNextDefinedID(SwiftSVGExporterState *state)
 {
     NSString *idString = [NSMutableString string];
@@ -133,22 +121,15 @@ static NSString *sGetNextDefinedID(SwiftSVGExporterState *state)
 
 static CGFloat sGetTransformedAlpha(SwiftSVGExporterState *state, CGFloat alpha)
 {
-    CFArrayRef transforms = state->colorTransforms;
-    for (CFIndex i, count = CFArrayGetCount(transforms); i < count; i++) {
-        SwiftColorTransform *transform = (SwiftColorTransform *)CFArrayGetValueAtIndex(transforms, i);
-        
-        alpha = (alpha * transform->alphaMultiply) + transform->alphaAdd;
-        if      (alpha > 1.0) alpha = 1.0;
-        else if (alpha < 0.0) alpha = 0.0;
-    }
-    
-    return alpha;
+    SwiftColor color = { 0.0, 0.0, 0.0, alpha };
+    color = SwiftColorApplyColorTransformStack(color, state->colorTransforms);
+    return color.alpha;
 }
 
 
 static NSString *sGetSVGForColor(SwiftSVGExporterState *state, SwiftColor inColor)
 {
-    SwiftColor color = sGetTransformedColor(state, inColor);
+    SwiftColor color = SwiftColorApplyColorTransformStack(inColor, state->colorTransforms);
     
     int r = (NSInteger)(color.red   * 255.0);
     int g = (NSInteger)(color.green * 255.0);

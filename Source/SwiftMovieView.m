@@ -30,6 +30,7 @@
 #import "SwiftLayer.h"
 #import "SwiftScene.h"
 #import "SwiftFrame.h"
+#import "SwiftPlayhead.h"
 
 @interface SwiftMovieView ()
 - (void) _displayLinkDidFire:(CADisplayLink *)displayLink;
@@ -43,8 +44,7 @@
     [m_displayLink invalidate];
 
     [m_movie        release];  m_movie        = nil;
-    [m_currentScene release];  m_currentScene = nil;
-    [m_currentFrame release];  m_currentFrame = nil;
+    [m_playhead     release];  m_playhead     = nil;
     [m_displayLink  release];  m_displayLink  = nil;
     [m_layer        release];  m_layer        = nil;
 
@@ -133,37 +133,6 @@
 }
 
 
-- (void) _gotoNextFrame
-{
-    SwiftFrame *currentFrame = m_currentFrame;
-    SwiftFrame *nextFrame    = [currentFrame nextFrame];
-    
-    // If nextFrame is nil, we are at the end of the movie.  Loop movie if requested
-    if (!nextFrame && m_loopsMovie) {
-        NSArray *frames = [m_movie frames];
-        nextFrame = [frames count] ? [frames objectAtIndex:0] : nil;
-    }
-    
-    // If indexOfScene is lower than the old indexOfScene, we switched scenes.  Loop scene if requested
-    if (nextFrame && ([nextFrame indexInScene] < [currentFrame indexInScene]) && m_loopsScene) {
-        NSArray *frames = [m_currentScene frames];
-        nextFrame = [frames count] ? [frames objectAtIndex:0] : nil;
-    }
-
-    if (nextFrame) {
-        [nextFrame retain]; // Be paranoid, as setCurrentScene: calls setCurrentFrame:
-
-        [self setCurrentScene:[nextFrame parentScene]];
-        [self setCurrentFrame:nextFrame];
-
-        [nextFrame release];
-
-    } else {
-        [self stop];
-    }
-}
-
-
 - (void) _displayLinkDidFire:(CADisplayLink *)displayLink
 {
     CFTimeInterval elapsed = ([m_displayLink timestamp] - m_playStart);
@@ -171,24 +140,31 @@
     long currentFrame = (long)(elapsed * m_framesPerSecond);
 
     if (m_playIndex != currentFrame) {
-        [self _gotoNextFrame];
+        [m_playhead step];
         m_playIndex = currentFrame;
     }
 }
 
 
-- (void) play
+#pragma mark -
+#pragma mark Playhead Delegate
+
+- (void) playheadReachedEnd:(SwiftPlayhead *)playhead
 {
-    m_playing = YES;
-    [m_displayLink setPaused:!m_playing];
-    m_playStart = CACurrentMediaTime();
-    m_playIndex = 0;
+    [self setPlaying:NO];
 }
 
-- (void) stop
+
+- (void) playheadDidUpdate:(SwiftPlayhead *)playhead
 {
-    m_playing = NO;
-    [m_displayLink setPaused:!m_playing];
+    SwiftScene *scene = [playhead scene];
+    SwiftFrame *frame = [playhead frame];
+
+    if (m_delegate_movieView_willDisplayScene_frame) {
+        [m_delegate movieView:self willDisplayScene:scene frame:frame];
+    }
+
+    [m_layer setCurrentFrame:frame];
 }
 
 
@@ -204,81 +180,19 @@
         [m_layer removeFromSuperlayer];
         [m_layer release];
 
-
         m_framesPerSecond = [m_movie frameRate];
+
+        [m_playhead release];
+        m_playhead = [[SwiftPlayhead alloc] initWithMovie:m_movie delegate:(id<SwiftPlayheadDelegate>)self];
 
         m_layer = [[SwiftLayer alloc] initWithMovie:m_movie];
         [m_layer setUsesAcceleratedRendering:m_usesAcceleratedRendering];
         [m_layer setFrameAnimationDuration:(m_interpolatesFrames ? (1.0 / m_framesPerSecond) : 0.0)];
         [m_layer setCurrentFrame:m_currentFrame];
 
-        NSArray *scenes = [m_movie scenes];
-        [self setCurrentScene:[scenes count] ? [scenes objectAtIndex:0] : nil];
-
         [[self layer] addSublayer:m_layer];
         [self setNeedsLayout];
     }
-}
-
-
-- (void) setCurrentScene:(SwiftScene *)scene
-{
-    if (m_currentScene != scene) {
-        [m_currentScene release];
-        m_currentScene = [scene retain];
-
-        [self setCurrentFrameNumber:1];
-    }
-}
-
-
-- (void) setCurrentSceneName:(NSString *)sceneName
-{
-    SwiftScene *scene = [m_movie sceneWithName:sceneName];
-    if (scene) [self setCurrentScene:scene];
-}
-
-
-- (NSString *) currentSceneName
-{
-    return [m_currentScene name];
-}
-
-
-- (void) setCurrentFrame:(SwiftFrame *)frame
-{
-    if (m_currentFrame != frame) {
-        [m_currentFrame release];
-        m_currentFrame = [frame retain];
-        
-        [m_layer setCurrentFrame:frame];
-    }
-}
-
-
-- (void) setCurrentFrameLabel:(NSString *)frameLabel
-{
-    SwiftFrame *frame = [m_currentScene frameWithLabel:frameLabel];
-    if (frame) [self setCurrentFrame:frame];
-}
-
-
-- (NSString *) currentFrameLabel
-{
-    return [m_currentFrame label];
-}
-
-
-- (void) setCurrentFrameNumber:(NSInteger)frameNumber
-{
-    SwiftFrame *frame = [m_currentScene frameAtIndex1:frameNumber];
-    if (frame) [self setCurrentFrame:frame];
-}
-
-
-- (NSInteger) currentFrameNumber
-{
-    return [m_currentScene index1OfFrame:m_currentFrame];
 }
 
 
@@ -306,13 +220,22 @@
 } 
 
 
+- (void) setPlaying:(BOOL)playing
+{
+    if (m_playing != playing) {
+        m_playing = playing;
+        [m_displayLink setPaused:!m_playing];
+        m_playStart = CACurrentMediaTime();
+        m_playIndex = 0;
+    }
+}
+
+
 @synthesize movie                    = m_movie,
             delegate                 = m_delegate,
-            currentScene             = m_currentScene,
-            currentFrame             = m_currentFrame,
+            playing                  = m_playing,
+            playhead                 = m_playhead,
             usesAcceleratedRendering = m_usesAcceleratedRendering,
-            interpolatesFrames       = m_interpolatesFrames,
-            loopsMovie               = m_loopsMovie,
-            loopsScene               = m_loopsScene;
+            interpolatesFrames       = m_interpolatesFrames;
 
 @end

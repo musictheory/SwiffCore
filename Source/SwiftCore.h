@@ -43,6 +43,7 @@
 #import "SwiftParser.h"
 #import "SwiftPath.h"
 #import "SwiftPlacedObject.h"
+#import "SwiftPlayhead.h"
 #import "SwiftRenderer.h"
 #import "SwiftShape.h"
 #import "SwiftSprite.h"

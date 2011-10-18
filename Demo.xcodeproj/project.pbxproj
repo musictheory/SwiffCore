@@ -15,6 +15,9 @@
 		550B604F1446B93900F8C138 /* libSwiftCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B603E1446B42900F8C138 /* libSwiftCore.a */; };
 		550B60511446B94600F8C138 /* libz.1.1.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B60501446B94600F8C138 /* libz.1.1.3.dylib */; };
 		550B60531446B95100F8C138 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B60521446B95100F8C138 /* QuartzCore.framework */; };
+		55BA68E9144B9C4B00D83AA8 /* DemoMovies.plist in Resources */ = {isa = PBXBuildFile; fileRef = 55BA68E8144B9C4B00D83AA8 /* DemoMovies.plist */; };
+		55BA68EC144BA50100D83AA8 /* DemoMovieController.m in Sources */ = {isa = PBXBuildFile; fileRef = 55BA68EB144BA50100D83AA8 /* DemoMovieController.m */; };
+		55BA68EF144BACA600D83AA8 /* TestSuite.swf in Resources */ = {isa = PBXBuildFile; fileRef = 55BA68EE144BACA600D83AA8 /* TestSuite.swf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +57,10 @@
 		550B60521446B95100F8C138 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		558B13DE1446BB230054AF76 /* DemoPrefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DemoPrefix.pch; path = Source/DemoPrefix.pch; sourceTree = SOURCE_ROOT; };
 		558B13DF1446BB2C0054AF76 /* DemoInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = DemoInfo.plist; path = Resources/DemoInfo.plist; sourceTree = SOURCE_ROOT; };
+		55BA68E8144B9C4B00D83AA8 /* DemoMovies.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = DemoMovies.plist; path = Resources/DemoMovies.plist; sourceTree = SOURCE_ROOT; };
+		55BA68EA144BA50100D83AA8 /* DemoMovieController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DemoMovieController.h; path = Source/DemoMovieController.h; sourceTree = SOURCE_ROOT; };
+		55BA68EB144BA50100D83AA8 /* DemoMovieController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DemoMovieController.m; path = Source/DemoMovieController.m; sourceTree = SOURCE_ROOT; };
+		55BA68EE144BACA600D83AA8 /* TestSuite.swf */ = {isa = PBXFileReference; lastKnownFileType = file; name = TestSuite.swf; path = Tests/TestSuite.swf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +85,7 @@
 			children = (
 				550B60361446B42900F8C138 /* SwiftCore.xcodeproj */,
 				550B60211446B35600F8C138 /* Demo */,
+				55BA68ED144BAC8A00D83AA8 /* Resources */,
 				550B601A1446B35600F8C138 /* Frameworks */,
 				550B60181446B35600F8C138 /* Products */,
 			);
@@ -106,11 +114,12 @@
 		550B60211446B35600F8C138 /* Demo */ = {
 			isa = PBXGroup;
 			children = (
+				55BA68EA144BA50100D83AA8 /* DemoMovieController.h */,
+				55BA68EB144BA50100D83AA8 /* DemoMovieController.m */,
 				550B60451446B5C200F8C138 /* DemoApp.h */,
 				550B60461446B5C200F8C138 /* DemoApp.m */,
-				558B13DF1446BB2C0054AF76 /* DemoInfo.plist */,
-				558B13DE1446BB230054AF76 /* DemoPrefix.pch */,
 				550B60411446B4B500F8C138 /* DemoMain.m */,
+				558B13DE1446BB230054AF76 /* DemoPrefix.pch */,
 			);
 			path = Demo;
 			sourceTree = "<group>";
@@ -122,6 +131,16 @@
 				55BA68DC144A492C00D83AA8 /* libSwiftCoreMac.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		55BA68ED144BAC8A00D83AA8 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				55BA68EE144BACA600D83AA8 /* TestSuite.swf */,
+				558B13DF1446BB2C0054AF76 /* DemoInfo.plist */,
+				55BA68E8144B9C4B00D83AA8 /* DemoMovies.plist */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -198,6 +217,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				55BA68E9144B9C4B00D83AA8 /* DemoMovies.plist in Resources */,
+				55BA68EF144BACA600D83AA8 /* TestSuite.swf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -210,6 +231,7 @@
 			files = (
 				550B60421446B4B500F8C138 /* DemoMain.m in Sources */,
 				550B60471446B5C200F8C138 /* DemoApp.m in Sources */,
+				55BA68EC144BA50100D83AA8 /* DemoMovieController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

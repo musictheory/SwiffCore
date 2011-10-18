@@ -57,18 +57,6 @@ static void sCleanupState(SwiftRendererState *state)
 }
 
 
-static void sEnumerateColorTransforms(SwiftRendererState *state, void (^f)(SwiftColorTransform transform))
-{
-    CFArrayRef transforms = state->colorTransforms;
-    if (!transforms) return;
-
-    for (CFIndex i = 0, count = CFArrayGetCount(transforms); i < count; i++) {
-        SwiftColorTransform *transform = (SwiftColorTransform *)CFArrayGetValueAtIndex(transforms, i);
-        f(*transform);
-    }
-};
-
-
 static void sApplyLineStyle(SwiftLineStyle *style, SwiftRendererState *state)
 {
     CGContextRef context = state->context;
@@ -91,10 +79,7 @@ static void sApplyLineStyle(SwiftLineStyle *style, SwiftRendererState *state)
         CGContextSetMiterLimit(context, [style miterLimit]);
     }
 
-    __block SwiftColor color = [style color];
-    sEnumerateColorTransforms(state, ^(SwiftColorTransform transform) {
-        color = SwiftColorApplyColorTransform(color, transform);
-    });
+    SwiftColor color = SwiftColorApplyColorTransformStack([style color], state->colorTransforms);
     CGContextSetStrokeColor(context, (CGFloat *)&color);
     
     CGContextStrokePath(context);
@@ -108,10 +93,7 @@ static void sApplyFillStyle(SwiftFillStyle *style, SwiftRendererState *state)
     SwiftFillStyleType type = [style type];
 
     if (type == SwiftFillStyleTypeColor) {
-        __block SwiftColor color = [style color];
-        sEnumerateColorTransforms(state, ^(SwiftColorTransform transform) {
-            color = SwiftColorApplyColorTransform(color, transform);
-        });
+        SwiftColor color = SwiftColorApplyColorTransformStack([style color], state->colorTransforms);
         CGContextSetFillColor(context, (CGFloat *)&color);
 
     } else if ((type == SwiftFillStyleTypeLinearGradient) || (type == SwiftFillStyleTypeRadialGradient)) {

@@ -111,9 +111,6 @@
         m_depthToPlacedObjectMap = NULL;
     }
 
-    [m_frames makeObjectsPerformSelector:@selector(setParentSprite:) withObject:nil];
-    [m_frames makeObjectsPerformSelector:@selector(setNextFrame:)    withObject:nil];
-
     [m_frames          release];  m_frames          = nil;
     [m_labelToFrameMap release];  m_labelToFrameMap = nil;
                                   m_lastFrame       = nil;
@@ -258,9 +255,6 @@
         }
 
         SwiftFrame *frame = [[SwiftFrame alloc] _initWithSortedPlacedObjects:placedObjects];
-
-        [frame setParentSprite:self];
-        [[m_frames lastObject] setNextFrame:frame];
         [m_frames addObject:frame];
 
         m_lastFrame = frame;
@@ -322,7 +316,7 @@
 }
 
 
-- (SwiftFrame *) frameAtIndex1:(NSInteger)index1
+- (SwiftFrame *) frameAtIndex1:(NSUInteger)index1
 {
     if (index1 > 0 && index1 <= [m_frames count]) {
         return [m_frames objectAtIndex:(index1 - 1)];
@@ -332,7 +326,7 @@
 }
 
 
-- (NSInteger) index1OfFrame:(SwiftFrame *)frame
+- (NSUInteger) index1OfFrame:(SwiftFrame *)frame
 {
     NSUInteger index = [m_frames indexOfObject:frame];
 
@@ -347,11 +341,9 @@
 #pragma mark -
 #pragma mark Accessors
 
-- (CGRect) bounds       { return CGRectZero; }
-- (CGRect) edgeBounds {    return CGRectZero;}
-
-- (BOOL) hasEdgeBounds { return NO; }
-
+- (CGRect) bounds      { return CGRectZero; }
+- (CGRect) edgeBounds  { return CGRectZero; }
+- (BOOL) hasEdgeBounds { return NO;         }
 
 @synthesize libraryID  = m_libraryID,
             frames     = m_frames;

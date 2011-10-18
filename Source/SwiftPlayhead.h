@@ -1,5 +1,5 @@
 /*
-    SwiftMovieView.h
+    SwiftPlayhead.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,52 +25,48 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <UIKit/UIKit.h>
-#import <QuartzCore/QuartzCore.h>
+#import <Foundation/Foundation.h>
 
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+@class SwiftScene, SwiftFrame, SwiftMovie;
+@protocol SwiftPlayheadDelegate;
 
-@class SwiftLayer, SwiftMovie, SwiftScene, SwiftFrame, SwiftPlayhead;
 
-@protocol SwiftMovieViewDelegate;
-
-@interface SwiftMovieView : UIView {
+@interface SwiftPlayhead : NSObject {
 @private
-    id<SwiftMovieViewDelegate> m_delegate;
+    id<SwiftPlayheadDelegate> m_delegate;
 
-    SwiftLayer    *m_layer;
-    SwiftMovie    *m_movie;
-    SwiftPlayhead *m_playhead;
-    SwiftScene    *m_currentScene;
-    SwiftFrame    *m_currentFrame;
-    CADisplayLink *m_displayLink;
-    CFTimeInterval m_playStart;
-    long           m_playIndex;
-    CFTimeInterval m_framesPerSecond;
-    
-    BOOL m_usesAcceleratedRendering;
-    BOOL m_interpolatesFrames;
-    BOOL m_playing;
-    BOOL m_delegate_movieView_willDisplayScene_frame;
-    BOOL m_delegate_movieView_didDisplayScene_frame;
+    SwiftMovie *m_movie;
+    NSUInteger  m_rawFrameIndex;
+    BOOL        m_loopsMovie;
+    BOOL        m_loopsScene;
+    BOOL        m_delegate_playheadDidUpdate;
+    BOOL        m_delegate_playheadReachedEnd;
 }
 
-@property (nonatomic, retain) SwiftMovie *movie;
-@property (nonatomic, assign) id<SwiftMovieViewDelegate> delegate;
+- (id) initWithMovie:(SwiftMovie *)movie delegate:(id<SwiftPlayheadDelegate>)delegate;
 
-@property (nonatomic, retain, readonly) SwiftPlayhead *playhead;
+- (void) step;
 
-@property (nonatomic, assign, getter=isPlaying) BOOL playing;
-@property (nonatomic, assign) BOOL usesAcceleratedRendering;
-@property (nonatomic, assign) BOOL interpolatesFrames;
+@property (nonatomic, assign) id<SwiftPlayheadDelegate> delegate;
+@property (nonatomic, retain, readonly) SwiftMovie *movie;
+
+@property (nonatomic, assign) SwiftScene *scene;
+@property (nonatomic, retain) NSString   *sceneName;
+
+@property (nonatomic, assign) SwiftFrame *frame;
+@property (nonatomic, retain) NSString   *frameLabel;
+@property (nonatomic, assign) NSUInteger  frameIndex1;  // 1-based, relative to scene
+
+@property (nonatomic, assign) BOOL loopsMovie;
+@property (nonatomic, assign) BOOL loopsScene;
+
+@property (nonatomic, assign) NSUInteger rawFrameIndex; // 0-based, relative to movie
 
 @end
 
 
-@protocol SwiftMovieViewDelegate <NSObject>
+@protocol SwiftPlayheadDelegate <NSObject>
 @optional
-- (void) movieView:(SwiftMovieView *)movieView willDisplayScene:(SwiftScene *)scene frame:(SwiftFrame *)frame;
-- (void) movieView:(SwiftMovieView *)movieView didDisplayScene:(SwiftScene *)scene  frame:(SwiftFrame *)frame;
+- (void) playheadDidUpdate:(SwiftPlayhead *)playhead;
+- (void) playheadReachedEnd:(SwiftPlayhead *)playhead;
 @end
-
-#endif

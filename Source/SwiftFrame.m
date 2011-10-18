@@ -43,8 +43,8 @@
 
 - (void) dealloc
 {
-    [m_label                  release];  m_label                  = nil;
-    [m_placedObjects          release];  m_placedObjects          = nil;
+    [m_label         release];  m_label         = nil;
+    [m_placedObjects release];  m_placedObjects = nil;
 
     [super dealloc];
 }
@@ -67,11 +67,9 @@
 }
 
 
-@synthesize indexInScene    = m_indexInScene,
+@synthesize index1InScene   = m_index1InScene,
             placedObjects   = m_placedObjects,
-            parentSprite    = m_parentSprite,
-            parentScene     = m_parentScene,
-            nextFrame       = m_nextFrame,
+            scene           = m_scene,
             label           = m_label,
             backgroundColor = m_backgroundColor;
 

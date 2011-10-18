@@ -60,7 +60,7 @@ typedef NSInteger SwiftGradientInterpolationMode;
       isFocalGradient: (BOOL) isFocalGradient;
 
 @property (nonatomic, readonly, assign) NSInteger recordCount;
-- (void) getColor:(SwiftColor *)outColor ratio:(CGFloat *)outRatio forRecord:(NSInteger)index;
+- (void) getColor:(SwiftColor *)outColor ratio:(CGFloat *)outRatio forRecord:(NSUInteger)index;
 
 @property (nonatomic, readonly /*strong*/) CGGradientRef CGGradient;
 

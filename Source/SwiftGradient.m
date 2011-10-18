@@ -107,9 +107,9 @@
 }
 
 
-- (void) getColor:(SwiftColor *)outColor ratio:(CGFloat *)outRatio forRecord:(NSInteger)index
+- (void) getColor:(SwiftColor *)outColor ratio:(CGFloat *)outRatio forRecord:(NSUInteger)index
 {
-    if ((index >= 0) && (index < m_recordCount)) {
+    if (index < m_recordCount) {
         if (outColor) *outColor = m_colors[index];
         if (outRatio) *outRatio = m_ratios[index];
     }

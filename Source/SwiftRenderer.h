@@ -32,11 +32,7 @@
 
 + (id) sharedInstance;
 
-- (void) renderFrame:(SwiftFrame *)frame 
-               movie:(SwiftMovie *)movie
-             context:(CGContextRef) context;
+- (void) renderFrame:(SwiftFrame *)frame movie:(SwiftMovie *)movie context:(CGContextRef)context;
+- (void) renderPlacedObject:(SwiftPlacedObject *)placedObject movie:(SwiftMovie *)movie context:(CGContextRef)context;
 
-- (void) renderPlacedObject:(SwiftPlacedObject *)placedObject
-                      movie:(SwiftMovie *)movie
-                    context:(CGContextRef)context;
 @end
