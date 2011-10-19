@@ -38,9 +38,9 @@ enum {
 };
 typedef NSInteger SwiftFontLanguageCode;
 
-@interface SwiftFont : NSObject {
+@interface SwiftFontDefinition : NSObject {
 @private
-    NSInteger  m_libraryID;
+    UInt16     m_libraryID;
  
     NSString  *m_name;
     NSString  *m_fullName;
@@ -75,13 +75,14 @@ typedef NSInteger SwiftFontLanguageCode;
 // When encountering one of these tags, the movie should read the fontID from the stream, create or lookup
 // the corresponding font, and then call one of the readDefineFont... methods
 //
-- (id) initWithLibraryID:(NSInteger)libraryID;
+- (id) initWithLibraryID:(UInt16)libraryID;
+
 - (void) readDefineFontTagFromParser:(SwiftParser *)parser version:(NSInteger)version;
 - (void) readDefineFontNameTagFromParser:(SwiftParser *)parser version:(NSInteger)version;
 - (void) readDefineFontInfoTagFromParser:(SwiftParser *)parser version:(NSInteger)version;
 
 
-@property (nonatomic, assign) NSInteger libraryID;
+@property (nonatomic, assign, readonly) UInt16 libraryID;
 
 @property (nonatomic, assign, readonly) SwiftFontLanguageCode languageCode;
 

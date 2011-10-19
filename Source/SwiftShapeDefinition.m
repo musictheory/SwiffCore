@@ -26,7 +26,7 @@
 */
 
 
-#import "SwiftShape.h"
+#import "SwiftShapeDefinition.h"
 #import "SwiftFillStyle.h"
 #import "SwiftLineStyle.h"
 #import "SwiftParser.h"
@@ -81,7 +81,7 @@ static void sPathAddShapeOperation(SwiftPath *path, _SwiftShapeOperation *op, Sw
 }
  
 
-@implementation SwiftShape
+@implementation SwiftShapeDefinition
 
 #pragma mark -
 #pragma mark Lifecycle
@@ -92,11 +92,9 @@ static void sPathAddShapeOperation(SwiftPath *path, _SwiftShapeOperation *op, Sw
         SwiftParserByteAlign(parser);
 
         if (tag == SwiftTagDefineShape) {
-            UInt16 libraryID;
-            SwiftParserReadUInt16(parser, &libraryID);
-            m_libraryID = libraryID;
+            SwiftParserReadUInt16(parser, &m_libraryID);
 
-            SwiftLog(@"DEFINESHAPE defines id %d", libraryID);
+            SwiftLog(@"DEFINESHAPE defines id %ld", (long)m_libraryID);
             
             SwiftParserReadRect(parser, &m_bounds);
 

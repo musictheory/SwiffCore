@@ -1,5 +1,5 @@
 /*
-    SwiftShape.h
+    SwiftStaticText.m
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,37 +25,44 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#import "SwiftStaticTextDefinition.h"
 
-#import <Foundation/Foundation.h>
+#import "SwiftParser.h"
+#import "SwiftTextRecord.h"
 
+@implementation SwiftStaticTextDefinition
 
-@interface SwiftShape : NSObject {
-@private
-    NSInteger  m_libraryID;
-    NSData    *m_tagData;
-    CFArrayRef m_groups;
-    NSArray   *m_fillStyles;
-    NSArray   *m_lineStyles;
-    NSArray   *m_paths;
-    CGRect     m_bounds;
-    CGRect     m_edgeBounds;
-    BOOL       m_usesFillWindingRule;
-    BOOL       m_usesNonScalingStrokes;
-    BOOL       m_usesScalingStrokes;
-    BOOL       m_hasEdgeBounds;
+- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version
+{
+    if ((self = [super init])) {
+        SwiftParserReadUInt16(parser, &m_libraryID);
+        SwiftParserReadRect(parser,   &m_bounds);
+        SwiftParserReadMatrix(parser, &m_affineTransform);
+
+        UInt8 glyphBits, advanceBits;
+        SwiftParserReadUInt8(parser, &glyphBits);
+        SwiftParserReadUInt8(parser, &advanceBits);
+    
+        m_textRecords = [[SwiftTextRecord textRecordArrayWithParser:parser tag:tag version:version glyphBits:glyphBits advanceBits:advanceBits] retain];
+    }
+    
+    return self;
 }
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(SwiftVersion)version;
 
-@property (nonatomic, assign, readonly) NSInteger libraryID;
-@property (nonatomic, assign, readonly) CGRect bounds;
-@property (nonatomic, assign, readonly) CGRect edgeBounds;
+- (void) dealloc
+{
+    [m_textRecords release];
+    m_textRecords = nil;
 
-@property (nonatomic, retain, readonly) NSArray *paths;
+    [super dealloc];
+}
 
-@property (nonatomic, assign, readonly) BOOL usesFillWindingRule;
-@property (nonatomic, assign, readonly) BOOL usesNonScalingStrokes;
-@property (nonatomic, assign, readonly) BOOL usesScalingStrokes;
-@property (nonatomic, assign, readonly) BOOL hasEdgeBounds;
+- (BOOL) hasEdgeBounds { return NO; }
+- (CGRect) edgeBounds { return CGRectZero; }
+
+
+@synthesize libraryID = m_libraryID,
+            bounds    = m_bounds;
 
 @end

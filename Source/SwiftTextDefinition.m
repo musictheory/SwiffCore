@@ -25,11 +25,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftDynamicText.h"
+#import "SwiftTextDefinition.h"
 
 #import "SwiftParser.h"
 
-@implementation SwiftDynamicText
+@implementation SwiftTextDefinition
 
 - (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)tagVersion
 {

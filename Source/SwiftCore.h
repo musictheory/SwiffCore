@@ -31,10 +31,14 @@
 // Protocols
 #import "SwiftPlacableObject.h"
 
-// Classes
-#import "SwiftDynamicText.h"
+// Definition
+#import "SwiftTextDefinition.h"
+#import "SwiftFontDefinition.h"
+#import "SwiftShapeDefinition.h"
+#import "SwiftSpriteDefinition.h"
+#import "SwiftStaticTextDefinition.h"
+
 #import "SwiftFillStyle.h"
-#import "SwiftFont.h"
 #import "SwiftFontGlyph.h"
 #import "SwiftFrame.h"
 #import "SwiftGradient.h"
@@ -46,9 +50,6 @@
 #import "SwiftPlacedObject.h"
 #import "SwiftPlayhead.h"
 #import "SwiftRenderer.h"
-#import "SwiftShape.h"
-#import "SwiftSprite.h"
-#import "SwiftStaticText.h"
 #import "SwiftTextRecord.h"
 
 // Subclasses

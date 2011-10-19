@@ -28,11 +28,11 @@
 #import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
 
-@class SwiftMovie, SwiftSprite, SwiftFrame;
+@class SwiftMovie, SwiftSpriteDefinition, SwiftFrame;
 
 @interface SwiftLayer : CALayer {
     SwiftMovie          *m_movie;
-    SwiftSprite         *m_sprite;
+    SwiftSpriteDefinition *m_sprite;
     SwiftFrame          *m_currentFrame;
     NSMutableDictionary *m_depthToLayerMap;
     CGAffineTransform    m_baseTransform;
@@ -44,7 +44,7 @@
 - (id) initWithMovie:(SwiftMovie *)movie;
 
 @property (nonatomic, assign, readonly) SwiftMovie  *movie;
-@property (nonatomic, retain, readonly) SwiftSprite *sprite;
+@property (nonatomic, retain, readonly) SwiftSpriteDefinition *sprite;
 
 @property (nonatomic, retain) SwiftFrame *currentFrame;
 

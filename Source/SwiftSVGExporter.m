@@ -348,7 +348,7 @@ static void sDrawPath(SwiftSVGExporterState *state, SwiftPath *path, CGAffineTra
 }
 
 
-static void sDrawSprite(SwiftSVGExporterState *state, SwiftSprite *sprite)
+static void sDrawSprite(SwiftSVGExporterState *state, SwiftSpriteDefinition *sprite)
 {
     SwiftFrame *frame = [sprite frameAtIndex1:1];
 
@@ -358,7 +358,7 @@ static void sDrawSprite(SwiftSVGExporterState *state, SwiftSprite *sprite)
 }
 
 
-static void sDrawShape(SwiftSVGExporterState *state, SwiftShape *shape)
+static void sDrawShape(SwiftSVGExporterState *state, SwiftShapeDefinition *shape)
 {
     NSMutableString *body = state->body;
 
@@ -428,14 +428,14 @@ static void sDrawPlacedObject(SwiftSVGExporterState *state, SwiftPlacedObject *p
         CFArraySetValueAtIndex(state->colorTransforms, colorTransformLastIndex, [placedObject colorTransformPointer]);
     }
 
-    NSInteger objectID = [placedObject objectID];
+    UInt16 libraryID = [placedObject libraryID];
 
-    SwiftSprite *sprite = nil;
-    SwiftShape  *shape  = nil;
+    SwiftSpriteDefinition *sprite = nil;
+    SwiftShapeDefinition  *shape  = nil;
 
-    if ((sprite = [state->movie spriteWithID:objectID])) {
+    if ((sprite = [state->movie spriteDefinitionWithLibraryID:libraryID])) {
         sDrawSprite(state, sprite);
-    } else if ((shape = [state->movie shapeWithID:objectID])) {
+    } else if ((shape = [state->movie shapeDefinitionWithLibraryID:libraryID])) {
         sDrawShape(state, shape);
     }
 

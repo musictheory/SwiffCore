@@ -26,7 +26,7 @@
 */
 
 @protocol SwiftPlacableObject <NSObject>
-@property (nonatomic, assign, readonly) NSInteger libraryID;
+@property (nonatomic, assign, readonly) UInt16 libraryID;
 @property (nonatomic, assign, readonly) CGRect bounds;
 @property (nonatomic, assign, readonly) CGRect edgeBounds;
 @property (nonatomic, assign, readonly) BOOL hasEdgeBounds;
