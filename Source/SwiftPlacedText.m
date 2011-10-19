@@ -1,5 +1,5 @@
 /*
-    SwiftStaticText.m
+    SwiftPlacedText.m
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,47 +25,70 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftStaticText.h"
+#import "SwiftPlacedText.h"
 
-#import "SwiftParser.h"
-#import "SwiftTextRecord.h"
+#import "SwiftHTMLToCoreTextConverter.h"
 
-@implementation SwiftStaticText
-
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version
-{
-    if ((self = [super init])) {
-        UInt16 libraryID;
-        SwiftParserReadUInt16(parser, &libraryID);
-        m_libraryID = libraryID;
-        
-        SwiftParserReadRect(parser,   &m_bounds);
-        SwiftParserReadMatrix(parser, &m_affineTransform);
-
-        UInt8 glyphBits, advanceBits;
-        SwiftParserReadUInt8(parser, &glyphBits);
-        SwiftParserReadUInt8(parser, &advanceBits);
-    
-        m_textRecords = [[SwiftTextRecord textRecordArrayWithParser:parser tag:tag version:version glyphBits:glyphBits advanceBits:advanceBits] retain];
-    }
-    
-    return self;
-}
-
+@implementation SwiftPlacedText
 
 - (void) dealloc
 {
-    [m_textRecords release];
-    m_textRecords = nil;
+    [m_text release];
+    m_text = nil;
+
+    if (m_attributedText) {
+        CFRelease(m_attributedText);
+        m_attributedText = NULL;
+    }
 
     [super dealloc];
 }
 
-- (BOOL) hasEdgeBounds { return NO; }
-- (CGRect) edgeBounds { return CGRectZero; }
+
+- (id) copyWithZone:(NSZone *)zone
+{
+    SwiftPlacedText *result = [super copyWithZone:zone];
+
+    result->m_text = [m_text copy];
+    result->m_attributedText = CFAttributedStringCreateCopy(NULL, m_attributedText);
+
+    return result;
+}
 
 
-@synthesize libraryID = m_libraryID,
-            bounds    = m_bounds;
+- (void) setText:(NSString *)text HTML:(BOOL)isHTML
+{
+    if ((m_text != text) || (isHTML != m_HTML)) {
+        m_text = [text copy];
+        m_HTML = m_HTML;
+        
+        if (m_attributedText) CFRelease(m_attributedText);
+        m_attributedText = NULL;
+        
+        if (m_text) {
+            if (isHTML) {
+                SwiftHTMLToCoreTextConverter *converter = [SwiftHTMLToCoreTextConverter sharedInstance];
+                m_attributedText = [converter copyAttributedStringForHTML:m_text baseFont:NULL];
+                CFRetain(m_attributedText);
+
+            } else {
+                NSDictionary *attributes = [NSDictionary dictionary];
+                m_attributedText = CFAttributedStringCreate(NULL, (__bridge CFStringRef)m_text, (__bridge CFDictionaryRef)attributes);
+            }
+        }
+    }
+}
+
+
+- (void) setText:(NSString *)text
+{
+    [self setText:text HTML:NO];
+}
+
+
+@synthesize text = m_text,
+            attributedText = m_attributedText,
+            HTML = m_HTML;
+
 
 @end

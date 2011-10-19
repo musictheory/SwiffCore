@@ -21,6 +21,7 @@ WRAPPER_EXTENSION = framework
 MACH_O_TYPE = staticlib
 LINK_WITH_STANDARD_LIBRARIES = NO
 DEAD_CODE_STRIPPING = NO
+HEADER_SEARCH_PATHS = $(inherited) $(SDKROOT)/usr/include/libxml2
 
 // Applies to Debug only, overridden in Release
 ARCHS = armv6 armv7

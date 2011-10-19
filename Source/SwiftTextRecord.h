@@ -27,19 +27,24 @@
 
 #import <Foundation/Foundation.h>
 
+typedef struct _SwiftGlyphEntry {
+    UInt16  index;
+    CGFloat advance;
+} SwiftGlyphEntry;
+
+
 @interface SwiftTextRecord : NSObject {
 @private
-    NSInteger m_fontID;
-    NSInteger m_glyphCount;
+    NSUInteger       m_glyphEntriesCount;
+    SwiftGlyphEntry *m_glyphEntries;
 
-    CGPoint    m_offset;
-    CGFloat    m_height;
-    SwiftColor m_color;
-    BOOL       m_hasFont;
-    BOOL       m_hasColor;
-    
-    UInt16  *m_glyphIndex;
-    CGFloat *m_glyphAdvance;
+    CGPoint          m_offset;
+    CGFloat          m_textHeight;
+    SwiftColor       m_color;
+
+    UInt16           m_fontID;
+    BOOL             m_hasFont;
+    BOOL             m_hasColor;
 }
 
 + (NSArray *) textRecordArrayWithParser: (SwiftParser *) parser
@@ -53,5 +58,18 @@
               version: (NSInteger) version
             glyphBits: (UInt8) glyphBits
           advanceBits: (UInt8) advanceBits;
+
+@property (nonatomic, assign, readonly) CGPoint offset;
+@property (nonatomic, assign, readonly) CGFloat textHeight;
+
+@property (nonatomic, assign, readonly) UInt16 fontID;
+@property (nonatomic, assign, readonly) SwiftColor color;
+@property (nonatomic, assign, readonly) SwiftColor *colorPointer;
+
+@property (nonatomic, assign, readonly) NSUInteger glyphEntriesCount;
+@property (nonatomic, assign, readonly) SwiftGlyphEntry *glyphEntries;
+
+@property (nonatomic, assign, readonly) BOOL hasFont;
+@property (nonatomic, assign, readonly) BOOL hasColor;
 
 @end

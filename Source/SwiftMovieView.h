@@ -41,16 +41,15 @@
     SwiftLayer    *m_layer;
     SwiftMovie    *m_movie;
     SwiftPlayhead *m_playhead;
-    SwiftScene    *m_currentScene;
-    SwiftFrame    *m_currentFrame;
     CADisplayLink *m_displayLink;
+
     CFTimeInterval m_playStart;
     long           m_playIndex;
     CFTimeInterval m_framesPerSecond;
-    
+
+    BOOL m_playing;
     BOOL m_usesAcceleratedRendering;
     BOOL m_interpolatesFrames;
-    BOOL m_playing;
     BOOL m_delegate_movieView_willDisplayScene_frame;
     BOOL m_delegate_movieView_didDisplayScene_frame;
 }

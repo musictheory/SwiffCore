@@ -33,6 +33,8 @@ extern void SwiftEnableLogging(void);
 #define SwiftLog( ...) { if (_SwiftShouldLog) _SwiftLog(6, __VA_ARGS__); }
 #define SwiftWarn(...) { _SwiftLog(4, __VA_ARGS__); }
 
+#define SwiftFloatFromTwips(TWIPS) ((TWIPS) / 20.0)
+
 extern SwiftColor SwiftColorApplyColorTransform(SwiftColor color, SwiftColorTransform transform);
 
 // CFArrayRef values must be valid (SwiftColorTransform *).  If stack is NULL, color is returned

@@ -1,5 +1,5 @@
 /*
-    SwiftStaticText.m
+    SwiftPlacedText.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,47 +25,18 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftStaticText.h"
+#import <Foundation/Foundation.h>
 
-#import "SwiftParser.h"
-#import "SwiftTextRecord.h"
-
-@implementation SwiftStaticText
-
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version
-{
-    if ((self = [super init])) {
-        UInt16 libraryID;
-        SwiftParserReadUInt16(parser, &libraryID);
-        m_libraryID = libraryID;
-        
-        SwiftParserReadRect(parser,   &m_bounds);
-        SwiftParserReadMatrix(parser, &m_affineTransform);
-
-        UInt8 glyphBits, advanceBits;
-        SwiftParserReadUInt8(parser, &glyphBits);
-        SwiftParserReadUInt8(parser, &advanceBits);
-    
-        m_textRecords = [[SwiftTextRecord textRecordArrayWithParser:parser tag:tag version:version glyphBits:glyphBits advanceBits:advanceBits] retain];
-    }
-    
-    return self;
+@interface SwiftPlacedText : SwiftPlacedObject {
+    NSString              *m_text;
+    CFAttributedStringRef  m_attributedText;
+    BOOL                   m_HTML;
 }
 
+- (void) setText:(NSString *)text HTML:(BOOL)isHTML;
 
-- (void) dealloc
-{
-    [m_textRecords release];
-    m_textRecords = nil;
-
-    [super dealloc];
-}
-
-- (BOOL) hasEdgeBounds { return NO; }
-- (CGRect) edgeBounds { return CGRectZero; }
-
-
-@synthesize libraryID = m_libraryID,
-            bounds    = m_bounds;
+@property (nonatomic, copy) NSString *text;
+@property (nonatomic, readonly /*strong*/) CFAttributedStringRef attributedText;
+@property (nonatomic, assign, readonly, getter=isHTML) BOOL HTML;
 
 @end

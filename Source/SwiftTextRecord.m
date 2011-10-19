@@ -89,38 +89,35 @@
             if (hasXOffset) {
                 SInt16 x = 0;
                 SwiftParserReadSInt16(parser, &x);
-                m_offset.x = (x / 20.0);
+                m_offset.x = SwiftFloatFromTwips(x);
             }
 
             if (hasYOffset) {
                 SInt16 y = 0;
                 SwiftParserReadSInt16(parser, &y);
-                m_offset.y = (y / 20.0);
+                m_offset.y = SwiftFloatFromTwips(y);
             }
             
             if (hasFont) {
                 UInt16 height;
                 SwiftParserReadUInt16(parser, &height);
-                m_height = (height / 20.0);
+                m_textHeight = SwiftFloatFromTwips(height);
             }
             
             UInt8 glyphCount;
             SwiftParserReadUInt8(parser, &glyphCount);
-            m_glyphCount = glyphCount;
+            m_glyphEntriesCount = glyphCount;
+            m_glyphEntries = calloc(glyphCount, sizeof(SwiftGlyphEntry));
 
-            m_glyphIndex   = calloc(glyphCount, sizeof(UInt16));
-            m_glyphAdvance = calloc(glyphCount, sizeof(CGFloat));
-
-            UInt8 i;
-            for (i = 0; i < m_glyphCount; i++) {
+            for (UInt8 i = 0; i < m_glyphEntriesCount; i++) {
                 UInt32 glyphIndex   = 0;
                 SInt32 glyphAdvance = 0;
 
                 SwiftParserReadUBits(parser, glyphBits,   &glyphIndex);
                 SwiftParserReadSBits(parser, advanceBits, &glyphAdvance);
                 
-                m_glyphIndex[i]   = (UInt16)glyphIndex;
-                m_glyphAdvance[i] = glyphAdvance;
+                m_glyphEntries[i].index   = glyphIndex;
+                m_glyphEntries[i].advance = SwiftFloatFromTwips(glyphAdvance);
             }
             
         } else {
@@ -140,17 +137,29 @@
 
 - (void) dealloc
 {
-    if (m_glyphIndex) {
-        free(m_glyphIndex);
-        m_glyphIndex = NULL;
-    }
-
-    if (m_glyphAdvance) {
-        free(m_glyphAdvance);
-        m_glyphAdvance = NULL;
-    }
+    free(m_glyphEntries);
+    m_glyphEntries = NULL;
     
     [super dealloc];
 }
+
+
+#pragma mark -
+#pragma mark Accessors
+
+- (SwiftColor *) colorPointer
+{
+    return &m_color;
+}
+
+
+@synthesize offset            = m_offset,
+            textHeight        = m_textHeight,
+            fontID            = m_fontID,
+            color             = m_color,
+            glyphEntriesCount = m_glyphEntriesCount,
+            glyphEntries      = m_glyphEntries,
+            hasFont           = m_hasFont,
+            hasColor          = m_hasColor;
 
 @end

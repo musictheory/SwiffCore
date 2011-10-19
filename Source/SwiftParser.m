@@ -25,7 +25,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "SwiftParser.h"
+#import "SwiftParser.h"
+
+#import "SwiftUtil.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -55,8 +57,6 @@ struct _SwiftParser {
     UInt8         currentTagVersion;
     UInt8         movieVersion;
 };
-
-#define GetPointsFromTwips(X) ((X) / 20.0)
 
 
 static BOOL _SwiftInflate(const UInt8 *inBuffer, UInt32 inLength, UInt8 *outBuffer, UInt32 outLength)
@@ -515,8 +515,8 @@ void SwiftParserReadMatrix(SwiftParser *parser, CGAffineTransform *outMatrix)
         outMatrix->b  = rotateSkew0;
         outMatrix->c  = rotateSkew1;
         outMatrix->d  = scaleY;
-        outMatrix->tx = GetPointsFromTwips(translateX);
-        outMatrix->ty = GetPointsFromTwips(translateY);
+        outMatrix->tx = SwiftFloatFromTwips(translateX);
+        outMatrix->ty = SwiftFloatFromTwips(translateY);
     }
 }
 
@@ -653,10 +653,10 @@ void SwiftParserReadRect(SwiftParser *parser, CGRect *outValue)
     SwiftParserReadSBits(parser, nBits, &(maxY));
     
     if (outValue) {
-        outValue->origin.x    = GetPointsFromTwips(minX);
-        outValue->origin.y    = GetPointsFromTwips(minY);
-        outValue->size.width  = GetPointsFromTwips(maxX - minX);
-        outValue->size.height = GetPointsFromTwips(maxY - minY);
+        outValue->origin.x    = SwiftFloatFromTwips(minX);
+        outValue->origin.y    = SwiftFloatFromTwips(minY);
+        outValue->size.width  = SwiftFloatFromTwips(maxX - minX);
+        outValue->size.height = SwiftFloatFromTwips(maxY - minY);
     }
 
     SwiftParserByteAlign(parser);

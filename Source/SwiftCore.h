@@ -38,6 +38,7 @@
 #import "SwiftFontGlyph.h"
 #import "SwiftFrame.h"
 #import "SwiftGradient.h"
+#import "SwiftHTMLToCoreTextConverter.h"
 #import "SwiftLineStyle.h"
 #import "SwiftMovieView.h"
 #import "SwiftParser.h"

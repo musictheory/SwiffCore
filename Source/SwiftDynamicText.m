@@ -61,22 +61,25 @@
 
         SwiftParserReadUBits(parser, 1, &border);         m_border       = border;
         SwiftParserReadUBits(parser, 1, &wasStatic);      m_wasStatic    = wasStatic;
-        SwiftParserReadUBits(parser, 1, &html);           m_html         = html;
+        SwiftParserReadUBits(parser, 1, &html);           m_HTML         = html;
         SwiftParserReadUBits(parser, 1, &useOutlines);    m_useOutlines  = useOutlines;
 
         if (hasFont) {
             UInt16 fontID;
             SwiftParserReadUInt16(parser, &fontID);
+            m_fontID = fontID;
         }
 
         if (hasFontClass) {
-            NSString *fontClass;
+            NSString *fontClass = nil;
             SwiftParserReadString( parser, &fontClass);
+            m_fontClass = [fontClass retain];
         }
     
         if (hasFont) {
             UInt16 fontHeight;
             SwiftParserReadUInt16(parser, &fontHeight);
+            m_fontHeight = SwiftFloatFromTwips(fontHeight);
         }
         
         if (hasColor) {
@@ -93,20 +96,17 @@
 
         if (hasLayout) {
             UInt8  align;
-            UInt16 leftMargin, rightMargin, indent;
-            SInt16 leading;
-        
-            SwiftParserReadUInt8( parser, &align);
-            SwiftParserReadUInt16(parser, &leftMargin);
-            SwiftParserReadUInt16(parser, &rightMargin);
-            SwiftParserReadUInt16(parser, &indent);
-            SwiftParserReadSInt16(parser, &leading);
-            
-//            tag->align       = align;
-//            tag->leftMargin  = leftMargin;
-//            tag->rightMargin = rightMargin;
-//            tag->indent      = indent;
-//            tag->leading     = leading;
+            SwiftParserReadUInt8(parser, &align);
+
+            if      (align == 1) {  m_textAlignment = kCTRightTextAlignment;      }
+            else if (align == 2) {  m_textAlignment = kCTCenterTextAlignment;     }
+            else if (align == 3) {  m_textAlignment = kCTJustifiedTextAlignment;  }
+            else                 {  m_textAlignment = kCTLeftTextAlignment;       }
+
+            SwiftParserReadUInt16(parser, &m_leftMarginInTwips);
+            SwiftParserReadUInt16(parser, &m_rightMarginInTwips);
+            SwiftParserReadUInt16(parser, &m_indentInTwips);
+            SwiftParserReadSInt16(parser, &m_leadingInTwips);
         }
 
         NSString *variableName;
@@ -128,6 +128,7 @@
 {
     [m_initialText  release];  m_initialText  = nil;
     [m_variableName release];  m_variableName = nil;
+    [m_fontClass    release];  m_fontClass    = nil;
 
     [super dealloc];
 }
@@ -136,11 +137,37 @@
 - (CGRect) edgeBounds  { return CGRectZero; }
 - (BOOL) hasEdgeBounds { return NO; }
 
-@synthesize libraryID    = m_libraryID,
-            bounds       = m_bounds,
-            variableName = m_variableName,
-            initialText  = m_initialText,
-            editable     = m_editable,
-            selectable   = m_selectable;
+
+#pragma mark -
+#pragma mark Accessors
+
+- (SwiftColor *) colorPointer
+{
+    return &m_color;
+}
+
+
+- (CGFloat) leftMargin  { return SwiftFloatFromTwips(m_leftMarginInTwips);  }
+- (CGFloat) rightMargin { return SwiftFloatFromTwips(m_rightMarginInTwips); }
+- (CGFloat) indent      { return SwiftFloatFromTwips(m_indentInTwips);      }
+- (CGFloat) leading     { return SwiftFloatFromTwips(m_leadingInTwips);     }
+
+@synthesize libraryID     = m_libraryID,
+            bounds        = m_bounds,
+            variableName  = m_variableName,
+            initialText   = m_initialText,
+            maxLength     = m_maxLength,
+            textAlignment = m_textAlignment,
+            editable      = m_editable,
+            selectable    = m_selectable,
+            HTML          = m_HTML,
+            hasLayout     = m_hasLayout,
+            hasFont       = m_hasFont,
+            hasFontClass  = m_hasFontClass,
+            fontClass     = m_fontClass,
+            fontHeight    = m_fontHeight,
+            fontID        = m_fontID,
+            hasColor      = m_hasColor,
+            color         = m_color;
 
 @end

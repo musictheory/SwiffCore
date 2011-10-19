@@ -7,13 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		55038DE9144E5C5C00EA5841 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55038DE8144E5C5C00EA5841 /* libxml2.dylib */; };
+		55038DEB144E5C6400EA5841 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55038DEA144E5C6400EA5841 /* libz.dylib */; };
 		550B601C1446B35600F8C138 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B601B1446B35600F8C138 /* UIKit.framework */; };
 		550B601E1446B35600F8C138 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B601D1446B35600F8C138 /* Foundation.framework */; };
 		550B60201446B35600F8C138 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B601F1446B35600F8C138 /* CoreGraphics.framework */; };
 		550B60421446B4B500F8C138 /* DemoMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 550B60411446B4B500F8C138 /* DemoMain.m */; };
 		550B60471446B5C200F8C138 /* DemoApp.m in Sources */ = {isa = PBXBuildFile; fileRef = 550B60461446B5C200F8C138 /* DemoApp.m */; };
 		550B604F1446B93900F8C138 /* libSwiftCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B603E1446B42900F8C138 /* libSwiftCore.a */; };
-		550B60511446B94600F8C138 /* libz.1.1.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B60501446B94600F8C138 /* libz.1.1.3.dylib */; };
 		550B60531446B95100F8C138 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B60521446B95100F8C138 /* QuartzCore.framework */; };
 		55BA68E9144B9C4B00D83AA8 /* DemoMovies.plist in Resources */ = {isa = PBXBuildFile; fileRef = 55BA68E8144B9C4B00D83AA8 /* DemoMovies.plist */; };
 		55BA68EC144BA50100D83AA8 /* DemoMovieController.m in Sources */ = {isa = PBXBuildFile; fileRef = 55BA68EB144BA50100D83AA8 /* DemoMovieController.m */; };
@@ -45,6 +46,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		55038DE8144E5C5C00EA5841 /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
+		55038DEA144E5C6400EA5841 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		550B60171446B35600F8C138 /* Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		550B601B1446B35600F8C138 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		550B601D1446B35600F8C138 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -68,8 +71,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				55038DEB144E5C6400EA5841 /* libz.dylib in Frameworks */,
+				55038DE9144E5C5C00EA5841 /* libxml2.dylib in Frameworks */,
 				550B60531446B95100F8C138 /* QuartzCore.framework in Frameworks */,
-				550B60511446B94600F8C138 /* libz.1.1.3.dylib in Frameworks */,
 				550B604F1446B93900F8C138 /* libSwiftCore.a in Frameworks */,
 				550B601C1446B35600F8C138 /* UIKit.framework in Frameworks */,
 				550B601E1446B35600F8C138 /* Foundation.framework in Frameworks */,
@@ -102,6 +106,8 @@
 		550B601A1446B35600F8C138 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				55038DEA144E5C6400EA5841 /* libz.dylib */,
+				55038DE8144E5C5C00EA5841 /* libxml2.dylib */,
 				550B60521446B95100F8C138 /* QuartzCore.framework */,
 				550B60501446B94600F8C138 /* libz.1.1.3.dylib */,
 				550B601B1446B35600F8C138 /* UIKit.framework */,
