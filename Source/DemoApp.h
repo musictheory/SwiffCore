@@ -29,10 +29,7 @@
 
 @interface DemoTableViewController : UITableViewController {
 @private
-    id               m_moviesPlist;
-    NSData          *m_movieData;
-    SwiftMovie      *m_movie;
-    SwiftMovieView  *m_movieView;
+    id m_moviesPlist;
 }
 
 @end

@@ -1,5 +1,5 @@
 /*
-    SwiftStaticText.h
+    SwiftSprite.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,15 +27,27 @@
 
 #import <Foundation/Foundation.h>
 
-@interface SwiftStaticText : NSObject <SwiftPlacableObject> {
+@class SwiftFrame, SwiftMovie, SwiftSceneAndFrameLabelData;
+
+@interface SwiftSpriteDefinition : NSObject <SwiftPlacableObject> {
 @private
-    NSInteger m_libraryID;
-    CGRect m_bounds;
-    CGAffineTransform m_affineTransform;
-    
-    NSArray *m_textRecords;
+    CFMutableDictionaryRef m_depthToPlacedObjectMap;
+    SwiftFrame      *m_lastFrame;
+    UInt16           m_libraryID;
+
+@protected
+    NSMutableArray  *m_frames;
+    NSDictionary    *m_labelToFrameMap;
+    SwiftSceneAndFrameLabelData *m_sceneAndFrameLabelData;
 }
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)tagVersion;
+- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version;
+
+- (SwiftFrame *) frameWithLabel:(NSString *)label;
+
+- (SwiftFrame *) frameAtIndex1:(NSUInteger)index1;
+- (NSUInteger) index1OfFrame:(SwiftFrame *)frame;
+
+@property (nonatomic, retain, readonly) NSArray *frames;
 
 @end

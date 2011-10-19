@@ -28,21 +28,14 @@
 
 #import <Foundation/Foundation.h>
 
-@class SwiftDynamicText, SwiftFont, SwiftShape, SwiftStaticText, SwiftScene;
+@class SwiftTextDefinition, SwiftFontDefinition, SwiftShapeDefinition, SwiftStaticTextDefinition, SwiftScene;
 
-@interface SwiftMovie : SwiftSprite {
+@interface SwiftMovie : SwiftSpriteDefinition {
 @private
     NSData              *m_data;
-
     NSArray             *m_scenes;
     NSDictionary        *m_sceneNameToSceneMap;
-
-    NSMutableDictionary *m_objects;
-    NSMutableDictionary *m_shapes;
-    NSMutableDictionary *m_sprites;
-    NSMutableDictionary *m_fonts;
-    NSMutableDictionary *m_dynamicTexts;
-    NSMutableDictionary *m_staticTexts;
+    NSMutableDictionary *m_definitionMap;
 
     NSInteger            m_version;
     CGPoint              m_stageOrigin;
@@ -54,13 +47,13 @@
 - (id) initWithData:(NSData *)data;
 - (id) initWithData:(NSData *)data parserOptions:(SwiftParserOptions)parserOptions;
 
-- (id) objectWithID:(NSInteger)objectID;
+- (id) definitionWithLibraryID:(UInt16)libraryID;
 
-- (SwiftSprite *) spriteWithID:(NSInteger)spriteID;
-- (SwiftShape  *) shapeWithID:(NSInteger)shapeID;
-- (SwiftFont   *) fontWithID:(NSInteger)fontID;
-- (SwiftStaticText  *) staticTextWithID:(NSInteger)textID;
-- (SwiftDynamicText *) dynamicTextWithID:(NSInteger)textID;
+- (SwiftFontDefinition       *) fontDefinitionWithLibraryID:(UInt16)libraryID;
+- (SwiftShapeDefinition      *) shapeDefinitionWithLibraryID:(UInt16)libraryID;
+- (SwiftSpriteDefinition     *) spriteDefinitionWithLibraryID:(UInt16)libraryID;
+- (SwiftStaticTextDefinition *) staticTextDefinitionWithLibraryID:(UInt16)libraryID;
+- (SwiftTextDefinition       *) textDefinitionWithLibraryID:(UInt16)libraryID;
 
 - (SwiftScene *) sceneWithName:(NSString *)name;
 

@@ -34,14 +34,12 @@
 #endif
 
 
-@interface SwiftDynamicText : NSObject <SwiftPlacableObject> {
+@interface SwiftTextDefinition : NSObject <SwiftPlacableObject> {
 @private
-    NSInteger  m_libraryID;
+    UInt16     m_libraryID;
     CGRect     m_bounds;
     
     SwiftColor m_color;
-    CGColorRef m_cgColor;
-    
     NSUInteger m_maxLength;
     
     NSString  *m_variableName;

@@ -60,7 +60,7 @@
 {
     if ((m_text != text) || (isHTML != m_HTML)) {
         m_text = [text copy];
-        m_HTML = m_HTML;
+        m_HTML = isHTML;
         
         if (m_attributedText) CFRelease(m_attributedText);
         m_attributedText = NULL;

@@ -50,6 +50,8 @@ static void sSetCachedData(NSURL *url, NSData *data)
     
     [defaults setObject:dictionary forKey:sMovieCache];
     [defaults synchronize];
+    
+    [dictionary release];
 }
 
 

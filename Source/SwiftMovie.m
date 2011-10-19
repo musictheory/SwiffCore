@@ -28,17 +28,19 @@
 
 #import "SwiftMovie.h"
 
-#import "SwiftShape.h"
-#import "SwiftSprite.h"
-#import "SwiftFont.h"
-#import "SwiftStaticText.h"
-#import "SwiftDynamicText.h"
 #import "SwiftParser.h"
+
+#import "SwiftShapeDefinition.h"
+#import "SwiftSpriteDefinition.h"
+#import "SwiftFontDefinition.h"
+#import "SwiftStaticTextDefinition.h"
+#import "SwiftTextDefinition.h"
+
 #import "SwiftSceneAndFrameLabelData.h"
 #import "SwiftScene.h"
 
 
-@interface SwiftSprite (Protected)
+@interface SwiftSpriteDefinition (Protected)
 - (void) _parser:(SwiftParser *)parser didFindTag:(SwiftTag)tag version:(NSInteger)version;
 @end
 
@@ -56,12 +58,7 @@
     if ((self = [super init])) {
         m_data = [data retain];
         
-        m_objects      = [[NSMutableDictionary alloc] init];
-        m_shapes       = [[NSMutableDictionary alloc] init];
-        m_sprites      = [[NSMutableDictionary alloc] init];
-        m_fonts        = [[NSMutableDictionary alloc] init];
-        m_dynamicTexts = [[NSMutableDictionary alloc] init];
-        m_staticTexts  = [[NSMutableDictionary alloc] init];
+        m_definitionMap = [[NSMutableDictionary alloc] init];
         
         SwiftColor white = { 1.0, 1.0, 1.0, 1.0 };
         m_backgroundColor = white;
@@ -113,16 +110,9 @@
 - (void) dealloc
 {
     [m_data                release];  m_data                = nil;
-
     [m_scenes              release];  m_scenes              = nil;
     [m_sceneNameToSceneMap release];  m_sceneNameToSceneMap = nil;
-
-    [m_objects             release];  m_objects             = nil;
-    [m_shapes              release];  m_shapes              = nil;
-    [m_sprites             release];  m_sprites             = nil;
-    [m_fonts               release];  m_fonts               = nil;
-    [m_dynamicTexts        release];  m_dynamicTexts        = nil;
-    [m_staticTexts         release];  m_staticTexts         = nil;
+    [m_definitionMap       release];  m_definitionMap       = nil;
 
     [super dealloc];
 }
@@ -134,12 +124,11 @@
 - (void) _parser:(SwiftParser *)parser didFindTag:(SwiftTag)tag version:(NSInteger)version
 {
     if (tag == SwiftTagDefineShape) {
-        SwiftShape *shape = [[SwiftShape alloc] initWithParser:parser tag:tag version:version];
+        SwiftShapeDefinition *shape = [[SwiftShapeDefinition alloc] initWithParser:parser tag:tag version:version];
 
         if (shape) {
             NSNumber *key = [[NSNumber alloc] initWithInteger:[shape libraryID]];
-            [m_shapes  setObject:shape forKey:key];
-            [m_objects setObject:shape forKey:key];
+            [m_definitionMap setObject:shape forKey:key];
             [key release];
         }
 
@@ -149,12 +138,11 @@
         NSLog(@"Found morph shape!");
 
     } else if (tag == SwiftTagDefineSprite) {
-        SwiftSprite *sprite = [[SwiftSprite alloc] initWithParser:parser tag:tag version:version];
+        SwiftSpriteDefinition *sprite = [[SwiftSpriteDefinition alloc] initWithParser:parser tag:tag version:version];
 
         if (sprite) {
             NSNumber *key = [[NSNumber alloc] initWithInteger:[sprite libraryID]];
-            [m_sprites setObject:sprite forKey:key];
-            [m_objects setObject:sprite forKey:key];
+            [m_definitionMap setObject:sprite forKey:key];
             [key release];
         }
         
@@ -165,11 +153,11 @@
         SwiftParserReadUInt16(parser, &fontID);
 
         NSNumber  *key  = [[NSNumber alloc] initWithInteger:(NSInteger)fontID];
-        SwiftFont *font = [m_fonts objectForKey:key];
+        SwiftFontDefinition *font = [m_definitionMap objectForKey:key];
         
-        if (!font) {
-            font = [[SwiftFont alloc] initWithLibraryID:fontID];
-            [m_fonts setObject:font forKey:key];
+        if (![font isKindOfClass:[SwiftFontDefinition class]]) {
+            font = [[SwiftFontDefinition alloc] initWithLibraryID:fontID];
+            [m_definitionMap setObject:font forKey:key];
             [font release];
         }
         
@@ -184,24 +172,22 @@
         [key release];
     
     } else if (tag == SwiftTagDefineText) {
-        SwiftStaticText *text = [[SwiftStaticText alloc] initWithParser:parser tag:tag version:version];
+        SwiftStaticTextDefinition *text = [[SwiftStaticTextDefinition alloc] initWithParser:parser tag:tag version:version];
         
         if (text) {
             NSNumber *key = [[NSNumber alloc] initWithInteger:[text libraryID]];
-            [m_staticTexts setObject:text forKey:key];
-            [m_objects setObject:text forKey:key];
+            [m_definitionMap setObject:text forKey:key];
             [key release];
         }
         
         [text release];
     
     } else if (tag == SwiftTagDefineEditText) {
-        SwiftDynamicText *text = [[SwiftDynamicText alloc] initWithParser:parser tag:tag version:version];
+        SwiftTextDefinition *text = [[SwiftTextDefinition alloc] initWithParser:parser tag:tag version:version];
         
         if (text) {
             NSNumber *key = [[NSNumber alloc] initWithInteger:[text libraryID]];
-            [m_dynamicTexts setObject:text forKey:key];
-            [m_objects setObject:text forKey:key];
+            [m_definitionMap setObject:text forKey:key];
             [key release];
         }
         
@@ -219,63 +205,63 @@
 #pragma mark -
 #pragma mark Public Methods
 
-- (id) objectWithID:(NSInteger)objectID
+- (id) definitionWithLibraryID:(UInt16)libraryID
 {
-    NSNumber *number = [[NSNumber alloc] initWithInteger:objectID];
-    id object = [m_objects objectForKey:number];
+    NSNumber *number = [[NSNumber alloc] initWithInteger:libraryID];
+    id definition = [m_definitionMap objectForKey:number];
     [number release];
     
-    return object;
+    return definition;
 }
 
 
-- (SwiftSprite *) spriteWithID:(NSInteger)spriteID
+- (SwiftSpriteDefinition *) spriteDefinitionWithLibraryID:(UInt16)spriteID
 {
     NSNumber *number = [[NSNumber alloc] initWithInteger:spriteID];
-    SwiftSprite *sprite = [m_sprites objectForKey:number];
+    SwiftSpriteDefinition *definition = [m_definitionMap objectForKey:number];
     [number release];
     
-    return sprite;
+    return [definition isKindOfClass:[SwiftSpriteDefinition class]] ? definition : nil;
 }
 
 
-- (SwiftShape *) shapeWithID:(NSInteger)shapeID
+- (SwiftShapeDefinition *) shapeDefinitionWithLibraryID:(UInt16)shapeID
 {
     NSNumber *number = [[NSNumber alloc] initWithInteger:shapeID];
-    SwiftShape *shape  = [m_shapes objectForKey:number];
+    SwiftShapeDefinition *definition = [m_definitionMap objectForKey:number];
     [number release];
     
-    return shape;
+    return [definition isKindOfClass:[SwiftShapeDefinition class]] ? definition : nil;
 }
 
 
-- (SwiftFont *) fontWithID:(NSInteger)fontID
+- (SwiftFontDefinition *) fontDefinitionWithLibraryID:(UInt16)fontID
 {
     NSNumber *number = [[NSNumber alloc] initWithInteger:fontID];
-    SwiftFont *font  = [m_shapes objectForKey:number];
+    SwiftFontDefinition *definition  = [m_definitionMap objectForKey:number];
     [number release];
     
-    return font;
+    return [definition isKindOfClass:[SwiftFontDefinition class]] ? definition : nil;
 }
 
 
-- (SwiftStaticText *) staticTextWithID:(NSInteger)textID
+- (SwiftStaticTextDefinition *) staticTextDefinitionWithLibraryID:(UInt16)textID
 {
     NSNumber *number = [[NSNumber alloc] initWithInteger:textID];
-    SwiftStaticText *text = [m_staticTexts objectForKey:number];
+    SwiftStaticTextDefinition *definition  = [m_definitionMap objectForKey:number];
     [number release];
 
-    return text;
+    return [definition isKindOfClass:[SwiftStaticTextDefinition class]] ? definition : nil;
 }
 
 
-- (SwiftDynamicText *) dynamicTextWithID:(NSInteger)textID;
+- (SwiftTextDefinition *) textDefinitionWithLibraryID:(UInt16)textID
 {
     NSNumber *number = [[NSNumber alloc] initWithInteger:textID];
-    SwiftDynamicText *text = [m_dynamicTexts objectForKey:number];
+    SwiftTextDefinition *definition = [m_definitionMap objectForKey:number];
     [number release];
 
-    return text;
+    return [definition isKindOfClass:[SwiftTextDefinition class]] ? definition : nil;
 }
 
 

@@ -30,7 +30,6 @@
 @interface DemoMovieController : UIViewController <SwiftMovieViewDelegate> {
 @private
     NSURL           *m_movieURL;
-    NSURLConnection *m_urlConnection;
     NSData          *m_movieData;
     SwiftMovie      *m_movie;
     SwiftMovieView  *m_movieView;

@@ -26,18 +26,13 @@
 */
 
 
-#import "SwiftFont.h"
+#import "SwiftFontDefinition.h"
 #import "SwiftParser.h"
 
 
-@interface SwiftFont (CalledByMovie)
+@implementation SwiftFontDefinition
 
-@end
-
-
-@implementation SwiftFont
-
-- (id) initWithLibraryID:(NSInteger)libraryID
+- (id) initWithLibraryID:(UInt16)libraryID
 {
     if ((self = [super init])) {
         m_libraryID = libraryID;
@@ -247,7 +242,7 @@
             fullName        = m_fullName,
             copyright       = m_copyright,
             ascenderHeight  = m_ascenderHeight,
-            descenderHeight = m_descendingHeight,
+            descenderHeight = m_descenderHeight,
             leadingHeight   = m_leadingHeight,
             bold            = m_bold,
             italic          = m_italic,

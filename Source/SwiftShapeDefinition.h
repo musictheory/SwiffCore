@@ -1,5 +1,5 @@
 /*
-    SwiftSprite.h
+    SwiftShape.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,30 +25,37 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+
 #import <Foundation/Foundation.h>
 
-@class SwiftFrame, SwiftMovie, SwiftSceneAndFrameLabelData;
 
-@interface SwiftSprite : NSObject <SwiftPlacableObject> {
+@interface SwiftShapeDefinition : NSObject {
 @private
-    CFMutableDictionaryRef m_depthToPlacedObjectMap;
-    SwiftFrame      *m_lastFrame;
-    NSInteger        m_libraryID;
-
-@protected
-    NSMutableArray  *m_frames;
-    NSDictionary    *m_labelToFrameMap;
-    SwiftSceneAndFrameLabelData *m_sceneAndFrameLabelData;
+    UInt16     m_libraryID;
+    NSData    *m_tagData;
+    CFArrayRef m_groups;
+    NSArray   *m_fillStyles;
+    NSArray   *m_lineStyles;
+    NSArray   *m_paths;
+    CGRect     m_bounds;
+    CGRect     m_edgeBounds;
+    BOOL       m_usesFillWindingRule;
+    BOOL       m_usesNonScalingStrokes;
+    BOOL       m_usesScalingStrokes;
+    BOOL       m_hasEdgeBounds;
 }
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version;
+- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(SwiftVersion)version;
 
-- (SwiftFrame *) frameWithLabel:(NSString *)label;
+@property (nonatomic, assign, readonly) UInt16 libraryID;
+@property (nonatomic, assign, readonly) CGRect bounds;
+@property (nonatomic, assign, readonly) CGRect edgeBounds;
 
-- (SwiftFrame *) frameAtIndex1:(NSUInteger)index1;
-- (NSUInteger) index1OfFrame:(SwiftFrame *)frame;
+@property (nonatomic, retain, readonly) NSArray *paths;
 
-@property (nonatomic, retain, readonly) NSArray *frames;
-@property (nonatomic, assign, readonly) NSInteger libraryID;
+@property (nonatomic, assign, readonly) BOOL usesFillWindingRule;
+@property (nonatomic, assign, readonly) BOOL usesNonScalingStrokes;
+@property (nonatomic, assign, readonly) BOOL usesScalingStrokes;
+@property (nonatomic, assign, readonly) BOOL hasEdgeBounds;
 
 @end

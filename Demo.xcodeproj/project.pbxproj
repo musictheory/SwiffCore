@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		55038DE9144E5C5C00EA5841 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55038DE8144E5C5C00EA5841 /* libxml2.dylib */; };
 		55038DEB144E5C6400EA5841 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55038DEA144E5C6400EA5841 /* libz.dylib */; };
+		55038DF4144ECBD400EA5841 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55038DF3144ECBD300EA5841 /* CoreText.framework */; };
 		550B601C1446B35600F8C138 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B601B1446B35600F8C138 /* UIKit.framework */; };
 		550B601E1446B35600F8C138 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B601D1446B35600F8C138 /* Foundation.framework */; };
 		550B60201446B35600F8C138 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B601F1446B35600F8C138 /* CoreGraphics.framework */; };
@@ -48,6 +49,7 @@
 /* Begin PBXFileReference section */
 		55038DE8144E5C5C00EA5841 /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 		55038DEA144E5C6400EA5841 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		55038DF3144ECBD300EA5841 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		550B60171446B35600F8C138 /* Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		550B601B1446B35600F8C138 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		550B601D1446B35600F8C138 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -73,6 +75,7 @@
 			files = (
 				55038DEB144E5C6400EA5841 /* libz.dylib in Frameworks */,
 				55038DE9144E5C5C00EA5841 /* libxml2.dylib in Frameworks */,
+				55038DF4144ECBD400EA5841 /* CoreText.framework in Frameworks */,
 				550B60531446B95100F8C138 /* QuartzCore.framework in Frameworks */,
 				550B604F1446B93900F8C138 /* libSwiftCore.a in Frameworks */,
 				550B601C1446B35600F8C138 /* UIKit.framework in Frameworks */,
@@ -87,6 +90,7 @@
 		550B600C1446B35600F8C138 = {
 			isa = PBXGroup;
 			children = (
+				55038DF3144ECBD300EA5841 /* CoreText.framework */,
 				550B60361446B42900F8C138 /* SwiftCore.xcodeproj */,
 				550B60211446B35600F8C138 /* Demo */,
 				55BA68ED144BAC8A00D83AA8 /* Resources */,

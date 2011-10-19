@@ -34,7 +34,8 @@
 #import "SwiftLineStyle.h"
 #import "SwiftFillStyle.h"
 #import "SwiftPlacedObject.h"
-#import "SwiftShape.h"
+#import "SwiftPlacedText.h"
+#import "SwiftShapeDefinition.h"
 #import "SwiftPath.h"
 
 
@@ -46,7 +47,7 @@ typedef struct _SwiftRendererState {
     CFMutableArrayRef colorTransforms;
 } SwiftRendererState;
 
-static void sDrawPlacedObject(SwiftPlacedObject *placedObject, SwiftRendererState *state, BOOL applyColorTransform, BOOL applyAffineTransform);
+static void sDrawPlacedObject(SwiftRendererState *state, SwiftPlacedObject *placedObject, BOOL applyColorTransform, BOOL applyAffineTransform);
 
 static void sCleanupState(SwiftRendererState *state)
 {
@@ -57,7 +58,7 @@ static void sCleanupState(SwiftRendererState *state)
 }
 
 
-static void sApplyLineStyle(SwiftLineStyle *style, SwiftRendererState *state)
+static void sApplyLineStyle(SwiftRendererState *state, SwiftLineStyle *style)
 {
     CGContextRef context = state->context;
     
@@ -86,7 +87,7 @@ static void sApplyLineStyle(SwiftLineStyle *style, SwiftRendererState *state)
 }
 
 
-static void sApplyFillStyle(SwiftFillStyle *style, SwiftRendererState *state)
+static void sApplyFillStyle(SwiftRendererState *state, SwiftFillStyle *style)
 {
      CGContextRef context = state->context;
    
@@ -148,18 +149,18 @@ static void sSetupContext(CGContextRef context)
 }
 
 
-static void sDrawSprite(SwiftSprite *sprite, SwiftRendererState *state)
+static void sDrawSprite(SwiftRendererState *state, SwiftSpriteDefinition *sprite)
 {
     NSArray    *frames = [sprite frames];
     SwiftFrame *frame  = [frames count] ? [frames objectAtIndex:0] : nil;
     
     for (SwiftPlacedObject *po in [frame placedObjects]) {
-        sDrawPlacedObject(po, state, YES, YES);
+        sDrawPlacedObject(state, po, YES, YES);
     }
 }
 
 
-static void sDrawShape(SwiftShape *shape, SwiftRendererState *state)
+static void sDrawShape(SwiftRendererState *state, SwiftShapeDefinition *shape)
 {
     CGContextRef context = state->context;
 
@@ -241,12 +242,12 @@ static void sDrawShape(SwiftShape *shape, SwiftRendererState *state)
         BOOL hasFill   = NO;
 
         if (lineWidth > 0) {
-            sApplyLineStyle(lineStyle, state);
+            sApplyLineStyle(state, lineStyle);
             hasStroke = YES;
         }
         
         if (fillStyle) {
-            sApplyFillStyle(fillStyle, state);
+            sApplyFillStyle(state, fillStyle);
             hasFill = ([fillStyle type] == SwiftFillStyleTypeColor);
         }
         
@@ -262,8 +263,19 @@ static void sDrawShape(SwiftShape *shape, SwiftRendererState *state)
     }
 }
 
+static void sDrawStaticText(SwiftRendererState *state, SwiftStaticTextDefinition *staticText)
+{
 
-static void sDrawPlacedObject(SwiftPlacedObject *placedObject, SwiftRendererState *state, BOOL applyColorTransform, BOOL applyAffineTransform)
+}
+
+
+static void sDrawText(SwiftRendererState *state, SwiftPlacedText *placedText, SwiftTextDefinition *text)
+{
+
+}
+
+
+static void sDrawPlacedObject(SwiftRendererState *state, SwiftPlacedObject *placedObject, BOOL applyColorTransform, BOOL applyAffineTransform)
 {
     CGAffineTransform savedTransform;
 
@@ -288,15 +300,26 @@ static void sDrawPlacedObject(SwiftPlacedObject *placedObject, SwiftRendererStat
         }
     }
 
-    NSInteger objectID = [placedObject objectID];
+    UInt16 libraryID = [placedObject libraryID];
 
-    SwiftSprite *sprite = nil;
-    SwiftShape  *shape  = nil;
+    SwiftSpriteDefinition     *sprite     = nil;
+    SwiftShapeDefinition      *shape      = nil;
+    SwiftStaticTextDefinition *staticText = nil;
+    SwiftTextDefinition       *text       = nil;
+    
+    if ((sprite = [state->movie spriteDefinitionWithLibraryID:libraryID])) {
+        sDrawSprite(state, sprite);
 
-    if ((sprite = [state->movie spriteWithID:objectID])) {
-        sDrawSprite(sprite, state);
-    } else if ((shape = [state->movie shapeWithID:objectID])) {
-        sDrawShape(shape, state);
+    } else if ((shape = [state->movie shapeDefinitionWithLibraryID:libraryID])) {
+        sDrawShape(state, shape);
+
+    } else if ((staticText = [state->movie staticTextDefinitionWithLibraryID:libraryID])) {
+        sDrawStaticText(state, staticText);
+
+    } else if ((text = [state->movie textDefinitionWithLibraryID:libraryID])) {
+        if ([placedObject isKindOfClass:[SwiftPlacedText class]]) {
+            sDrawText(state, (SwiftPlacedText *)placedObject, text);
+        }
     }
 
     if (colorTransformLastIndex > 0) {
@@ -331,7 +354,7 @@ static void sDrawPlacedObject(SwiftPlacedObject *placedObject, SwiftRendererStat
     sSetupContext(context);
 
     for (SwiftPlacedObject *object in [frame placedObjects]) {
-        sDrawPlacedObject(object, &state, YES, YES);
+        sDrawPlacedObject(&state, object, YES, YES);
     }
     
     sCleanupState(&state);
@@ -344,7 +367,7 @@ static void sDrawPlacedObject(SwiftPlacedObject *placedObject, SwiftRendererStat
 
     sSetupContext(context);
 
-    sDrawPlacedObject(placedObject, &state, YES, NO);
+    sDrawPlacedObject(&state, placedObject, YES, NO);
 
     sCleanupState(&state);
 }

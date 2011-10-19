@@ -32,7 +32,7 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 
 @implementation SwiftLayer
 
-- (id) _initWithSprite:(SwiftSprite *)sprite
+- (id) _initWithSprite:(SwiftSpriteDefinition *)sprite
 {
     if ((self = [super init])) {
         m_sprite = [sprite retain];
@@ -79,10 +79,10 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
     NSInteger newDepth = newPlacedObject ? [newPlacedObject depth] : NSIntegerMax;
     
     void (^updateLayer)(CALayer *layer, SwiftPlacedObject *) = ^(CALayer *layer, SwiftPlacedObject *placedObject) {
-        NSInteger objectID = [placedObject objectID];
-        id object = [m_movie objectWithID:objectID];
+        UInt16 libraryID = [placedObject libraryID];
+        id definition = [m_movie definitionWithLibraryID:libraryID];
 
-        CGRect bounds = [object bounds];
+        CGRect bounds = [definition bounds];
         bounds = CGRectApplyAffineTransform(bounds, m_baseTransform);
         
         [layer setValue:placedObject forKey:PlacedObjectKey];
@@ -98,8 +98,8 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
     
     while ((oldDepth < NSIntegerMax) || (newDepth < NSIntegerMax)) {
         if (oldDepth == newDepth) {
-            NSInteger oldLibraryID = [oldPlacedObject objectID];
-            NSInteger newLibraryID = [newPlacedObject objectID];
+            UInt16 oldLibraryID = [oldPlacedObject libraryID];
+            UInt16 newLibraryID = [newPlacedObject libraryID];
             
             NSNumber *key = [[NSNumber alloc] initWithInteger:newDepth];
             CALayer *layer = [m_depthToLayerMap objectForKey:key];

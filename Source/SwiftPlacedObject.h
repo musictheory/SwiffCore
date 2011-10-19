@@ -30,7 +30,7 @@
 
 @interface SwiftPlacedObject : NSObject <NSCopying> {
 @private
-    UInt16               m_objectID;
+    UInt16               m_libraryID;
     UInt16               m_depth;
     UInt16               m_clipDepth;
     UInt16               m_ratio;
@@ -42,7 +42,7 @@
 - (id) initWithDepth:(NSInteger)depth;
 
 @property (nonatomic, copy,   readonly) NSString *instanceName;
-@property (nonatomic, assign, readonly) UInt16 objectID;
+@property (nonatomic, assign, readonly) UInt16 libraryID;
 @property (nonatomic, assign, readonly) UInt16 depth;
 @property (nonatomic, assign, readonly) UInt16 clipDepth;
 @property (nonatomic, assign, readonly) CGFloat ratio;

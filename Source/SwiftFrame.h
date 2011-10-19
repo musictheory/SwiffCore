@@ -28,7 +28,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class SwiftPlacedObject, SwiftSprite, SwiftScene;
+@class SwiftPlacedObject, SwiftSpriteDefinition, SwiftScene;
 
 @interface SwiftFrame : NSObject <NSCopying> {
 @private

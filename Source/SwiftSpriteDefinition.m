@@ -25,7 +25,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftSprite.h"
+#import "SwiftSpriteDefinition.h"
 
 #import "SwiftFrame.h"
 #import "SwiftParser.h"
@@ -34,10 +34,10 @@
 
 @interface SwiftPlacedObject (FriendMethods)
 @property (nonatomic, retain) NSString *instanceName;
-@property (nonatomic, assign) NSInteger objectID;
-@property (nonatomic, assign) NSInteger depth;
-@property (nonatomic, assign) NSInteger clipDepth;
-@property (nonatomic, assign) CGFloat   ratio;
+@property (nonatomic, assign) UInt16  libraryID;
+@property (nonatomic, assign) UInt16  depth;
+@property (nonatomic, assign) UInt16  clipDepth;
+@property (nonatomic, assign) CGFloat ratio;
 @property (nonatomic, assign) CGAffineTransform affineTransform;
 @property (nonatomic, assign) SwiftColorTransform colorTransform;
 @end
@@ -47,11 +47,11 @@
 - (id) _initWithSortedPlacedObjects:(NSArray *)placedObjects;
 @end
 
-@interface SwiftSprite ()
+@interface SwiftSpriteDefinition ()
 - (void) _parser:(SwiftParser *)parser didFindTag:(SwiftTag)tag version:(NSInteger)version;
 @end
 
-@implementation SwiftSprite
+@implementation SwiftSpriteDefinition
 
 - (id) init
 {
@@ -67,14 +67,12 @@
 - (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)baseTag version:(NSInteger)baseVersion
 {
     if ((self = [self init])) {
-        UInt16 libraryID;
-        SwiftParserReadUInt16(parser, &libraryID);
-        m_libraryID = libraryID;
+        SwiftParserReadUInt16(parser, &m_libraryID);
 
         UInt16 frameCount;
         SwiftParserReadUInt16(parser, &frameCount);
 
-        SwiftLog(@"DEFINESPRITE defines id %d", libraryID);
+        SwiftLog(@"DEFINESPRITE defines id %ld", (long)m_libraryID);
 
         while (SwiftParserIsValid(parser) && SwiftParserAdvanceToNextTagInSprite(parser)) {
             [self _parser: parser
@@ -161,14 +159,23 @@
         if (hasClipDepth)       SwiftParserReadUInt16(parser, &clipDepth);
 
     } else {
-        hasColorTransform = YES;
-        hasMatrix         = YES;
-        hasCharacter      = YES;
+        move         = YES;
+        hasMatrix    = YES;
+        hasCharacter = YES;
+        hasClipDepth = NO;
+        hasName      = NO;
+        hasRatio     = NO;
 
         SwiftParserReadUInt16(parser, &characterID);
         SwiftParserReadUInt16(parser, &depth);
         SwiftParserReadMatrix(parser, &matrix);
-        SwiftParserReadColorTransform(parser, &colorTransform);
+
+        SwiftParserByteAlign(parser);
+        hasColorTransform = (SwiftParserGetBytesRemainingInCurrentTag(parser) > 0);
+
+        if (hasColorTransform) {
+            SwiftParserReadColorTransform(parser, &colorTransform);
+        }
     }
 
     // Not supported yet
@@ -177,11 +184,13 @@
 
     if (move) {
         placedObject = [(SwiftPlacedObject *)CFDictionaryGetValue(m_depthToPlacedObjectMap, (const void *)depth) copy];
-    } else {
+    }
+
+    if (!placedObject) {
         placedObject = [[SwiftPlacedObject alloc] initWithDepth:depth];
     }
     
-    if (hasCharacter)      [placedObject setObjectID:characterID];
+    if (hasCharacter)      [placedObject setLibraryID:characterID];
     if (hasClipDepth)      [placedObject setClipDepth:clipDepth];
     if (hasName)           [placedObject setInstanceName:name];
     if (hasRatio)          [placedObject setRatio:ratio];
@@ -193,9 +202,9 @@
 
     if (SwiftShouldLog()) {
         if (move) {
-            SwiftLog(@"PLACEOBJECT%d moves object at depth %d", version, depth);
+            SwiftLog(@"PLACEOBJECT%ld moves object at depth %ld", (long)version, (long)depth);
         } else {
-            SwiftLog(@"PLACEOBJECT%d places object %d at depth %d", version, characterID, depth);
+            SwiftLog(@"PLACEOBJECT%ld places object %ld at depth %ld", (long)version, (long)[placedObject libraryID], (long)depth);
         }
     }
 

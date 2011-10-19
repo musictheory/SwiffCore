@@ -30,10 +30,10 @@
 
 @interface SwiftPlacedObject ()
 @property (nonatomic, copy)   NSString *instanceName;
-@property (nonatomic, assign) NSInteger objectID;
-@property (nonatomic, assign) NSInteger depth;
-@property (nonatomic, assign) NSInteger clipDepth;
-@property (nonatomic, assign) CGFloat   ratio;
+@property (nonatomic, assign) UInt16  libraryID;
+@property (nonatomic, assign) UInt16  depth;
+@property (nonatomic, assign) UInt16  clipDepth;
+@property (nonatomic, assign) CGFloat ratio;
 @property (nonatomic, assign) CGAffineTransform affineTransform;
 @property (nonatomic, assign) SwiftColorTransform colorTransform;
 @end
@@ -69,7 +69,7 @@
 {
     SwiftPlacedObject *result = [[SwiftPlacedObject alloc] initWithDepth:m_depth];
 
-    result->m_objectID        = m_objectID;
+    result->m_libraryID       = m_libraryID;
     result->m_depth           = m_depth;
     result->m_clipDepth       = m_clipDepth;
     result->m_ratio           = m_ratio;
@@ -140,7 +140,7 @@
 
 
 @synthesize instanceName       = m_instanceName,
-            objectID           = m_objectID,
+            libraryID          = m_libraryID,
             depth              = m_depth,
             clipDepth          = m_clipDepth,
             affineTransform    = m_affineTransform;
