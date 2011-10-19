@@ -60,20 +60,20 @@ static void sPathAddShapeOperation(SwiftPath *path, _SwiftShapeOperation *op, Sw
         (op->fromPoint.y != position->y))
     {
         CGPoint toPoint = {
-            op->fromPoint.x / 20.0,
-            op->fromPoint.y / 20.0
+            SwiftFloatFromTwips(op->fromPoint.x),
+            SwiftFloatFromTwips(op->fromPoint.y)
         };
     
         SwiftPathAddOperation(path, SwiftPathOperationMove, &toPoint, NULL);
     }
     
     if (op->type == _SwiftShapeOperationTypeLine) {
-        CGPoint toPoint = CGPointMake(op->toPoint.x / 20.0, op->toPoint.y / 20.0);
+        CGPoint toPoint = CGPointMake(SwiftFloatFromTwips(op->toPoint.x), SwiftFloatFromTwips(op->toPoint.y));
         SwiftPathAddOperation(path, SwiftPathOperationLine, &toPoint, NULL);
     
     } else if (op->type == _SwiftShapeOperationTypeCurve) {
-        CGPoint toPoint      = CGPointMake(op->toPoint.x      / 20.0, op->toPoint.y      / 20.0);
-        CGPoint controlPoint = CGPointMake(op->controlPoint.x / 20.0, op->controlPoint.y / 20.0);
+        CGPoint toPoint      = CGPointMake(SwiftFloatFromTwips(op->toPoint.x),      SwiftFloatFromTwips(op->toPoint.y));
+        CGPoint controlPoint = CGPointMake(SwiftFloatFromTwips(op->controlPoint.x), SwiftFloatFromTwips(op->controlPoint.y));
         SwiftPathAddOperation(path, SwiftPathOperationCurve, &toPoint, &controlPoint);
     }
     

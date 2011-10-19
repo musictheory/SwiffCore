@@ -73,7 +73,7 @@ const CGFloat SwiftLineStyleHairlineWidth = 0.05;
         if (width == 1) {
             m_width = SwiftLineStyleHairlineWidth;
         } else {
-            m_width = (width / 20.0);
+            m_width = SwiftFloatFromTwips(width);
         }
 
         CGLineCap (^getLineCap)(UInt32) = ^(UInt32 capStyle) {

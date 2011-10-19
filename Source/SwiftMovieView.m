@@ -188,7 +188,7 @@
         m_layer = [[SwiftLayer alloc] initWithMovie:m_movie];
         [m_layer setUsesAcceleratedRendering:m_usesAcceleratedRendering];
         [m_layer setFrameAnimationDuration:(m_interpolatesFrames ? (1.0 / m_framesPerSecond) : 0.0)];
-        [m_layer setCurrentFrame:m_currentFrame];
+        [m_layer setCurrentFrame:[m_playhead frame]];
 
         [[self layer] addSublayer:m_layer];
         [self setNeedsLayout];
