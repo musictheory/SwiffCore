@@ -28,24 +28,26 @@
 
 #import <Foundation/Foundation.h>
 
+@class SwiftMovie;
 
-@interface SwiftShapeDefinition : NSObject {
+@interface SwiftShapeDefinition : NSObject <SwiftPlacableDefinition> {
 @private
-    UInt16     m_libraryID;
-    NSData    *m_tagData;
-    CFArrayRef m_groups;
-    NSArray   *m_fillStyles;
-    NSArray   *m_lineStyles;
-    NSArray   *m_paths;
-    CGRect     m_bounds;
-    CGRect     m_edgeBounds;
-    BOOL       m_usesFillWindingRule;
-    BOOL       m_usesNonScalingStrokes;
-    BOOL       m_usesScalingStrokes;
-    BOOL       m_hasEdgeBounds;
+    SwiftMovie *m_movie;
+    UInt16      m_libraryID;
+    NSData     *m_tagData;
+    CFArrayRef  m_groups;
+    NSArray    *m_fillStyles;
+    NSArray    *m_lineStyles;
+    NSArray    *m_paths;
+    CGRect      m_bounds;
+    CGRect      m_edgeBounds;
+    BOOL        m_usesFillWindingRule;
+    BOOL        m_usesNonScalingStrokes;
+    BOOL        m_usesScalingStrokes;
+    BOOL        m_hasEdgeBounds;
 }
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(SwiftVersion)version;
+- (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie;
 
 @property (nonatomic, assign, readonly) UInt16 libraryID;
 @property (nonatomic, assign, readonly) CGRect bounds;

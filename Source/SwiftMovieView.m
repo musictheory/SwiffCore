@@ -39,6 +39,16 @@
 
 @implementation SwiftMovieView
 
+- (id) initWithFrame:(CGRect)frame
+{
+    if ((self = [super initWithFrame:frame])) {
+        m_showsBackgroundColor = YES;
+    }
+    
+    return self;
+}
+
+
 - (void) dealloc
 {
     [m_displayLink invalidate];
@@ -190,6 +200,11 @@
         [m_layer setFrameAnimationDuration:(m_interpolatesFrames ? (1.0 / m_framesPerSecond) : 0.0)];
         [m_layer setCurrentFrame:[m_playhead frame]];
 
+        if (m_showsBackgroundColor) {
+            m_showsBackgroundColor = ~m_showsBackgroundColor;
+            [self setShowsBackgroundColor:YES];
+        }
+
         [[self layer] addSublayer:m_layer];
         [self setNeedsLayout];
     }
@@ -231,10 +246,26 @@
 }
 
 
+- (void) setShowsBackgroundColor:(BOOL)showsBackgroundColor
+{
+    if (showsBackgroundColor != m_showsBackgroundColor) {
+        if (showsBackgroundColor) {
+            CGColorRef backgroundColor = SwiftColorCopyCGColor([m_movie backgroundColor]);
+            [m_layer setBackgroundColor:backgroundColor];
+            CGColorRelease(backgroundColor);
+        } else {
+            [m_layer setBackgroundColor:NULL];
+        }
+
+        m_showsBackgroundColor = showsBackgroundColor;
+    }
+}
+
 @synthesize movie                    = m_movie,
             delegate                 = m_delegate,
             playing                  = m_playing,
             playhead                 = m_playhead,
+            showsBackgroundColor     = m_showsBackgroundColor,
             usesAcceleratedRendering = m_usesAcceleratedRendering,
             interpolatesFrames       = m_interpolatesFrames;
 

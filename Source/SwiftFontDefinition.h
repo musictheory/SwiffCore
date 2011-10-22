@@ -28,44 +28,24 @@
 
 #import <Foundation/Foundation.h>
 
-enum {
-    SwiftFontLanguageCodeNoLanguage = 0,
-    SwiftFontLanguageCodeLatin = 1,
-    SwiftFontLanguageCodeJapanese = 2,
-    SwiftFontLanguageCodeKorean = 3,
-    SwiftFontLanguageCodeSimplifiedChinese = 4,
-    SwiftFontLanguageCodeTraditionalChinese = 5
-};
-typedef NSInteger SwiftFontLanguageCode;
+@class SwiftMovie;
 
-@interface SwiftFontDefinition : NSObject {
+@interface SwiftFontDefinition : NSObject <SwiftDefinition> {
 @private
-    UInt16     m_libraryID;
+    SwiftMovie *m_movie;
  
-    NSString  *m_name;
-    NSString  *m_fullName;
-    NSString  *m_copyright;
+    NSString   *m_name;
+    NSString   *m_fullName;
+    NSString   *m_copyright;
+    UInt16     *m_codeTable;
 
-    UInt16    *codeTable;
+    CTFontDescriptorRef m_fontDescriptor;
 
-    NSInteger  m_languageCode;
-    NSInteger  m_glyphCount;
+    NSUInteger  m_glyphCount;
 
-    CGFloat    m_ascenderHeight;
-    CGFloat    m_descenderHeight;
-    CGFloat    m_leadingHeight;
-
-#if 0
-    SInt16    *advanceTable;
-    SWFRect   *boundsTable;
-    SWFShape **glyph;
-#endif
-    
-    BOOL       m_bold;
-    BOOL       m_italic;
-    BOOL       m_pixelAligned;
-    BOOL       m_smallText;
-    BOOL       m_hasLayout;
+    UInt16      m_libraryID;
+    BOOL        m_bold;
+    BOOL        m_italic;
 }
 
 
@@ -75,31 +55,25 @@ typedef NSInteger SwiftFontLanguageCode;
 // When encountering one of these tags, the movie should read the fontID from the stream, create or lookup
 // the corresponding font, and then call one of the readDefineFont... methods
 //
-- (id) initWithLibraryID:(UInt16)libraryID;
+- (id) initWithLibraryID:(UInt16)libraryID movie:(SwiftMovie *)movie;
 
-- (void) readDefineFontTagFromParser:(SwiftParser *)parser version:(NSInteger)version;
-- (void) readDefineFontNameTagFromParser:(SwiftParser *)parser version:(NSInteger)version;
-- (void) readDefineFontInfoTagFromParser:(SwiftParser *)parser version:(NSInteger)version;
-
+- (void) readDefineFontTagFromParser:(SwiftParser *)parser;
+- (void) readDefineFontNameTagFromParser:(SwiftParser *)parser;
+- (void) readDefineFontInfoTagFromParser:(SwiftParser *)parser;
+- (void) readDefineFontAlignZonesFromParser:(SwiftParser *)parser;
 
 @property (nonatomic, assign, readonly) UInt16 libraryID;
 
-@property (nonatomic, assign, readonly) SwiftFontLanguageCode languageCode;
+@property (nonatomic, /*strong*/ readonly) CTFontDescriptorRef fontDescriptor;
 
 @property (nonatomic, retain, readonly) NSString *name;
 @property (nonatomic, retain, readonly) NSString *fullName;
 @property (nonatomic, retain, readonly) NSString *copyright;
 
-@property (nonatomic, assign, readonly) CGFloat ascenderHeight;
-@property (nonatomic, assign, readonly) CGFloat descenderHeight;
-@property (nonatomic, assign, readonly) CGFloat leadingHeight;
+@property (nonatomic, assign, readonly) NSUInteger glyphCount;
+@property (nonatomic, assign, readonly) UInt16 *codeTable;
 
 @property (nonatomic, assign, readonly, getter=isBold)   BOOL bold;
 @property (nonatomic, assign, readonly, getter=isItalic) BOOL italic;
-
-@property (nonatomic, readonly, assign, getter=isPixelAligned) BOOL pixelAligned;
-
-@property (nonatomic, assign, readonly) BOOL hasLayoutInformation;
-
 
 @end

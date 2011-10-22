@@ -34,14 +34,14 @@
 #import "SwiftLineStyle.h"
 #import "SwiftFillStyle.h"
 #import "SwiftPlacedObject.h"
+#import "SwiftPlacedStaticText.h"
 #import "SwiftPlacedText.h"
 #import "SwiftShapeDefinition.h"
 #import "SwiftPath.h"
 
 
 typedef struct _SwiftRendererState {
-    __unsafe_unretained SwiftMovie *movie;
-
+    SwiftMovie       *movie;
     CGContextRef      context;
     CGAffineTransform affineTransform;
     CFMutableArrayRef colorTransforms;
@@ -263,15 +263,46 @@ static void sDrawShape(SwiftRendererState *state, SwiftShapeDefinition *shape)
     }
 }
 
-static void sDrawStaticText(SwiftRendererState *state, SwiftStaticTextDefinition *staticText)
-{
 
+static void sDrawAttributedString(SwiftRendererState *state, CFAttributedStringRef as, CGPoint offset)
+{ 
+    CGContextRef context = state->context;
+
+    CTLineRef line = CTLineCreateWithAttributedString(as);
+    if (line) {
+        CGPoint p = CGPointMake(offset.x, offset.y);
+        p = CGPointApplyAffineTransform(p, state->affineTransform);
+
+        CGAffineTransform transform = CGAffineTransformConcat(CGAffineTransformMakeScale(1.0, -1.0), state->affineTransform);
+
+        CGContextSaveGState(context);
+
+        CGContextSetTextMatrix(context, transform);
+        CGContextSetTextPosition(context, p.x, p.y);
+
+        CTLineDraw(line, context);
+        CGContextFlush(context);
+
+        CGContextRestoreGState(context);
+
+        CFRelease(line);
+    }
 }
 
 
-static void sDrawText(SwiftRendererState *state, SwiftPlacedText *placedText, SwiftTextDefinition *text)
+static void sDrawPlacedStaticText(SwiftRendererState *state, SwiftPlacedStaticText *placedStaticText)
 {
+    CFAttributedStringRef as = [placedStaticText attributedText];
+    CGPoint offset = [placedStaticText attributedTextOffset];
+    if (as) sDrawAttributedString(state, as, offset);
+}
 
+
+static void sDrawPlacedText(SwiftRendererState *state, SwiftPlacedText *placedText)
+{
+    CFAttributedStringRef as = [placedText attributedText];
+    CGPoint offset = [placedText attributedTextOffset];
+    if (as) sDrawAttributedString(state, as, offset);
 }
 
 
@@ -314,11 +345,13 @@ static void sDrawPlacedObject(SwiftRendererState *state, SwiftPlacedObject *plac
         sDrawShape(state, shape);
 
     } else if ((staticText = [state->movie staticTextDefinitionWithLibraryID:libraryID])) {
-        sDrawStaticText(state, staticText);
+        if ([placedObject isKindOfClass:[SwiftPlacedStaticText class]]) {
+            sDrawPlacedStaticText(state, (SwiftPlacedStaticText *)placedObject);
+        }
 
     } else if ((text = [state->movie textDefinitionWithLibraryID:libraryID])) {
         if ([placedObject isKindOfClass:[SwiftPlacedText class]]) {
-            sDrawText(state, (SwiftPlacedText *)placedObject, text);
+            sDrawPlacedText(state, (SwiftPlacedText *)placedObject);
         }
     }
 

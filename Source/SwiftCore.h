@@ -29,7 +29,7 @@
 #import "SwiftUtil.h"
 
 // Protocols
-#import "SwiftPlacableObject.h"
+#import "SwiftDefinition.h"
 
 // Definition
 #import "SwiftTextDefinition.h"

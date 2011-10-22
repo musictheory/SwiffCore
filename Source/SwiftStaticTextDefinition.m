@@ -32,9 +32,11 @@
 
 @implementation SwiftStaticTextDefinition
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version
+- (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie
 {
     if ((self = [super init])) {
+        m_movie = movie;
+    
         SwiftParserReadUInt16(parser, &m_libraryID);
         SwiftParserReadRect(parser,   &m_bounds);
         SwiftParserReadMatrix(parser, &m_affineTransform);
@@ -43,7 +45,7 @@
         SwiftParserReadUInt8(parser, &glyphBits);
         SwiftParserReadUInt8(parser, &advanceBits);
     
-        m_textRecords = [[SwiftTextRecord textRecordArrayWithParser:parser tag:tag version:version glyphBits:glyphBits advanceBits:advanceBits] retain];
+        m_textRecords = [[SwiftTextRecord textRecordArrayWithParser:parser glyphBits:glyphBits advanceBits:advanceBits] retain];
     }
     
     return self;
@@ -58,11 +60,20 @@
     [super dealloc];
 }
 
+
+- (void) clearWeakReferences
+{
+    m_movie = nil;
+}
+
+
 - (BOOL) hasEdgeBounds { return NO; }
 - (CGRect) edgeBounds { return CGRectZero; }
 
 
-@synthesize libraryID = m_libraryID,
-            bounds    = m_bounds;
+@synthesize movie       = m_movie,
+            libraryID   = m_libraryID,
+            bounds      = m_bounds,
+            textRecords = m_textRecords;
 
 @end

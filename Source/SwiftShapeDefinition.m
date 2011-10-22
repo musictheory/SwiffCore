@@ -86,10 +86,15 @@ static void sPathAddShapeOperation(SwiftPath *path, _SwiftShapeOperation *op, Sw
 #pragma mark -
 #pragma mark Lifecycle
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(SwiftVersion)version
+- (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie
 {
     if ((self = [super init])) {
         SwiftParserByteAlign(parser);
+
+        m_movie = movie;
+
+        SwiftTag  tag     = SwiftParserGetCurrentTag(parser);
+        NSInteger version = SwiftParserGetCurrentTagVersion(parser);
 
         if (tag == SwiftTagDefineShape) {
             SwiftParserReadUInt16(parser, &m_libraryID);
@@ -339,6 +344,12 @@ static void sPathAddShapeOperation(SwiftPath *path, _SwiftShapeOperation *op, Sw
 }
 
 
+- (void) clearWeakReferences
+{
+    m_movie = nil;
+}
+
+
 #pragma mark -
 #pragma mark Private Methods
 
@@ -537,7 +548,8 @@ static void sPathAddShapeOperation(SwiftPath *path, _SwiftShapeOperation *op, Sw
     return m_paths;
 }
 
-@synthesize libraryID             = m_libraryID,
+@synthesize movie                 = m_movie,
+            libraryID             = m_libraryID,
             bounds                = m_bounds,
             edgeBounds            = m_edgeBounds,
             usesFillWindingRule   = m_usesFillWindingRule,

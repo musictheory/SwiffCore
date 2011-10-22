@@ -64,5 +64,8 @@
 @property (nonatomic, assign, readonly) CGPoint stageOrigin;
 @property (nonatomic, assign, readonly) CGSize  stageSize;
 
+@property (nonatomic, assign, readonly) SwiftColor  backgroundColor;
+@property (nonatomic, assign, readonly) SwiftColor *backgroundColorPointer;
+
 
 @end

@@ -119,35 +119,10 @@ static SwiftHTMLToCoreTextConverterTag sGetTagForString(const xmlChar *inString)
 }
 
 
-static void sStartElementNs (
-    void *ctx,
-    const xmlChar *localname,
-    const xmlChar *prefix,
-    const xmlChar *URI,
-    int nb_namespaces,
-    const xmlChar **namespaces,
-    int nb_attributes,
-    int nb_defaulted,
-    const xmlChar **attributesArray
-) {
-@autoreleasepool {
-    SwiftHTMLToCoreTextConverterTag  tag  = sGetTagForString(localname);
-    SwiftHTMLToCoreTextConverter *self = (SwiftHTMLToCoreTextConverter *)ctx;
-    NSMutableDictionary *attributes = [NSMutableDictionary dictionary];
-    
-    for (int i = 0; i < (nb_attributes * 5); i += 5) {
-        const char *localnameCString = (const char *)attributesArray[i];
-        const char *valueCString     = (const char *)attributesArray[i + 3];
-        const char *endCString       = (const char *)attributesArray[i + 4];
-
-        NSString *key   = [[NSString stringWithUTF8String:localnameCString] lowercaseString];
-        NSString *value = [[[NSString alloc] initWithBytes:valueCString  length:(endCString - valueCString) encoding:NSUTF8StringEncoding] autorelease];
-        
-        [attributes setObject:value forKey:key];
-    }
-
+static void sStartElement(SwiftHTMLToCoreTextConverter *self, xmlElementPtr element, SwiftHTMLToCoreTextConverterTag tag)
+{
     if (tag == SwiftHTMLToCoreTextConverterTag_A) {
-        // Not yet implemented
+        // Not yet implemented: Dynamic Text HTML <a> support
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_B) {
         [self _flush];  self->m_boldCount++;
@@ -156,7 +131,7 @@ static void sStartElementNs (
         [self->m_characters appendString:@"\n"];
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_FONT) {
-        // Not yet implemented
+        // Not yet implemented: Dynamic Text HTML <font> support
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_I) {
         [self _flush];  self->m_italicCount++;
@@ -165,34 +140,30 @@ static void sStartElementNs (
         [self->m_characters appendFormat:@"%C ", 0x2022];
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_P) {
-        // Not yet implemented
+        // Not yet implemented: Dynamic Text HTML <p> support
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_TAB) {
         [self->m_characters appendString:@"\t"];
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_TEXTFORMAT) {
-        // Not yet implemented
+        // Not yet implemented: Dynamic Text HTML <textformat> support
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_U) {
         [self _flush];  self->m_underlineCount++;
     }
-} }
+}
 
 
-static void sEndElementNs (void *ctx, const xmlChar *localname, const xmlChar *prefix, const xmlChar *URI)
+static void sEndElement(SwiftHTMLToCoreTextConverter *self, xmlElementPtr element, SwiftHTMLToCoreTextConverterTag tag)
 {
-@autoreleasepool {
-    SwiftHTMLToCoreTextConverterTag  tag  = sGetTagForString(localname);
-    SwiftHTMLToCoreTextConverter    *self = (SwiftHTMLToCoreTextConverter *)ctx;
-
     if (tag == SwiftHTMLToCoreTextConverterTag_A) {
-        // Not yet implemented
+        // Not yet implemented: Dynamic Text HTML <a> support
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_B) {
         self->m_boldCount--;  [self _flush];
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_FONT) {
-        // Not yet implemented
+        // Not yet implemented: Dynamic Text HTML <font> support
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_I) {
         self->m_italicCount--;  [self _flush];
@@ -201,28 +172,53 @@ static void sEndElementNs (void *ctx, const xmlChar *localname, const xmlChar *p
         [self->m_characters appendString:@"\n"];
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_P) {
-        // Not yet implemented
+        // Not yet implemented: Dynamic Text HTML <p> support
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_TEXTFORMAT) {
-        // Not yet implemented
+        // Not yet implemented: Dynamic Text HTML <textformat> support
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_U) {
         self->m_underlineCount--;  [self _flush];
     }
-} }
+}
 
 
-static void sCharacters(void *ctx, const xmlChar *ch, int len)
+static void sHandleNode(SwiftHTMLToCoreTextConverter *self, xmlNodePtr node)
 {
-@autoreleasepool {
-    SwiftHTMLToCoreTextConverter *self = (SwiftHTMLToCoreTextConverter *)ctx;
+    if (node->type == XML_ELEMENT_NODE) {
+        xmlElementPtr element = (xmlElementPtr)node;
+        SwiftHTMLToCoreTextConverterTag tag = sGetTagForString(element->name);
+        
+        if (tag != SwiftHTMLToCoreTextConverterTag_Unknown) {
+            sStartElement(self, element, tag);
+        }
 
-    if (len) {
-        NSString *string = [[NSString alloc] initWithBytes:ch length:len encoding:NSUTF8StringEncoding];
-        [self->m_characters appendString:string];
-        [string release];
+        if (node->children) {
+            xmlNodePtr childNode = xmlFirstElementChild(node);
+            while (childNode) {
+                sHandleNode(self, childNode);
+                childNode = xmlNextElementSibling(childNode);
+            }
+        }
+
+        if (tag != SwiftHTMLToCoreTextConverterTag_Unknown) {
+            sEndElement(self, element, tag);
+        }
+
+    } else if (node->type == XML_TEXT_NODE) {
+        xmlChar *content = xmlNodeGetContent(node);
+
+        if (content) {
+            size_t length = strlen((const char *)content);
+
+            NSString *string = [[NSString alloc] initWithBytesNoCopy:(void *)content length:length encoding:NSUTF8StringEncoding freeWhenDone:YES];
+            [self->m_characters appendString:string];
+            [string release];
+        }
     }
-} }
+     
+}
+
 
 
 - (CFAttributedStringRef) copyAttributedStringForHTML:(NSString *)string baseFont:(CTFontRef)font
@@ -238,13 +234,8 @@ static void sCharacters(void *ctx, const xmlChar *ch, int len)
     UInt8 *buffer = (UInt8 *)malloc(length);
     CFStringGetBytes(cfString, range, kCFStringEncodingUTF8, 0, 0, buffer, length, &length);
     
-    htmlParserCtxtPtr context = htmlCreateMemoryParserCtxt((const char *)buffer, length);
-
-    context->userData = self;
-    context->sax->startElementNs = sStartElementNs;
-    context->sax->endElementNs   = sEndElementNs;
-    context->sax->characters     = sCharacters;
-
+    htmlDocPtr htmlDoc = htmlReadMemory((const char *)buffer, length, NULL, "UTF-8", 0);
+    
     m_characters = [[NSMutableString alloc] init];
     m_output     = CFAttributedStringCreateMutable(NULL, 0);
     
@@ -253,9 +244,11 @@ static void sCharacters(void *ctx, const xmlChar *ch, int len)
     } else {
         m_baseFont = CTFontCreateWithName(CFSTR("Helvetica"), 12.0, &CGAffineTransformIdentity);
     }
-                
-    if (context) {
-        htmlParseDocument(context);
+
+    if (htmlDoc) {
+        sHandleNode(self, (xmlNodePtr)htmlDoc);
+        xmlFreeDoc(htmlDoc);
+
         [self _flush];
     }
 
@@ -269,8 +262,6 @@ static void sCharacters(void *ctx, const xmlChar *ch, int len)
     m_characters = nil;
 
     free(buffer);
-
-    htmlFreeParserCtxt(context);
     
     return output;
 }

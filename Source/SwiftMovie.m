@@ -63,6 +63,8 @@
         SwiftColor white = { 1.0, 1.0, 1.0, 1.0 };
         m_backgroundColor = white;
 
+        m_movie = self;
+
         clock_t c = clock();
         SwiftParser *parser = SwiftParserCreate([data bytes], [data length], parserOptions);
         if (parser) {
@@ -97,6 +99,8 @@
             }
 
             SwiftParserFree(parser);
+            
+            m_movie = nil;
         }
 
         NSInteger valueToLog = (((clock() - c) * 1000) / CLOCKS_PER_SEC);
@@ -109,6 +113,8 @@
 
 - (void) dealloc
 {
+    [[m_definitionMap allValues] makeObjectsPerformSelector:@selector(clearWeakReferences)];
+
     [m_data                release];  m_data                = nil;
     [m_scenes              release];  m_scenes              = nil;
     [m_sceneNameToSceneMap release];  m_sceneNameToSceneMap = nil;
@@ -124,7 +130,7 @@
 - (void) _parser:(SwiftParser *)parser didFindTag:(SwiftTag)tag version:(NSInteger)version
 {
     if (tag == SwiftTagDefineShape) {
-        SwiftShapeDefinition *shape = [[SwiftShapeDefinition alloc] initWithParser:parser tag:tag version:version];
+        SwiftShapeDefinition *shape = [[SwiftShapeDefinition alloc] initWithParser:parser movie:self];
 
         if (shape) {
             NSNumber *key = [[NSNumber alloc] initWithInteger:[shape libraryID]];
@@ -134,11 +140,23 @@
 
         [shape release];
 
+    } else if (tag == SwiftTagDefineButton) {
+        // Not yet implemented: Button Support.
+    
     } else if (tag == SwiftTagDefineMorphShape) {
-        NSLog(@"Found morph shape!");
+        // Not yet implemented: MorphShape Support
+
+    } else if (tag == SwiftTagDefineBits || tag == SwiftTagDefineBitsLossless) {
+        // Not yet implemented: Bitmap Image Support
+
+    } else if (tag == SwiftTagDefineSound) {
+        // Not yet implemented: Sound Support
+
+    } else if (tag == SwiftTagDefineVideoStream) {
+        // Not yet implemented: Video Support
 
     } else if (tag == SwiftTagDefineSprite) {
-        SwiftSpriteDefinition *sprite = [[SwiftSpriteDefinition alloc] initWithParser:parser tag:tag version:version];
+        SwiftSpriteDefinition *sprite = [[SwiftSpriteDefinition alloc] initWithParser:parser movie:self];
 
         if (sprite) {
             NSNumber *key = [[NSNumber alloc] initWithInteger:[sprite libraryID]];
@@ -148,7 +166,11 @@
         
         [sprite release];
 
-    } else if ((tag == SwiftTagDefineFont) || (tag == SwiftTagDefineFontInfo) || (tag == SwiftTagDefineFontName)) {
+    } else if ((tag == SwiftTagDefineFont)     ||
+               (tag == SwiftTagDefineFontInfo) ||
+               (tag == SwiftTagDefineFontName) ||
+               (tag == SwiftTagDefineFontAlignZones))
+    {
         UInt16 fontID;
         SwiftParserReadUInt16(parser, &fontID);
 
@@ -156,23 +178,25 @@
         SwiftFontDefinition *font = [m_definitionMap objectForKey:key];
         
         if (![font isKindOfClass:[SwiftFontDefinition class]]) {
-            font = [[SwiftFontDefinition alloc] initWithLibraryID:fontID];
+            font = [[SwiftFontDefinition alloc] initWithLibraryID:fontID movie:self];
             [m_definitionMap setObject:font forKey:key];
             [font release];
         }
         
         if (tag == SwiftTagDefineFont) {
-            [font readDefineFontTagFromParser:parser version:version];
+            [font readDefineFontTagFromParser:parser];
         } else if (tag == SwiftTagDefineFontInfo) {
-            [font readDefineFontInfoTagFromParser:parser version:version];
+            [font readDefineFontInfoTagFromParser:parser];
         } else if (tag == SwiftTagDefineFontName) {
-            [font readDefineFontNameTagFromParser:parser version:version];
+            [font readDefineFontNameTagFromParser:parser];
+        } else if (tag == SwiftTagDefineFontAlignZones) {
+            [font readDefineFontAlignZonesFromParser:parser];
         }
 
         [key release];
     
     } else if (tag == SwiftTagDefineText) {
-        SwiftStaticTextDefinition *text = [[SwiftStaticTextDefinition alloc] initWithParser:parser tag:tag version:version];
+        SwiftStaticTextDefinition *text = [[SwiftStaticTextDefinition alloc] initWithParser:parser movie:self];
         
         if (text) {
             NSNumber *key = [[NSNumber alloc] initWithInteger:[text libraryID]];
@@ -183,7 +207,7 @@
         [text release];
     
     } else if (tag == SwiftTagDefineEditText) {
-        SwiftTextDefinition *text = [[SwiftTextDefinition alloc] initWithParser:parser tag:tag version:version];
+        SwiftTextDefinition *text = [[SwiftTextDefinition alloc] initWithParser:parser movie:self];
         
         if (text) {
             NSNumber *key = [[NSNumber alloc] initWithInteger:[text libraryID]];
@@ -278,6 +302,18 @@
     }
 
     return [m_sceneNameToSceneMap objectForKey:name];
+}
+
+
+- (SwiftColor) backgroundColor
+{
+    return m_backgroundColor;
+}
+
+
+- (SwiftColor *) backgroundColorPointer
+{
+    return &m_backgroundColor;
 }
 
 

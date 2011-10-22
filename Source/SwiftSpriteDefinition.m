@@ -30,6 +30,8 @@
 #import "SwiftFrame.h"
 #import "SwiftParser.h"
 #import "SwiftPlacedObject.h"
+#import "SwiftPlacedStaticText.h"
+#import "SwiftPlacedText.h"
 #import "SwiftSceneAndFrameLabelData.h"
 
 @interface SwiftPlacedObject (FriendMethods)
@@ -64,7 +66,7 @@
 }
 
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)baseTag version:(NSInteger)baseVersion
+- (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie
 {
     if ((self = [self init])) {
         SwiftParserReadUInt16(parser, &m_libraryID);
@@ -73,6 +75,8 @@
         SwiftParserReadUInt16(parser, &frameCount);
 
         SwiftLog(@"DEFINESPRITE defines id %ld", (long)m_libraryID);
+
+        m_movie = movie;
 
         while (SwiftParserIsValid(parser) && SwiftParserAdvanceToNextTagInSprite(parser)) {
             [self _parser: parser
@@ -90,6 +94,8 @@
             CFRelease(m_depthToPlacedObjectMap);
             m_depthToPlacedObjectMap = NULL;
         }
+        
+        m_movie = nil;
 
         SwiftLog(@"END");
     
@@ -101,6 +107,7 @@
     
     return self;
 }
+
 
 - (void) dealloc
 {
@@ -120,15 +127,21 @@
 }
 
 
+- (void) clearWeakReferences
+{
+    m_movie = nil;
+}
+
+
 #pragma mark -
 #pragma mark Tag Handlers
 
 - (void) _parser:(SwiftParser *)parser didFindPlaceObjectTag:(SwiftTag)tag version:(NSInteger)version
 {
     NSString *name = nil;
-    UInt32    hasClipActions, hasClipDepth, hasName, hasRatio, hasColorTransform, hasMatrix, hasCharacter, move;
+    UInt32    hasClipActions, hasClipDepth, hasName, hasRatio, hasColorTransform, hasMatrix, hasLibraryID, move;
     UInt16    depth;
-    UInt16    characterID;
+    UInt16    libraryID;
     UInt16    ratio;
     UInt16    clipDepth;
     
@@ -142,7 +155,7 @@
         SwiftParserReadUBits(parser, 1, &hasRatio);
         SwiftParserReadUBits(parser, 1, &hasColorTransform);
         SwiftParserReadUBits(parser, 1, &hasMatrix);
-        SwiftParserReadUBits(parser, 1, &hasCharacter);
+        SwiftParserReadUBits(parser, 1, &hasLibraryID);
         SwiftParserReadUBits(parser, 1, &move);
 
         if (version == 3) {
@@ -151,7 +164,7 @@
         }
 
         SwiftParserReadUInt16(parser, &depth);
-        if (hasCharacter)       SwiftParserReadUInt16(parser, &characterID);
+        if (hasLibraryID)       SwiftParserReadUInt16(parser, &libraryID);
         if (hasMatrix)          SwiftParserReadMatrix(parser, &matrix);
         if (hasColorTransform)  SwiftParserReadColorTransformWithAlpha(parser, &colorTransform);
         if (hasRatio)           SwiftParserReadUInt16(parser, &ratio);
@@ -161,12 +174,12 @@
     } else {
         move         = YES;
         hasMatrix    = YES;
-        hasCharacter = YES;
+        hasLibraryID = YES;
         hasClipDepth = NO;
         hasName      = NO;
         hasRatio     = NO;
 
-        SwiftParserReadUInt16(parser, &characterID);
+        SwiftParserReadUInt16(parser, &libraryID);
         SwiftParserReadUInt16(parser, &depth);
         SwiftParserReadMatrix(parser, &matrix);
 
@@ -180,17 +193,37 @@
 
     // Not supported yet
     hasClipActions = NO;
+
+    Class cls = [SwiftPlacedObject class];
     SwiftPlacedObject *placedObject = nil;
 
+    id<SwiftDefinition> definition = nil;
+    
+    if (hasLibraryID) {
+        definition = [m_movie definitionWithLibraryID:libraryID];
+
+        if ([definition isKindOfClass:[SwiftStaticTextDefinition class]]) {
+            cls = [SwiftPlacedStaticText class];
+        } else if ([definition isKindOfClass:[SwiftTextDefinition class]]) {
+            cls = [SwiftPlacedText class];
+        }
+    }
+
     if (move) {
-        placedObject = [(SwiftPlacedObject *)CFDictionaryGetValue(m_depthToPlacedObjectMap, (const void *)depth) copy];
+        SwiftPlacedObject *existing = (SwiftPlacedObject *)CFDictionaryGetValue(m_depthToPlacedObjectMap, (const void *)depth);
+        if (!hasLibraryID) cls = [existing class];
+        placedObject = [[cls alloc] initWithPlacedObject:existing];
     }
 
     if (!placedObject) {
-        placedObject = [[SwiftPlacedObject alloc] initWithDepth:depth];
+        placedObject = [[cls alloc] initWithDepth:depth];
     }
     
-    if (hasCharacter)      [placedObject setLibraryID:characterID];
+    if ([definition conformsToProtocol:@protocol(SwiftPlacableDefinition)]) {
+        [placedObject setDefinition:(id<SwiftPlacableDefinition>)definition];
+    }
+    
+    if (hasLibraryID)      [placedObject setLibraryID:libraryID];
     if (hasClipDepth)      [placedObject setClipDepth:clipDepth];
     if (hasName)           [placedObject setInstanceName:name];
     if (hasRatio)          [placedObject setRatio:ratio];
@@ -354,7 +387,8 @@
 - (CGRect) edgeBounds  { return CGRectZero; }
 - (BOOL) hasEdgeBounds { return NO;         }
 
-@synthesize libraryID  = m_libraryID,
+@synthesize movie      = m_movie,
+            libraryID  = m_libraryID,
             frames     = m_frames;
 
 @end

@@ -31,7 +31,7 @@
 
 @implementation SwiftTextDefinition
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)tagVersion
+- (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie
 {
     if ((self = [super init])) {
         UInt32 hasText, wordWrap, multiline, password, readOnly, hasColor,
@@ -40,6 +40,7 @@
            
         UInt16 libraryID;
         SwiftParserReadUInt16(parser, &libraryID);
+        m_movie     = movie;
         m_libraryID = libraryID;
         
         SwiftParserReadRect(parser, &m_bounds);
@@ -134,6 +135,12 @@
 }
 
 
+- (void) clearWeakReferences
+{
+    m_movie = nil;
+}
+
+
 - (CGRect) edgeBounds  { return CGRectZero; }
 - (BOOL) hasEdgeBounds { return NO; }
 
@@ -152,7 +159,8 @@
 - (CGFloat) indent      { return SwiftFloatFromTwips(m_indentInTwips);      }
 - (CGFloat) leading     { return SwiftFloatFromTwips(m_leadingInTwips);     }
 
-@synthesize libraryID     = m_libraryID,
+@synthesize movie         = m_movie,
+            libraryID     = m_libraryID,
             bounds        = m_bounds,
             variableName  = m_variableName,
             initialText   = m_initialText,

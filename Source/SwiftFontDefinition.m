@@ -32,9 +32,10 @@
 
 @implementation SwiftFontDefinition
 
-- (id) initWithLibraryID:(UInt16)libraryID
+- (id) initWithLibraryID:(UInt16)libraryID movie:(SwiftMovie *)movie
 {
     if ((self = [super init])) {
+        m_movie = movie;
         m_libraryID = libraryID;
     }
     
@@ -42,47 +43,70 @@
 }
 
 
-#pragma mark -
-#pragma mark Called by Movie
-
-
-
-
-- (void) _readCodeTable
+- (void) dealloc
 {
-
+    [m_name      release];  m_name      = nil;
+    [m_fullName  release];  m_fullName  = nil;
+    [m_copyright release];  m_copyright = nil;
+    
+    if (m_fontDescriptor) {
+        CFRelease(m_fontDescriptor);
+        m_fontDescriptor = NULL;
+    }
+    
+    free(m_codeTable);
+    
+    [super dealloc];
 }
 
 
-
-
-- (void) readDefineFontTagFromParser:(SwiftParser *)parser version:(NSInteger)version
+- (void) clearWeakReferences
 {
+    m_movie = nil;
+}
 
+
+#pragma mark -
+#pragma mark Called by Movie
+
+- (void) _readCodeTableFromParser:(SwiftParser *)parser wide:(BOOL)wide
+{
+    m_codeTable = malloc(m_glyphCount * sizeof(UInt16));
+
+    for (NSUInteger i = 0; i < m_glyphCount; i++) {
+        UInt16 value;
+
+        if (wide) {
+            SwiftParserReadUInt16(parser, &value);
+        } else {
+            UInt8 value8;
+            SwiftParserReadUInt8(parser, &value8);
+            value = value8;
+        }
+
+        m_codeTable[i] = value;
+    }
+}
+
+
+- (void) readDefineFontTagFromParser:(SwiftParser *)parser
+{
+    NSInteger version = SwiftParserGetCurrentTagVersion(parser);
 
     if (version == 1) {
-        // ...the number of entries in each table (the number of glyphs in the font) can be inferred
-        // by dividing the first entry in the OffsetTable by two.
+        // Per documentation:
+        // "...the number of entries in each table (the number of glyphs in the font) can be inferred
+        // by dividing the first entry in the OffsetTable by two."
+        //
         UInt16 offset;
         SwiftParserReadUInt16(parser, &offset);
         m_glyphCount = (offset / 2);
 
-        SwiftParserAdvance(parser, (m_glyphCount - 1) * sizeof(UInt16));
+        // Not yet implemented: Glyph Text Support
+        // Read offset table here
+        // Read shape table here
 
-#if 0
-        tag->glyph = malloc(tag->glyphCount * sizeof(void *));
-        SWFShape *glyphBuffer = malloc(tag->glyphCount * sizeof(SWFShapeRecord));
-
-        UInt32 i;
-        for (i = 0; i < tag->glyphCount; i++) {
-            SWFShape *shape = &glyphBuffer[i];
-            tag->glyph[i] = shape;
-
-            SWFParserReadShapeAndCreateContents(parser, shape, 0);
-        }
-#endif
-
-    } else {
+    } else if (version == 2 || version == 3) {
         UInt32 hasLayout, isShiftJIS, isSmallText, isANSIEncoding,
                usesWideOffsets, usesWideCodes, isItalic, isBold;
 
@@ -95,82 +119,66 @@
         SwiftParserReadUBits(parser, 1, &isItalic);
         SwiftParserReadUBits(parser, 1, &isBold);
 
-        m_hasLayout     = hasLayout;
-        m_smallText     = isSmallText;
-        m_italic        = isItalic;
-        m_bold          = isBold;
+        m_italic    = isItalic;
+        m_bold      = isBold;
+        // Not yet implemented: Glyph Text Support.
+        // Save isANSIEncoding, isShiftJIS, isSmallText for later use
 
         UInt8 languageCode;
         SwiftParserReadUInt8(parser, &languageCode);
-        m_languageCode = languageCode;
+        // Not yet implemented: Glyph Text Support.
+        // Save languageCode for later use
     
-        NSString *name;
+        NSString *name = nil;
         SwiftParserReadPascalString(parser, &name);
         m_name = [name retain];
         
         UInt16 glyphCount;
         SwiftParserReadUInt16(parser, &glyphCount);
+        m_glyphCount = glyphCount;
+    
+        // Not yet implemented: Glyph Text Support.
+        // Read OffsetTable.  For now, just advance through it, since we need CodeTableOffset
+        NSInteger bytesInOffsetTable = (usesWideOffsets ? sizeof(UInt32) : sizeof(UInt16)) * glyphCount;
+        NSInteger skippedBytes       = bytesInOffsetTable;
+        SwiftParserAdvance(parser, bytesInOffsetTable);
 
-#if 0
-
-        // Burn through OffsetTable
+        // Read CodeTableOffset, and advance to CodeTable
         if (usesWideOffsets) {
-            UInt32 unused;
-            SwiftParserAdvance(parser, tag->glyphCount * sizeof(UInt32));
-            SwiftParserReadUInt32(parser, &unused);
+            UInt32 bytesFromOffsetTableToCodeTable;
+            SwiftParserReadUInt32(parser, &bytesFromOffsetTableToCodeTable);
+
+            skippedBytes += sizeof(UInt32);
+            SwiftParserAdvance(parser, bytesFromOffsetTableToCodeTable - skippedBytes);
+
         } else {
-            UInt16 unused;
-            SwiftParserAdvance(parser, tag->glyphCount * sizeof(UInt16));
-            SwiftParserReadUInt16(parser, &unused);
+            UInt16 bytesFromOffsetTableToCodeTable;
+            SwiftParserReadUInt16(parser, &bytesFromOffsetTableToCodeTable);
+
+            skippedBytes += sizeof(UInt16);
+            SwiftParserAdvance(parser, bytesFromOffsetTableToCodeTable - skippedBytes);
         }
 
-        tag->glyph        = calloc(tag->glyphCount, sizeof(void *));
-        tag->codeTable    = calloc(tag->glyphCount, sizeof(UInt16));
-        tag->advanceTable = calloc(tag->glyphCount, sizeof(SInt16));
-        tag->boundsTable  = calloc(tag->glyphCount, sizeof(SWFRect));
-
-        UInt32 i;
-        for (i = 0; i < tag->glyphCount; i++) {
-            SWFShape *shape = malloc(sizeof(SWFShape));
-            tag->glyph[i] = shape;
-
-            SWFParserReadShapeAndCreateContents(parser, shape, 0);
-        }
-        
-        for (i = 0; i < tag->glyphCount; i++) {
-            if (usesWideCodes) {
-                SWFParserReadUInt16(parser, &tag->codeTable[i]);
-            } else {
-                UInt8 codeTableValue;
-                SWFParserReadUInt8(parser, &codeTableValue);
-                tag->codeTable[i] = codeTableValue;
-            }
-        }
+        [self _readCodeTableFromParser:parser wide:usesWideCodes];
         
         if (hasLayout) {
-            SWFParserReadSInt16(parser, &tag->ascenderHeight);
-            SWFParserReadSInt16(parser, &tag->descenderHeight);
-            SWFParserReadSInt16(parser, &tag->leadingHeight);
-            
-            for (i = 0; i < tag->glyphCount; i++) {
-                SWFParserReadSInt16(parser, &tag->advanceTable[i]);
-            }
-
-            for (i = 0; i < tag->glyphCount; i++) {
-                SWFParserReadRect(parser, &tag->boundsTable[i]);
-            }
-
-            // Don't read kerning count
+            // Not yet implemented: Glyph Text Support.
+            // Read FontAscent,  SI16
+            // Read FontDescent, SI16
+            // Read FontLeading, SI16
+            // Read FontAdvanceTable, SI16[nGlyphs]
+            // Read FontBoundsTable,  RECT[nGlyphs]
+            // Read KerningCount, UI16
+            // Read FontKerningTable KERNINGRECORD[KerningCount]
         }
-#endif
 
+    } else if (version == 4) {
+        // Not yet implemented: DefineFont4 support
     }
-
-
-
 }
 
-- (void) readDefineFontNameTagFromParser:(SwiftParser *)parser version:(NSInteger)version
+
+- (void) readDefineFontNameTagFromParser:(SwiftParser *)parser
 {
     NSString *name      = nil;
     NSString *copyright = nil;
@@ -184,7 +192,7 @@
 }
 
 
-- (void) readDefineFontInfoTagFromParser:(SwiftParser *)parser version:(NSInteger)version
+- (void) readDefineFontInfoTagFromParser:(SwiftParser *)parser
 {
     UInt32 reserved, isSmallText, isShiftJIS, isANSIEncoding, isItalic, isBold, usesWideCodes;
 
@@ -200,53 +208,79 @@
     SwiftParserReadUBits(parser, 1, &isBold);
     SwiftParserReadUBits(parser, 1, &usesWideCodes);
     
-    m_smallText    = isSmallText;
-    m_italic       = isItalic;
-    m_bold         = isBold;
-    
+    m_italic = isItalic;
+    m_bold   = isBold;
+    // Not yet implemented: Glyph Text Support.
+    // Save isANSIEncoding, isShiftJIS, isSmallText for later use
+
+    NSInteger version = SwiftParserGetCurrentTagVersion(parser);
     if (version == 2) {
         UInt8 languageCode;
         SwiftParserReadUInt8(parser, &languageCode);
-        m_languageCode = languageCode;
+        // Not yet implemented: Glyph Text Support.
+        // Save languageCode for later use
     }
 
+    m_glyphCount = SwiftParserGetBytesRemainingInCurrentTag(parser);
+    if (usesWideCodes) m_glyphCount /= 2;
     
-#if 0    
-    UInt32 glyphCount = SwiftParserGetBytesRemainingInCurrentTag(parser);
-    if (usesWideCodes) glyphCount /= 2;
-    
-    UInt16 *codeTable = malloc(glyphCount * sizeof(UInt16));
-    UInt16 *codeTablePtr = codeTable;
+    [self _readCodeTableFromParser:parser wide:usesWideCodes];
+}
 
-    while (parser->b < parser->endOfCurrentTag) {
-        if (usesWideCodes) {
-            SWFParserReadUInt16(parser, codeTablePtr);
-        } else {
-            UInt8 value;
-            SWFParserReadUInt8(parser, &value);
-            *codeTablePtr = value;
-        }
 
-        codeTablePtr++;
-    }
-#endif
+- (void) readDefineFontAlignZonesFromParser:(SwiftParser *)parser
+{
+    // Not yet implemented: Font Align Zones
 }
 
 
 #pragma mark -
 #pragma mark Accessors
 
-@synthesize libraryID       = m_libraryID,
-            languageCode    = m_languageCode,
+- (CTFontDescriptorRef) fontDescriptor
+{
+    if (!m_fontDescriptor) {
+        for (NSString *name in [m_name componentsSeparatedByString:@","]) {
+            name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+
+            if      ([name isEqualToString:@"_sans"])       name = @"Helvetica";
+            else if ([name isEqualToString:@"_serif"])      name = @"Times";
+            else if ([name isEqualToString:@"_typewriter"]) name = @"Courier";
+
+            CTFontRef font = CTFontCreateWithName((CFStringRef)name, 12.0, &CGAffineTransformIdentity);
+            if (!font) continue;
+
+            CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(font);
+            CTFontSymbolicTraits mask   = (kCTFontItalicTrait | kCTFontBoldTrait);
+        
+            if (m_bold)   traits |= kCTFontBoldTrait;
+            if (m_italic) traits |= kCTFontItalicTrait;
+
+            CTFontRef fontWithTraits = CTFontCreateCopyWithSymbolicTraits(font, CTFontGetSize(font), NULL, traits, mask);
+            m_fontDescriptor = CTFontCopyFontDescriptor(fontWithTraits);
+
+            if (fontWithTraits) CFRelease(fontWithTraits);
+            if (font) CFRelease(font);
+            
+            if (m_fontDescriptor) {
+                break;
+            }
+        }
+    }
+
+    return m_fontDescriptor;
+}
+
+
+@synthesize movie           = m_movie,
+            libraryID       = m_libraryID,
             name            = m_name,
             fullName        = m_fullName,
             copyright       = m_copyright,
-            ascenderHeight  = m_ascenderHeight,
-            descenderHeight = m_descenderHeight,
-            leadingHeight   = m_leadingHeight,
+            glyphCount      = m_glyphCount,
+            codeTable       = m_codeTable,
+            fontDescriptor  = m_fontDescriptor,
             bold            = m_bold,
-            italic          = m_italic,
-            pixelAligned    = m_pixelAligned,
-            hasLayoutInformation = m_hasLayoutInformation;
+            italic          = m_italic;
 
 @end

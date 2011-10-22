@@ -28,7 +28,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface SwiftPlacedObject : NSObject <NSCopying> {
+@interface SwiftPlacedObject : NSObject {
 @private
     UInt16               m_libraryID;
     UInt16               m_depth;
@@ -37,9 +37,15 @@
     NSString            *m_instanceName;
     SwiftColorTransform *m_colorTransformPtr;
     CGAffineTransform    m_affineTransform;
+
+@protected
+    id<SwiftPlacableDefinition> m_definition;
 }
 
 - (id) initWithDepth:(NSInteger)depth;
+- (id) initWithPlacedObject:(SwiftPlacedObject *)placedObject;
+
+@property (nonatomic, retain) id<SwiftPlacableDefinition> definition;
 
 @property (nonatomic, copy,   readonly) NSString *instanceName;
 @property (nonatomic, assign, readonly) UInt16 libraryID;

@@ -27,16 +27,23 @@
 
 #import <Foundation/Foundation.h>
 
+@class SwiftMovie;
+
 @interface SwiftPlacedText : SwiftPlacedObject {
+@private
     NSString              *m_text;
     CFAttributedStringRef  m_attributedText;
+    CGPoint                m_attributedTextOffset;
     BOOL                   m_HTML;
 }
+
+@property (nonatomic, retain) SwiftTextDefinition *definition;
 
 - (void) setText:(NSString *)text HTML:(BOOL)isHTML;
 
 @property (nonatomic, copy) NSString *text;
 @property (nonatomic, readonly /*strong*/) CFAttributedStringRef attributedText;
+@property (nonatomic, readonly) CGPoint attributedTextOffset;
 @property (nonatomic, assign, readonly, getter=isHTML) BOOL HTML;
 
 @end

@@ -57,6 +57,7 @@
 		55DBFAB61443A454003AA0DA /* SwiftLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFAB51443A453003AA0DA /* SwiftLayer.m */; };
 		55DBFABE1444EAAE003AA0DA /* SwiftMovieView.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFABD1444EAAE003AA0DA /* SwiftMovieView.m */; };
 		55DBFAC11444EE22003AA0DA /* SwiftScene.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFAC01444EE20003AA0DA /* SwiftScene.m */; };
+		55F01686144F8BAE0068002B /* SwiftPlacedStaticText.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F01685144F8BAE0068002B /* SwiftPlacedStaticText.m */; };
 		55F9C75814464B1300FE8E4F /* SwiftSceneAndFrameLabelData.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F9C75714464B1300FE8E4F /* SwiftSceneAndFrameLabelData.m */; };
 /* End PBXBuildFile section */
 
@@ -83,18 +84,20 @@
 		55DBFA851442C1F0003AA0DA /* Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Prefix.pch; path = Source/Prefix.pch; sourceTree = "<group>"; };
 		55DBFAB41443A453003AA0DA /* SwiftLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftLayer.h; path = Source/SwiftLayer.h; sourceTree = "<group>"; };
 		55DBFAB51443A453003AA0DA /* SwiftLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftLayer.m; path = Source/SwiftLayer.m; sourceTree = "<group>"; };
-		55DBFABB1443AF3D003AA0DA /* SwiftPlacableObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftPlacableObject.h; path = Source/SwiftPlacableObject.h; sourceTree = "<group>"; };
+		55DBFABB1443AF3D003AA0DA /* SwiftDefinition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftDefinition.h; path = Source/SwiftDefinition.h; sourceTree = "<group>"; };
 		55DBFABC1444EAAE003AA0DA /* SwiftMovieView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftMovieView.h; path = Source/SwiftMovieView.h; sourceTree = "<group>"; };
 		55DBFABD1444EAAE003AA0DA /* SwiftMovieView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftMovieView.m; path = Source/SwiftMovieView.m; sourceTree = "<group>"; };
 		55DBFABF1444EE1F003AA0DA /* SwiftScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftScene.h; path = Source/SwiftScene.h; sourceTree = "<group>"; };
 		55DBFAC01444EE20003AA0DA /* SwiftScene.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftScene.m; path = Source/SwiftScene.m; sourceTree = "<group>"; };
+		55F01684144F8BAE0068002B /* SwiftPlacedStaticText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftPlacedStaticText.h; path = Source/SwiftPlacedStaticText.h; sourceTree = "<group>"; };
+		55F01685144F8BAE0068002B /* SwiftPlacedStaticText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftPlacedStaticText.m; path = Source/SwiftPlacedStaticText.m; sourceTree = "<group>"; };
 		55F65A5D14429C9E00E12C27 /* SwiftTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftTypes.h; path = Source/SwiftTypes.h; sourceTree = "<group>"; };
 		55F65A5E14429C9E00E12C27 /* SwiftTypes.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftTypes.m; path = Source/SwiftTypes.m; sourceTree = "<group>"; };
-		55F65A5F14429C9E00E12C27 /* SwiftTextDefinition.h */ = {isa = PBXFileReference; name = SwiftTextDefinition.h; path = Source/SwiftTextDefinition.h; sourceTree = "<group>"; };
+		55F65A5F14429C9E00E12C27 /* SwiftTextDefinition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftTextDefinition.h; path = Source/SwiftTextDefinition.h; sourceTree = "<group>"; };
 		55F65A6014429C9E00E12C27 /* SwiftTextDefinition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftTextDefinition.m; path = Source/SwiftTextDefinition.m; sourceTree = "<group>"; };
 		55F65A6114429C9E00E12C27 /* SwiftFillStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftFillStyle.h; path = Source/SwiftFillStyle.h; sourceTree = "<group>"; };
 		55F65A6214429C9E00E12C27 /* SwiftFillStyle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftFillStyle.m; path = Source/SwiftFillStyle.m; sourceTree = "<group>"; };
-		55F65A6314429C9E00E12C27 /* SwiftFontDefinition.h */ = {isa = PBXFileReference; name = SwiftFontDefinition.h; path = Source/SwiftFontDefinition.h; sourceTree = "<group>"; };
+		55F65A6314429C9E00E12C27 /* SwiftFontDefinition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftFontDefinition.h; path = Source/SwiftFontDefinition.h; sourceTree = "<group>"; };
 		55F65A6414429C9E00E12C27 /* SwiftFontDefinition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftFontDefinition.m; path = Source/SwiftFontDefinition.m; sourceTree = "<group>"; };
 		55F65A6514429C9E00E12C27 /* SwiftFontGlyph.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftFontGlyph.h; path = Source/SwiftFontGlyph.h; sourceTree = "<group>"; };
 		55F65A6614429C9E00E12C27 /* SwiftFontGlyph.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftFontGlyph.m; path = Source/SwiftFontGlyph.m; sourceTree = "<group>"; };
@@ -114,11 +117,11 @@
 		55F65A7414429C9E00E12C27 /* SwiftPath.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftPath.m; path = Source/SwiftPath.m; sourceTree = "<group>"; };
 		55F65A7714429C9E00E12C27 /* SwiftPlacedObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftPlacedObject.h; path = Source/SwiftPlacedObject.h; sourceTree = "<group>"; };
 		55F65A7814429C9E00E12C27 /* SwiftPlacedObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftPlacedObject.m; path = Source/SwiftPlacedObject.m; sourceTree = "<group>"; };
-		55F65A7914429C9E00E12C27 /* SwiftShapeDefinition.h */ = {isa = PBXFileReference; name = SwiftShapeDefinition.h; path = Source/SwiftShapeDefinition.h; sourceTree = "<group>"; };
+		55F65A7914429C9E00E12C27 /* SwiftShapeDefinition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftShapeDefinition.h; path = Source/SwiftShapeDefinition.h; sourceTree = "<group>"; };
 		55F65A7A14429C9E00E12C27 /* SwiftShapeDefinition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftShapeDefinition.m; path = Source/SwiftShapeDefinition.m; sourceTree = "<group>"; };
-		55F65A7B14429C9E00E12C27 /* SwiftSpriteDefinition.h */ = {isa = PBXFileReference; name = SwiftSpriteDefinition.h; path = Source/SwiftSpriteDefinition.h; sourceTree = "<group>"; };
+		55F65A7B14429C9E00E12C27 /* SwiftSpriteDefinition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftSpriteDefinition.h; path = Source/SwiftSpriteDefinition.h; sourceTree = "<group>"; };
 		55F65A7C14429C9E00E12C27 /* SwiftSpriteDefinition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftSpriteDefinition.m; path = Source/SwiftSpriteDefinition.m; sourceTree = "<group>"; };
-		55F65A7D14429C9E00E12C27 /* SwiftStaticTextDefinition.h */ = {isa = PBXFileReference; name = SwiftStaticTextDefinition.h; path = Source/SwiftStaticTextDefinition.h; sourceTree = "<group>"; };
+		55F65A7D14429C9E00E12C27 /* SwiftStaticTextDefinition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftStaticTextDefinition.h; path = Source/SwiftStaticTextDefinition.h; sourceTree = "<group>"; };
 		55F65A7E14429C9E00E12C27 /* SwiftStaticTextDefinition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftStaticTextDefinition.m; path = Source/SwiftStaticTextDefinition.m; sourceTree = "<group>"; };
 		55F65A7F14429C9E00E12C27 /* SwiftTextRecord.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftTextRecord.h; path = Source/SwiftTextRecord.h; sourceTree = "<group>"; };
 		55F65A8014429C9E00E12C27 /* SwiftTextRecord.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftTextRecord.m; path = Source/SwiftTextRecord.m; sourceTree = "<group>"; };
@@ -154,7 +157,7 @@
 		55038DF1144EB79500EA5841 /* Definitions */ = {
 			isa = PBXGroup;
 			children = (
-				55DBFABB1443AF3D003AA0DA /* SwiftPlacableObject.h */,
+				55DBFABB1443AF3D003AA0DA /* SwiftDefinition.h */,
 				55F65A5F14429C9E00E12C27 /* SwiftTextDefinition.h */,
 				55F65A6014429C9E00E12C27 /* SwiftTextDefinition.m */,
 				55F65A6314429C9E00E12C27 /* SwiftFontDefinition.h */,
@@ -221,6 +224,8 @@
 				55F65A6E14429C9E00E12C27 /* SwiftMovie.m */,
 				55F65A7714429C9E00E12C27 /* SwiftPlacedObject.h */,
 				55F65A7814429C9E00E12C27 /* SwiftPlacedObject.m */,
+				55F01684144F8BAE0068002B /* SwiftPlacedStaticText.h */,
+				55F01685144F8BAE0068002B /* SwiftPlacedStaticText.m */,
 				55038DE2144E399C00EA5841 /* SwiftPlacedText.h */,
 				55038DE3144E399D00EA5841 /* SwiftPlacedText.m */,
 				55038DDE144CDA4900EA5841 /* SwiftPlayhead.h */,
@@ -456,6 +461,7 @@
 				55038DE0144CDA4900EA5841 /* SwiftPlayhead.m in Sources */,
 				55038DE4144E399F00EA5841 /* SwiftPlacedText.m in Sources */,
 				55038DE7144E489F00EA5841 /* SwiftHTMLToCoreTextConverter.m in Sources */,
+				55F01686144F8BAE0068002B /* SwiftPlacedStaticText.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

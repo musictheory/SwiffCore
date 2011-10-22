@@ -33,45 +33,47 @@
 #import <ApplicationServices/ApplicationServices.h>
 #endif
 
+@class SwiftMovie;
 
-@interface SwiftTextDefinition : NSObject <SwiftPlacableObject> {
+@interface SwiftTextDefinition : NSObject <SwiftPlacableDefinition> {
 @private
-    UInt16     m_libraryID;
-    CGRect     m_bounds;
+    SwiftMovie *m_movie;
+    UInt16      m_libraryID;
+    CGRect      m_bounds;
     
-    SwiftColor m_color;
-    NSUInteger m_maxLength;
+    SwiftColor  m_color;
+    NSUInteger  m_maxLength;
     
-    NSString  *m_variableName;
-    NSString  *m_initialText;
-    NSString  *m_fontClass;
-    CGFloat    m_fontHeight;
+    NSString   *m_variableName;
+    NSString   *m_initialText;
+    NSString   *m_fontClass;
+    CGFloat     m_fontHeight;
 
-    UInt16     m_fontID;
-    UInt16     m_leftMarginInTwips;
-    UInt16     m_rightMarginInTwips;
-    UInt16     m_indentInTwips;
-    SInt16     m_leadingInTwips;
+    UInt16      m_fontID;
+    UInt16      m_leftMarginInTwips;
+    UInt16      m_rightMarginInTwips;
+    UInt16      m_indentInTwips;
+    SInt16      m_leadingInTwips;
     CTTextAlignment m_textAlignment;
 
-    BOOL       m_wordWrap;
-    BOOL       m_password;
-    BOOL       m_multiline;
-    BOOL       m_editable;
-    BOOL       m_selectable;
-    BOOL       m_hasFont;
-    BOOL       m_hasFontClass;
-    BOOL       m_hasColor;
-    BOOL       m_autosize;
-    BOOL       m_hasLayout;
+    BOOL        m_wordWrap;
+    BOOL        m_password;
+    BOOL        m_multiline;
+    BOOL        m_editable;
+    BOOL        m_selectable;
+    BOOL        m_hasFont;
+    BOOL        m_hasFontClass;
+    BOOL        m_hasColor;
+    BOOL        m_autosize;
+    BOOL        m_hasLayout;
     
-    BOOL       m_border;
-    BOOL       m_wasStatic;
-    BOOL       m_HTML;
-    BOOL       m_useOutlines;
+    BOOL        m_border;
+    BOOL        m_wasStatic;
+    BOOL        m_HTML;
+    BOOL        m_useOutlines;
 }
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)tagVersion;
+- (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie;
 
 @property (nonatomic, retain, readonly) NSString *variableName;
 @property (nonatomic, retain, readonly) NSString *initialText;
