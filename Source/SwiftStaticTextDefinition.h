@@ -27,15 +27,19 @@
 
 #import <Foundation/Foundation.h>
 
-@interface SwiftStaticTextDefinition : NSObject <SwiftPlacableObject> {
+@class SwiftMovie;
+
+@interface SwiftStaticTextDefinition : NSObject <SwiftPlacableDefinition> {
 @private
-    UInt16 m_libraryID;
-    CGRect m_bounds;
+    SwiftMovie       *m_movie;
+    NSArray          *m_textRecords;
+    UInt16            m_libraryID;
+    CGRect            m_bounds;
     CGAffineTransform m_affineTransform;
-    
-    NSArray *m_textRecords;
 }
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)tagVersion;
+- (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie;
+
+@property (nonatomic, retain, readonly) NSArray *textRecords;
 
 @end

@@ -48,6 +48,7 @@
     CFTimeInterval m_framesPerSecond;
 
     BOOL m_playing;
+    BOOL m_showsBackgroundColor;
     BOOL m_usesAcceleratedRendering;
     BOOL m_interpolatesFrames;
     BOOL m_delegate_movieView_willDisplayScene_frame;
@@ -60,6 +61,7 @@
 @property (nonatomic, retain, readonly) SwiftPlayhead *playhead;
 
 @property (nonatomic, assign, getter=isPlaying) BOOL playing;
+@property (nonatomic, assign) BOOL showsBackgroundColor;
 @property (nonatomic, assign) BOOL usesAcceleratedRendering;
 @property (nonatomic, assign) BOOL interpolatesFrames;
 

@@ -31,18 +31,13 @@
 
 @implementation SwiftTextRecord
 
-+ (NSArray *) textRecordArrayWithParser: (SwiftParser *) parser
-                                    tag: (SwiftTag) tag
-                                version: (NSInteger) version
-                              glyphBits: (UInt8) glyphBits
-                            advanceBits: (UInt8) advanceBits
-
++ (NSArray *) textRecordArrayWithParser:(SwiftParser *)parser glyphBits:(UInt8)glyphBits advanceBits:(UInt8)advanceBits
 {
     NSMutableArray  *result = [NSMutableArray array];
     SwiftTextRecord *record = nil;
 
     do {
-        record = [[SwiftTextRecord alloc] initWithParser:parser tag:tag version:version glyphBits:glyphBits advanceBits:advanceBits];
+        record = [[SwiftTextRecord alloc] initWithParser:parser glyphBits:glyphBits advanceBits:advanceBits];
         if (record) [result addObject:record];
         [record release];
     } while (record);
@@ -51,11 +46,7 @@
 }
 
 
-- (id) initWithParser: (SwiftParser *) parser
-                  tag: (SwiftTag) tag
-              version: (NSInteger) version
-            glyphBits: (UInt8) glyphBits
-          advanceBits: (UInt8) advanceBits
+- (id) initWithParser:(SwiftParser *)parser glyphBits:(UInt8)glyphBits advanceBits:(UInt8)advanceBits
 {
     if ((self = [super init])) {
         SwiftParserByteAlign(parser);
@@ -79,7 +70,7 @@
             }
 
             if (hasColor) {
-                if (version >= 2) {
+                if (SwiftParserGetCurrentTagVersion(parser) >= 2) {
                     SwiftParserReadColorRGBA(parser, &m_color);
                 } else {
                     SwiftParserReadColorRGB(parser, &m_color);

@@ -98,6 +98,16 @@ static void sSwiftColorApplyColorTransformPointer(SwiftColor *color, SwiftColorT
 }
 
 
+CGColorRef SwiftColorCopyCGColor(SwiftColor color)
+{
+    CGColorSpaceRef space = CGColorSpaceCreateDeviceRGB();
+    CGColorRef result = CGColorCreate(space, (CGFloat *)&color);
+    CGColorSpaceRelease(space);
+
+    return result;
+}
+
+
 SwiftColor SwiftColorApplyColorTransform(SwiftColor color, SwiftColorTransform transform)
 {
     sSwiftColorApplyColorTransformPointer(&color, &transform);

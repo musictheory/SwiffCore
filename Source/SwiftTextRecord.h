@@ -47,17 +47,9 @@ typedef struct _SwiftGlyphEntry {
     BOOL             m_hasColor;
 }
 
-+ (NSArray *) textRecordArrayWithParser: (SwiftParser *) parser
-                                    tag: (SwiftTag) tag
-                                version: (NSInteger) version
-                              glyphBits: (UInt8) glyphBits
-                            advanceBits: (UInt8) advanceBits;
++ (NSArray *) textRecordArrayWithParser:(SwiftParser *)parser glyphBits:(UInt8)glyphBits advanceBits:(UInt8)advanceBits;
 
-- (id) initWithParser: (SwiftParser *) parser
-                  tag: (SwiftTag) tag
-              version: (NSInteger) version
-            glyphBits: (UInt8) glyphBits
-          advanceBits: (UInt8) advanceBits;
+- (id) initWithParser:(SwiftParser *)parser glyphBits:(UInt8)glyphBits advanceBits:(UInt8)advanceBits;
 
 @property (nonatomic, assign, readonly) CGPoint offset;
 @property (nonatomic, assign, readonly) CGFloat textHeight;

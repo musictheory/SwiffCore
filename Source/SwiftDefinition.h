@@ -25,8 +25,16 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-@protocol SwiftPlacableObject <NSObject>
+@class SwiftMovie;
+
+@protocol SwiftDefinition <NSObject>
+- (void) clearWeakReferences;
+
+@property (nonatomic, assign, readonly) SwiftMovie *movie;
 @property (nonatomic, assign, readonly) UInt16 libraryID;
+@end
+
+@protocol SwiftPlacableDefinition <SwiftDefinition>
 @property (nonatomic, assign, readonly) CGRect bounds;
 @property (nonatomic, assign, readonly) CGRect edgeBounds;
 @property (nonatomic, assign, readonly) BOOL hasEdgeBounds;

@@ -29,19 +29,20 @@
 
 @class SwiftFrame, SwiftMovie, SwiftSceneAndFrameLabelData;
 
-@interface SwiftSpriteDefinition : NSObject <SwiftPlacableObject> {
+@interface SwiftSpriteDefinition : NSObject <SwiftPlacableDefinition> {
 @private
     CFMutableDictionaryRef m_depthToPlacedObjectMap;
     SwiftFrame      *m_lastFrame;
     UInt16           m_libraryID;
 
 @protected
+    SwiftMovie      *m_movie;
     NSMutableArray  *m_frames;
     NSDictionary    *m_labelToFrameMap;
     SwiftSceneAndFrameLabelData *m_sceneAndFrameLabelData;
 }
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version;
+- (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie;
 
 - (SwiftFrame *) frameWithLabel:(NSString *)label;
 

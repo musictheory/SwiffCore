@@ -51,8 +51,27 @@
 }
 
 
+- (id) initWithPlacedObject:(SwiftPlacedObject *)placedObject
+{
+    if ((self = [self initWithDepth:placedObject->m_depth])) {
+        m_libraryID         = placedObject->m_libraryID;
+        m_clipDepth         = placedObject->m_clipDepth;
+        m_ratio             = placedObject->m_ratio;
+        m_affineTransform   = placedObject->m_affineTransform;
+        m_colorTransformPtr = placedObject->m_colorTransformPtr;
+        m_instanceName      = [placedObject->m_instanceName copy];
+        m_definition        = [placedObject->m_definition retain];
+    }
+    
+    return self;
+}
+
+
 - (void) dealloc
 {
+    [m_definition release];
+    m_definition = nil;
+    
     if (m_colorTransformPtr) {
         free(m_colorTransformPtr);
         m_colorTransformPtr = NULL;
@@ -139,7 +158,8 @@
 }
 
 
-@synthesize instanceName       = m_instanceName,
+@synthesize definition         = m_definition,
+            instanceName       = m_instanceName,
             libraryID          = m_libraryID,
             depth              = m_depth,
             clipDepth          = m_clipDepth,

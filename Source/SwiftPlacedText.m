@@ -31,6 +31,26 @@
 
 @implementation SwiftPlacedText
 
+- (id) initWithPlacedObject:(SwiftPlacedObject *)placedObject
+{
+    if ((self = [super initWithPlacedObject:placedObject])) {
+
+        if ([placedObject isKindOfClass:[SwiftPlacedText class]]) {
+            SwiftPlacedText *placedText = (SwiftPlacedText *)placedObject;
+
+            m_text = [placedText->m_text copy];
+            m_HTML =  placedText->m_HTML;
+            m_attributedTextOffset = placedText->m_attributedTextOffset;
+
+            if (placedText->m_attributedText) {
+                m_attributedText = CFAttributedStringCreateCopy(NULL, placedText->m_attributedText);
+            }
+        }
+    }
+    
+    return self;
+}
+
 - (void) dealloc
 {
     [m_text release];
@@ -44,16 +64,70 @@
     [super dealloc];
 }
 
+#if 0
+    SWFDefineEditTextTag *tag = _dynamicTag;
 
-- (id) copyWithZone:(NSZone *)zone
-{
-    SwiftPlacedText *result = [super copyWithZone:zone];
+    if (!string) {
+        const char *initialText = (const char *)_dynamicTag->initialText;
+        string = _dynamicTag->initialText ? [NSString stringWithCString:initialText encoding:NSUTF8StringEncoding] : nil;
+    }
 
-    result->m_text = [m_text copy];
-    result->m_attributedText = CFAttributedStringCreateCopy(NULL, m_attributedText);
+    if (tag->html) {
+        NSDictionary *documentAttributes = nil;
+        NSAttributedString *escaped = [[NSAttributedString alloc] initWithHTML:[string dataUsingEncoding:NSUTF8StringEncoding] documentAttributes:&documentAttributes];
+        string = [[[escaped string] retain] autorelease];
+        [escaped release];
+    }
+    
+    NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
 
-    return result;
-}
+    NSFont *font = [_movie fontForID:tag->fontID size:tag->fontHeight];
+    if (font) {
+        [attributes setObject:font forKey:NSFontAttributeName];
+    }
+
+    if (tag->hasColor) {
+        NSColor *color = [NSColor colorWithDeviceRed: (tag->color.red   / 255.0) 
+                                               green: (tag->color.green / 255.0)
+                                                blue: (tag->color.blue  / 255.0)
+                                               alpha: (tag->color.alpha / 255.0)];
+        
+        [attributes setObject:color forKey:NSForegroundColorAttributeName];
+    }
+
+    NSMutableAttributedString *as = [[NSMutableAttributedString alloc] initWithString:string attributes:attributes];
+
+    NSRect bounds       = sNSRectFromSWFRect(&tag->bounds, tag->leftMargin, tag->rightMargin);
+    NSRect boundingRect = [as boundingRectWithSize:NSMakeSize(INFINITY, INFINITY) options:NSStringDrawingOneShot];
+
+    bounds.origin.y += (boundingRect.size.height + boundingRect.origin.y);
+
+    // Flash seems to calculate lbearing and rbearing differently from all
+    // other font rendering engines.  Tweak it by adding an additional 1 pixel
+    // for font sizes 10-19, 2 pixels for 20-29, etc.
+    //
+    int fakePadding = ((int)floor(tag->fontHeight / 200));
+
+    if (tag->align == SWFTextAlignRight) {
+        bounds.origin.x  += bounds.size.width - boundingRect.size.width;
+        bounds.origin.x  -= fakePadding;
+        bounds.size.width = boundingRect.size.width;
+    
+    } else if (tag->align == SWFTextAlignCenter) {
+        bounds.origin.x  += ((bounds.size.width - boundingRect.size.width) / 2.0);
+        bounds.size.width = boundingRect.size.width;
+    } else {
+        bounds.origin.x += fakePadding;
+    }
+
+    [attributes release];
+
+    *boundsPtr = bounds;
+    *asPtr     = [as autorelease];
+    
+    return (as != nil);
+
+#endif
 
 
 - (void) setText:(NSString *)text HTML:(BOOL)isHTML
@@ -80,15 +154,28 @@
 }
 
 
+- (void) setDefinition:(SwiftTextDefinition *)definition
+{
+    if (m_definition != definition) {
+        [m_definition release];
+        m_definition = [definition retain];
+        
+        [self setText:[definition initialText] HTML:[definition isHTML]];
+    }
+}
+
+
 - (void) setText:(NSString *)text
 {
     [self setText:text HTML:NO];
 }
 
 
-@synthesize text = m_text,
-            attributedText = m_attributedText,
-            HTML = m_HTML;
+@synthesize text                 = m_text,
+            attributedText       = m_attributedText,
+            attributedTextOffset = m_attributedTextOffset,
+            HTML                 = m_HTML;
 
+@dynamic definition;
 
 @end

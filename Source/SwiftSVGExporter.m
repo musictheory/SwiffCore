@@ -27,8 +27,13 @@
 
 #import "SwiftSVGExporter.h"
 
+#import "SwiftPlacedObject.h"
+#import "SwiftPlacedStaticText.h"
+#import "SwiftPlacedText.h"
+
+
 typedef struct _SwiftSVGExporterState {
-    __unsafe_unretained SwiftMovie *movie;
+    SwiftMovie *movie;
 
     CGAffineTransform  affineTransform;
     CFMutableArrayRef  colorTransforms;
@@ -407,6 +412,17 @@ static void sDrawShape(SwiftSVGExporterState *state, SwiftShapeDefinition *shape
 }
 
 
+static void sDrawStaticText(SwiftSVGExporterState *state, SwiftPlacedStaticText *placedStaticText)
+{
+
+}
+
+
+static void sDrawText(SwiftSVGExporterState *state, SwiftPlacedText *placedText)
+{
+
+}
+
 
 static void sDrawPlacedObject(SwiftSVGExporterState *state, SwiftPlacedObject *placedObject)
 {
@@ -430,13 +446,24 @@ static void sDrawPlacedObject(SwiftSVGExporterState *state, SwiftPlacedObject *p
 
     UInt16 libraryID = [placedObject libraryID];
 
-    SwiftSpriteDefinition *sprite = nil;
-    SwiftShapeDefinition  *shape  = nil;
+    SwiftSpriteDefinition     *sprite      = nil;
+    SwiftShapeDefinition      *shape       = nil;
+    SwiftStaticTextDefinition *staticText  = nil;
+    SwiftTextDefinition       *text        = nil;
 
     if ((sprite = [state->movie spriteDefinitionWithLibraryID:libraryID])) {
         sDrawSprite(state, sprite);
     } else if ((shape = [state->movie shapeDefinitionWithLibraryID:libraryID])) {
         sDrawShape(state, shape);
+    } else if ((staticText = [state->movie staticTextDefinitionWithLibraryID:libraryID])) {
+        if ([placedObject isKindOfClass:[SwiftPlacedStaticText class]]) {
+            sDrawStaticText(state, (SwiftPlacedStaticText *)placedObject);
+        }
+
+    } else if ((text = [state->movie textDefinitionWithLibraryID:libraryID])) {
+        if ([placedObject isKindOfClass:[SwiftPlacedText class]]) {
+            sDrawText(state, (SwiftPlacedText *)placedObject);
+        }
     }
 
     if (colorTransformLastIndex > 0) {
