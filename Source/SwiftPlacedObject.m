@@ -28,17 +28,30 @@
 
 #import "SwiftPlacedObject.h"
 
-@interface SwiftPlacedObject ()
-@property (nonatomic, copy)   NSString *instanceName;
-@property (nonatomic, assign) UInt16  libraryID;
-@property (nonatomic, assign) UInt16  depth;
-@property (nonatomic, assign) UInt16  clipDepth;
-@property (nonatomic, assign) CGFloat ratio;
-@property (nonatomic, assign) CGAffineTransform affineTransform;
-@property (nonatomic, assign) SwiftColorTransform colorTransform;
+
+@interface SwiftFrozenPlacedObject : SwiftPlacedObject
 @end
 
+
+@implementation SwiftFrozenPlacedObject
+- (void) setDefinition:(id<SwiftPlacableDefinition>)x  SwiftFrozenImplementation;
+- (void) setInstanceName:(NSString *)x                 SwiftFrozenImplementation;
+- (void) setLibraryID:(UInt16)x                        SwiftFrozenImplementation;
+- (void) setDepth:(UInt16)x                            SwiftFrozenImplementation;
+- (void) setClipDepth:(UInt16)x                        SwiftFrozenImplementation;
+- (void) setRatio:(CGFloat)x                           SwiftFrozenImplementation;
+- (void) setAffineTransform:(CGAffineTransform)x       SwiftFrozenImplementation;
+- (void) setColorTransform:(SwiftColorTransform)x      SwiftFrozenImplementation;
+@end
+
+
 @implementation SwiftPlacedObject
+
+- (void) freeze
+{
+    isa = [SwiftFrozenPlacedObject class];
+}
+
 
 - (id) initWithDepth:(NSInteger)depth
 {
@@ -58,9 +71,12 @@
         m_clipDepth         = placedObject->m_clipDepth;
         m_ratio             = placedObject->m_ratio;
         m_affineTransform   = placedObject->m_affineTransform;
-        m_colorTransformPtr = placedObject->m_colorTransformPtr;
         m_instanceName      = [placedObject->m_instanceName copy];
         m_definition        = [placedObject->m_definition retain];
+
+        if (placedObject->m_colorTransformPtr) {
+            [self setColorTransform:*placedObject->m_colorTransformPtr];
+        }
     }
     
     return self;
@@ -84,32 +100,36 @@
 }
 
 
-- (id) copyWithZone:(NSZone *)zone
+#pragma mark -
+#pragma mark Accessors
+
+- (void) setRatio:(CGFloat)ratio
 {
-    SwiftPlacedObject *result = [[SwiftPlacedObject alloc] initWithDepth:m_depth];
-
-    result->m_libraryID       = m_libraryID;
-    result->m_depth           = m_depth;
-    result->m_clipDepth       = m_clipDepth;
-    result->m_ratio           = m_ratio;
-    result->m_affineTransform = m_affineTransform;
-
-    [result setInstanceName:m_instanceName];
-    
-    if (m_colorTransformPtr) {
-        [result setColorTransform:*m_colorTransformPtr];
-    }
-
-    return result;
+    m_ratio = ratio * 65535.0;
 }
 
 
-#pragma mark -
-#pragma mark Accessors
+- (CGFloat) ratio
+{
+    return m_ratio / 65535.0;
+}
+
+
+- (BOOL) hasAffineTransform
+{
+    return !CGAffineTransformIsIdentity(m_affineTransform);
+}
+
 
 - (CGAffineTransform *) affineTransformPointer
 {
     return &m_affineTransform;
+}
+
+
+- (BOOL) hasColorTransform
+{
+    return (m_colorTransformPtr != NULL);
 }
 
 
@@ -132,29 +152,6 @@
 - (SwiftColorTransform *) colorTransformPointer
 {
     return m_colorTransformPtr ? m_colorTransformPtr : &SwiftColorTransformIdentity;
-}
-
-
-- (void) setRatio:(CGFloat)ratio
-{
-    m_ratio = ratio * 65535.0;
-}
-
-
-- (CGFloat) ratio
-{
-    return m_ratio / 65535.0;
-}
-
-
-- (BOOL) hasAffineTransform
-{
-    return !CGAffineTransformIsIdentity(m_affineTransform);
-}
-
-- (BOOL) hasColorTransform
-{
-    return (m_colorTransformPtr != NULL);
 }
 
 

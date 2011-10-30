@@ -41,6 +41,17 @@ typedef struct _SwiftSoundStreamBlockMP3 {
 } SwiftSoundStreamBlockMP3;
 
 
+extern void SwiftSoundDefinitionFillBuffer(
+    SwiftSoundDefinition *definition,
+    UInt32 inFrameIndex, void *inBuffer, UInt32 inBufferCapacity,
+    UInt32 *outBytesWritten, UInt32 *outFramesWritten
+);
+
+// C-based API, for audio callbacks
+extern CFDataRef SwiftSoundDefinitionGetData(SwiftSoundDefinition *definition);
+extern CFRange   SwiftSoundDefinitionGetFrameRangeAtIndex(SwiftSoundDefinition *definition, CFIndex index);
+
+
 @interface SwiftSoundDefinition : NSObject <SwiftDefinition> {
 @private
     SwiftMovie    *m_movie;

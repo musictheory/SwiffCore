@@ -91,7 +91,7 @@ static BOOL _SwiftInflate(const UInt8 *inBuffer, UInt32 inLength, UInt8 *outBuff
 
 static BOOL sSwiftParserAdvanceToNextTag(SwiftParser *parser, BOOL inSprite)
 {
-    UInt16   tagCodeAndLength;
+    UInt16 tagCodeAndLength;
 
     if (inSprite) {
         if (parser->nextTagInSpriteB) {
@@ -283,6 +283,12 @@ void SwiftParserAdvance(SwiftParser *parser, UInt32 length)
     }
 
     parser->b += length;
+}
+
+
+const UInt8 *SwiftParserGetBytePointer(SwiftParser *parser)
+{
+    return parser->b;
 }
 
 
@@ -663,6 +669,20 @@ void SwiftParserReadRect(SwiftParser *parser, CGRect *outValue)
 }
 
 
+void SwiftParserReadData(SwiftParser *parser, UInt32 length, NSData **outValue)
+{
+    if (!sSwiftParserEnsureBuffer(parser, length)) {
+        return;
+    }
+
+    if (outValue) {
+        *outValue = [[[NSData alloc] initWithBytes:parser->b length:length] autorelease];
+    }
+
+    SwiftParserAdvance(parser, length);
+}
+
+
 void SwiftParserReadString(SwiftParser *parser, NSString **outValue)
 {
     NSStringEncoding encoding = (parser->movieVersion >= 6) ? NSUTF8StringEncoding : NSASCIIStringEncoding;
@@ -695,13 +715,17 @@ void SwiftParserReadStringWithEncoding(SwiftParser *parser, NSStringEncoding enc
 
 void SwiftParserReadPascalStringWithEncoding(SwiftParser *parser, NSStringEncoding encoding, NSString **outValue)
 {
-    UInt8 i;
-    SwiftParserReadUInt8(parser, &i);
+    UInt8 length;
+    SwiftParserReadUInt8(parser, &length);
 
-    if (outValue) {
-        *outValue = [[[NSString alloc] initWithBytes:parser->b length:i encoding:encoding] autorelease];
+    if (!sSwiftParserEnsureBuffer(parser, length)) {
+        return;
     }
 
-    SwiftParserAdvance(parser, i);
+    if (outValue) {
+        *outValue = [[[NSString alloc] initWithBytes:parser->b length:length encoding:encoding] autorelease];
+    }
+
+    SwiftParserAdvance(parser, length);
 }    
     

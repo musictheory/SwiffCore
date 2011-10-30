@@ -52,6 +52,7 @@ extern NSInteger SwiftParserGetMovieVersion(SwiftParser *parser);
 extern void SwiftParserByteAlign(SwiftParser *parser);
 extern void SwiftParserAdvance(SwiftParser *parser, UInt32 length);
 
+extern const UInt8 *SwiftParserGetBytePointer(SwiftParser *parser);
 extern UInt32 SwiftParserGetBytesRemainingInCurrentTag(SwiftParser *parser);
 
 extern void SwiftParserReadUBits(SwiftParser *parser, UInt8 numberOfBits, UInt32 *outValue);
@@ -79,6 +80,8 @@ extern void SwiftParserReadColorARGB(SwiftParser *parser, SwiftColor *outValue);
 
 extern void SwiftParserReadColorTransform(SwiftParser *parser, SwiftColorTransform *colorTransform);
 extern void SwiftParserReadColorTransformWithAlpha(SwiftParser *parser, SwiftColorTransform *colorTransform);
+
+extern void SwiftParserReadData(SwiftParser *parser, UInt32 length, NSData **outValue);
 
 extern void SwiftParserReadString(SwiftParser *parser, NSString **outValue);
 extern void SwiftParserReadPascalString(SwiftParser *parser, NSString **outValue);

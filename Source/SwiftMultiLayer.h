@@ -28,27 +28,15 @@
 #import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
 
+#import "SwiftLayer.h"
+
 @class SwiftMovie, SwiftSpriteDefinition, SwiftFrame;
 
-@interface SwiftLayer : CALayer {
-    SwiftMovie            *m_movie;
-    SwiftSpriteDefinition *m_sprite;
-    SwiftFrame            *m_currentFrame;
+@interface SwiftMultiLayer : SwiftLayer {
     NSMutableDictionary   *m_depthToLayerMap;
     CGAffineTransform      m_baseTransform;
-    
-    BOOL    m_usesMultipleLayers;
-    CGFloat m_frameAnimationDuration;
 }
 
 - (id) initWithMovie:(SwiftMovie *)movie;
-
-@property (nonatomic, assign, readonly) SwiftMovie  *movie;
-@property (nonatomic, retain, readonly) SwiftSpriteDefinition *sprite;
-
-@property (nonatomic, retain) SwiftFrame *currentFrame;
-
-@property (nonatomic, assign) BOOL usesMultipleLayers;
-@property (nonatomic, assign) CGFloat frameAnimationDuration;
 
 @end

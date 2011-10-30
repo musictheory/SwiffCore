@@ -17,6 +17,7 @@ OTHER_LDFLAGS=$(inherited) -framework Accelerate -framework AppKit -framework Au
 PRODUCT_NAME = $(TARGET_NAME)
 SDKROOT = macosx
 MACOSX_DEPLOYMENT_TARGET = 10.6
+HEADER_SEARCH_PATHS = $(inherited) $(SDKROOT)/usr/include/libxml2
 
 // Applies to Debug only, overridden in Release
 ARCHS = i386 x86_64

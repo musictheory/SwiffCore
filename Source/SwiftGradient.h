@@ -28,6 +28,13 @@
 
 #import <Foundation/Foundation.h>
 
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+#import <CoreGraphics/CoreGraphics.h>
+#else
+#import <ApplicationServices/ApplicationServices.h>
+#endif
+
+
 enum {
     SwiftGradientSpreadModePad = 0,
     SwiftGradientSpreadModeReflect,
@@ -50,7 +57,6 @@ typedef NSInteger SwiftGradientInterpolationMode;
     NSInteger     m_recordCount;
     CGFloat       m_ratios[15];
     SwiftColor    m_colors[15];
-    CGGradientRef m_cgGradient;
     CGFloat       m_focalPoint;
 }
 
@@ -62,7 +68,7 @@ typedef NSInteger SwiftGradientInterpolationMode;
 @property (nonatomic, readonly, assign) NSInteger recordCount;
 - (void) getColor:(SwiftColor *)outColor ratio:(CGFloat *)outRatio forRecord:(NSUInteger)index;
 
-@property (nonatomic, readonly /*strong*/) CGGradientRef CGGradient;
+- (CGGradientRef) copyCGGradientWithColorTransformStack:(CFArrayRef)stack CF_RETURNS_RETAINED;
 
 @property (nonatomic, readonly, assign) SwiftGradientSpreadMode spreadMode;
 @property (nonatomic, readonly, assign) SwiftGradientInterpolationMode interpolationMode;

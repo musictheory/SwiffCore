@@ -28,29 +28,33 @@
 
 #import <Foundation/Foundation.h>
 
-@class SwiftPlacedObject, SwiftSpriteDefinition, SwiftScene;
+@class SwiftScene, SwiftSoundDefinition;
 
-@interface SwiftFrame : NSObject <NSCopying> {
+@interface SwiftFrame : NSObject {
 @private
-    SwiftScene  *m_scene;
-    NSUInteger   m_index1InScene;
+    SwiftScene           *m_scene;
+    NSUInteger            m_index1InScene;
 
-    NSString    *m_label;
-    NSArray     *m_placedObjects;
-    SwiftColor   m_backgroundColor;
+    NSString             *m_label;
+    NSArray              *m_placedObjects;
+
+    SwiftSoundDefinition *m_streamSound;
+    NSArray              *m_soundEvents;
+    NSUInteger            m_streamBlockIndex;
 }
 
-@property (nonatomic, copy) NSString *label;
+- (void) clearWeakReferences;
 
-@property (nonatomic, assign) SwiftScene *scene;
-@property (nonatomic, assign) NSUInteger index1InScene;
+@property (nonatomic, copy, readonly) NSString *label;
+
+@property (nonatomic, assign, readonly) SwiftScene *scene;
+@property (nonatomic, assign, readonly) NSUInteger index1InScene;
+
+@property (nonatomic, retain, readonly) NSArray *soundEvents;
+@property (nonatomic, retain, readonly) SwiftSoundDefinition *streamSound;
+@property (nonatomic, assign, readonly) NSUInteger streamBlockIndex;
 
 // Sorted by ascending depth 
-@property (nonatomic, assign) SwiftColor backgroundColor;
-
-// Inside pointer, valid for lifetime of the SwiftFrame
-@property (nonatomic, assign, readonly) SwiftColor *backgroundColorPointer;
-
-@property (nonatomic, copy, readonly) NSArray  *placedObjects;
+@property (nonatomic, copy, readonly) NSArray *placedObjects;
 
 @end

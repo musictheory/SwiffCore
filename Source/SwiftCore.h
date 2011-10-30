@@ -52,5 +52,8 @@
 #import "SwiftRenderer.h"
 #import "SwiftTextRecord.h"
 
+#import "SwiftPNGExporter.h"
+#import "SwiftSVGExporter.h"
+
 // Subclasses
 #import "SwiftMovie.h"

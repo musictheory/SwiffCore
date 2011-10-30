@@ -32,20 +32,24 @@
 
 @interface SwiftMovie : SwiftSpriteDefinition {
 @private
-    NSData              *m_data;
     NSArray             *m_scenes;
     NSDictionary        *m_sceneNameToSceneMap;
     NSMutableDictionary *m_definitionMap;
 
     NSInteger            m_version;
-    CGPoint              m_stageOrigin;
-    CGSize               m_stageSize;
+    CGRect               m_stageRect;
     CGFloat              m_frameRate;
     SwiftColor           m_backgroundColor;
 }
 
+// data is raw data from the file
 - (id) initWithData:(NSData *)data;
-- (id) initWithData:(NSData *)data parserOptions:(SwiftParserOptions)parserOptions;
+
+// data is uncompressed data starting at tag's RECORDHEADER
+- (id) initWithTagData: (NSData *) data
+               version: (NSInteger) version
+             stageRect: (CGRect) stageRect
+             frameRate: (CGFloat) frameRate;
 
 - (id) definitionWithLibraryID:(UInt16)libraryID;
 
@@ -61,8 +65,7 @@
 
 @property (nonatomic, assign, readonly) NSInteger version;
 @property (nonatomic, assign, readonly) CGFloat frameRate;
-@property (nonatomic, assign, readonly) CGPoint stageOrigin;
-@property (nonatomic, assign, readonly) CGSize  stageSize;
+@property (nonatomic, assign, readonly) CGRect stageRect;
 
 @property (nonatomic, assign, readonly) SwiftColor  backgroundColor;
 @property (nonatomic, assign, readonly) SwiftColor *backgroundColorPointer;

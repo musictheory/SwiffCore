@@ -505,7 +505,7 @@ static void sDrawPlacedObject(SwiftSVGExporterState *state, SwiftPlacedObject *p
 {
     SwiftSVGExporterState state = { movie, CGAffineTransformIdentity, NULL, nil, nil, 0 };
 
-    CGSize stageSize = [movie stageSize];
+    CGSize stageSize = [movie stageRect].size;
     size_t width     = stageSize.width;
     size_t height    = stageSize.height;
     BOOL   success   = NO;

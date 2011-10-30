@@ -76,34 +76,25 @@
 }
 
 
-- (void) dealloc
+- (CGGradientRef) copyCGGradientWithColorTransformStack:(CFArrayRef)stack;
 {
-    CGGradientRelease(m_cgGradient);
-    m_cgGradient = NULL;
+    CGColorSpaceRef   colorSpace = CGColorSpaceCreateDeviceRGB();
+    CFMutableArrayRef colors     = CFArrayCreateMutable(NULL, m_recordCount, &kCFTypeArrayCallBacks);
+
+    for (NSInteger i = 0; i < m_recordCount; i++) {
+        SwiftColor color = SwiftColorApplyColorTransformStack(m_colors[i], stack);
     
-    [super dealloc];
-}
-
-
-- (CGGradientRef) CGGradient
-{
-    if (!m_cgGradient) {
-        CGColorSpaceRef   colorSpace = CGColorSpaceCreateDeviceRGB();
-        CFMutableArrayRef colors     = CFArrayCreateMutable(NULL, m_recordCount, &kCFTypeArrayCallBacks);
-
-        for (NSInteger i = 0; i < m_recordCount; i++) {
-            CGColorRef color = CGColorCreate(colorSpace, &m_colors[i].red);
-            CFArrayAppendValue(colors, color);
-            CGColorRelease(color);
-        }
-    
-        m_cgGradient = CGGradientCreateWithColors(colorSpace, colors, m_ratios);
-
-        if (colors)     CFRelease(colors);
-        if (colorSpace) CFRelease(colorSpace);
+        CGColorRef cgColor = CGColorCreate(colorSpace, &color.red);
+        CFArrayAppendValue(colors, cgColor);
+        CGColorRelease(cgColor);
     }
     
-    return m_cgGradient;
+    CGGradientRef result = CGGradientCreateWithColors(colorSpace, colors, m_ratios);
+
+    if (colors)     CFRelease(colors);
+    if (colorSpace) CFRelease(colorSpace);
+
+    return result;
 }
 
 

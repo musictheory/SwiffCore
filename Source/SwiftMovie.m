@@ -34,6 +34,7 @@
 #import "SwiftSpriteDefinition.h"
 #import "SwiftFontDefinition.h"
 #import "SwiftStaticTextDefinition.h"
+#import "SwiftSoundDefinition.h"
 #import "SwiftTextDefinition.h"
 
 #import "SwiftSceneAndFrameLabelData.h"
@@ -47,17 +48,9 @@
 
 @implementation SwiftMovie
 
-- (id) initWithData:(NSData *)data
-{
-    return [self initWithData:data parserOptions:SwiftParserOptionsDefault];
-}
-
-
-- (id) initWithData:(NSData *)data parserOptions:(SwiftParserOptions)parserOptions
+- (id) _initWithParserAtTagStream:(SwiftParser *)parser 
 {
     if ((self = [super init])) {
-        m_data = [data retain];
-        
         m_definitionMap = [[NSMutableDictionary alloc] init];
         
         SwiftColor white = { 1.0, 1.0, 1.0, 1.0 };
@@ -65,46 +58,78 @@
 
         m_movie = self;
 
-        clock_t c = clock();
-        SwiftParser *parser = SwiftParserCreate([data bytes], [data length], parserOptions);
-        if (parser) {
-            CGRect rect;
-            SwiftParserReadRect(parser, &rect);
-            
-            m_version     = SwiftParserGetMovieVersion(parser);
-            m_stageOrigin = rect.origin;
-            m_stageSize   = rect.size;
-            
-            SwiftParserReadFixed8(parser, &m_frameRate);
-
-            UInt16 frameCount;
-            SwiftParserReadUInt16(parser, &frameCount);
-
-            while (SwiftParserIsValid(parser) && SwiftParserAdvanceToNextTag(parser)) {
-                [self _parser: parser
-                   didFindTag: SwiftParserGetCurrentTag(parser)
-                      version: SwiftParserGetCurrentTagVersion(parser)];
-            }
-
-            if (m_sceneAndFrameLabelData) {
-                [m_sceneAndFrameLabelData applyLabelsToFrames:m_frames];
-                m_scenes = [[m_sceneAndFrameLabelData scenesForFrames:m_frames] retain];
-                
-                [m_sceneAndFrameLabelData release];
-                m_sceneAndFrameLabelData = nil;
-            } else {
-                SwiftScene *scene = [[SwiftScene alloc] initWithName:nil indexInMovie:0 frames:m_frames];
-                m_scenes = [[NSArray alloc] initWithObjects:scene, nil];
-                [scene release];
-            }
-
-            SwiftParserFree(parser);
-            
-            m_movie = nil;
+        while (SwiftParserIsValid(parser) && SwiftParserAdvanceToNextTag(parser)) {
+            [self _parser: parser
+               didFindTag: SwiftParserGetCurrentTag(parser)
+                  version: SwiftParserGetCurrentTagVersion(parser)];
         }
 
-        NSInteger valueToLog = (((clock() - c) * 1000) / CLOCKS_PER_SEC);
-        SwiftLog(@"Parsing <SwiftMovie: %p> took: %dms", self, valueToLog);
+        if (m_sceneAndFrameLabelData) {
+            [m_sceneAndFrameLabelData applyLabelsToFrames:m_frames];
+            m_scenes = [[m_sceneAndFrameLabelData scenesForFrames:m_frames] retain];
+            
+            [m_sceneAndFrameLabelData release];
+            m_sceneAndFrameLabelData = nil;
+        } else {
+            SwiftScene *scene = [[SwiftScene alloc] initWithName:nil indexInMovie:0 frames:m_frames];
+            m_scenes = [[NSArray alloc] initWithObjects:scene, nil];
+            [scene release];
+        }
+
+        m_movie = nil;
+    }
+
+    return self;
+}
+
+
+- (id) initWithData:(NSData *)data
+{
+    if (data) {
+        SwiftParser *parser = SwiftParserCreate([data bytes], [data length], SwiftParserOptionsDefault);
+
+        CGFloat frameRate  = 0;
+        UInt16  frameCount = 0;
+        CGRect  rect       = CGRectZero;
+
+        SwiftParserReadRect(parser, &rect);
+        SwiftParserReadFixed8(parser, &frameRate);
+        SwiftParserReadUInt16(parser, &frameCount);
+                
+        if ((self = [self _initWithParserAtTagStream:parser])) {
+            m_version   = SwiftParserGetMovieVersion(parser);
+            m_stageRect = rect;
+            m_frameRate = frameRate;
+        }
+        
+        SwiftParserFree(parser);
+
+    } else {
+        [self release];
+        return nil;
+    }
+
+    return self;
+}
+
+
+- (id) initWithTagData: (NSData *) data
+               version: (NSInteger) version
+             stageRect: (CGRect) stageRect
+             frameRate: (CGFloat) frameRate
+{
+    if (data) {
+        SwiftParser *parser = SwiftParserCreate([data bytes], [data length], SwiftParserOptionNoHeader);
+
+        if ((self = [self _initWithParserAtTagStream:parser])) {
+            m_version   = SwiftParserGetMovieVersion(parser);
+            m_stageRect = stageRect;
+            m_frameRate = frameRate;
+        }
+
+    } else {
+        [self release];
+        return nil;
     }
     
     return self;
@@ -115,7 +140,6 @@
 {
     [[m_definitionMap allValues] makeObjectsPerformSelector:@selector(clearWeakReferences)];
 
-    [m_data                release];  m_data                = nil;
     [m_scenes              release];  m_scenes              = nil;
     [m_sceneNameToSceneMap release];  m_sceneNameToSceneMap = nil;
     [m_definitionMap       release];  m_definitionMap       = nil;
@@ -150,7 +174,15 @@
         // Not yet implemented: Bitmap Image Support
 
     } else if (tag == SwiftTagDefineSound) {
-        // Not yet implemented: Sound Support
+        SwiftSoundDefinition *sound = [[SwiftSoundDefinition alloc] initWithParser:parser movie:self];
+
+        if (sound) {
+            NSNumber *key = [[NSNumber alloc] initWithInteger:[sound libraryID]];
+            [m_definitionMap setObject:sound forKey:key];
+            [key release];
+        }
+
+        [sound release];
 
     } else if (tag == SwiftTagDefineVideoStream) {
         // Not yet implemented: Video Support
@@ -239,54 +271,27 @@
 }
 
 
-- (SwiftSpriteDefinition *) spriteDefinitionWithLibraryID:(UInt16)spriteID
+- (id) _definitionWithLibraryID:(UInt16)libraryID ofClass:(Class)cls
 {
-    NSNumber *number = [[NSNumber alloc] initWithInteger:spriteID];
-    SwiftSpriteDefinition *definition = [m_definitionMap objectForKey:number];
-    [number release];
-    
-    return [definition isKindOfClass:[SwiftSpriteDefinition class]] ? definition : nil;
+    id<SwiftDefinition> definition = [self definitionWithLibraryID:libraryID];
+    return [definition isKindOfClass:cls] ? definition : nil;
 }
 
 
-- (SwiftShapeDefinition *) shapeDefinitionWithLibraryID:(UInt16)shapeID
-{
-    NSNumber *number = [[NSNumber alloc] initWithInteger:shapeID];
-    SwiftShapeDefinition *definition = [m_definitionMap objectForKey:number];
-    [number release];
-    
-    return [definition isKindOfClass:[SwiftShapeDefinition class]] ? definition : nil;
-}
+- (SwiftSpriteDefinition *) spriteDefinitionWithLibraryID:(UInt16)libraryID
+    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftSpriteDefinition class]]; }
 
+- (SwiftShapeDefinition *) shapeDefinitionWithLibraryID:(UInt16)libraryID
+    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftShapeDefinition class]]; }
 
-- (SwiftFontDefinition *) fontDefinitionWithLibraryID:(UInt16)fontID
-{
-    NSNumber *number = [[NSNumber alloc] initWithInteger:fontID];
-    SwiftFontDefinition *definition  = [m_definitionMap objectForKey:number];
-    [number release];
-    
-    return [definition isKindOfClass:[SwiftFontDefinition class]] ? definition : nil;
-}
+- (SwiftFontDefinition *) fontDefinitionWithLibraryID:(UInt16)libraryID
+    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftFontDefinition class]]; }
 
+- (SwiftStaticTextDefinition *) staticTextDefinitionWithLibraryID:(UInt16)libraryID
+    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftStaticTextDefinition class]]; }
 
-- (SwiftStaticTextDefinition *) staticTextDefinitionWithLibraryID:(UInt16)textID
-{
-    NSNumber *number = [[NSNumber alloc] initWithInteger:textID];
-    SwiftStaticTextDefinition *definition  = [m_definitionMap objectForKey:number];
-    [number release];
-
-    return [definition isKindOfClass:[SwiftStaticTextDefinition class]] ? definition : nil;
-}
-
-
-- (SwiftTextDefinition *) textDefinitionWithLibraryID:(UInt16)textID
-{
-    NSNumber *number = [[NSNumber alloc] initWithInteger:textID];
-    SwiftTextDefinition *definition = [m_definitionMap objectForKey:number];
-    [number release];
-
-    return [definition isKindOfClass:[SwiftTextDefinition class]] ? definition : nil;
-}
+- (SwiftTextDefinition *) textDefinitionWithLibraryID:(UInt16)libraryID
+    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftTextDefinition class]]; }
 
 
 - (SwiftScene *) sceneWithName:(NSString *)name
@@ -305,11 +310,8 @@
 }
 
 
-- (SwiftColor) backgroundColor
-{
-    return m_backgroundColor;
-}
-
+#pragma mark -
+#pragma mark Accessors
 
 - (SwiftColor *) backgroundColorPointer
 {
@@ -317,13 +319,10 @@
 }
 
 
-#pragma mark -
-#pragma mark Accessors
-
-@synthesize scenes      = m_scenes,
-            version     = m_version,
-            frameRate   = m_frameRate,
-            stageOrigin = m_stageOrigin,
-            stageSize   = m_stageSize;
+@synthesize scenes          = m_scenes,
+            version         = m_version,
+            frameRate       = m_frameRate,
+            stageRect       = m_stageRect,
+            backgroundColor = m_backgroundColor;
 
 @end

@@ -28,9 +28,15 @@
 #import "SwiftSceneAndFrameLabelData.h"
 #import "SwiftScene.h"
 
+
+@interface SwiftFrame (FriendMethods)
+- (void) _updateLabel:(NSString *)label;
+@end
+
+
 @implementation SwiftSceneAndFrameLabelData
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version
+- (id) initWithParser:(SwiftParser *)parser
 {
     if ((self = [super init])) {
         @autoreleasepool {
@@ -131,7 +137,7 @@
         UInt32 frameNumber = [key unsignedIntValue];
         
         if (frameNumber < count) {
-            [[frames objectAtIndex:frameNumber] setLabel:[m_offsetToSceneNameMap objectForKey:key]];
+            [[frames objectAtIndex:frameNumber] _updateLabel:[m_offsetToSceneNameMap objectForKey:key]];
         }
     }
 }

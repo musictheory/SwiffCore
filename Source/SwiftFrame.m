@@ -29,15 +29,33 @@
 #import "SwiftFrame.h"
 #import "SwiftPlacedObject.h"
 
+@interface SwiftFrame (FriendMethods)
+- (void) _updateLabel:(NSString *)label;
+- (void) _updateScene:(SwiftScene *)scene index1InScene:(NSUInteger)index1InScene;
+@end
+
 @implementation SwiftFrame
 
-- (id) _initWithSortedPlacedObjects:(NSArray *)placedObjects
+- (id) _initWithSortedPlacedObjects: (NSArray *) placedObjects
+                        soundEvents: (NSArray *) soundEvents
+                        streamSound: (SwiftSoundDefinition *) streamSound
+                   streamBlockIndex: (NSUInteger) streamBlockIndex
 {
     if ((self = [super init])) {
         m_placedObjects = [placedObjects retain];
+        m_soundEvents   = [soundEvents   retain];
+        m_streamSound   = [streamSound   retain];
+
+        m_streamBlockIndex = streamBlockIndex;
     }
     
     return self;
+}
+
+
+- (void) clearWeakReferences
+{
+    m_scene = nil;
 }
 
 
@@ -45,32 +63,40 @@
 {
     [m_label         release];  m_label         = nil;
     [m_placedObjects release];  m_placedObjects = nil;
+    [m_streamSound   release];  m_streamSound   = nil;
+    [m_soundEvents   release];  m_soundEvents   = nil;
 
     [super dealloc];
 }
 
 
-- (id) copyWithZone:(NSZone *)zone
-{
-    SwiftFrame *newFrame = (SwiftFrame *)NSCopyObject(self, 0, zone);
+#pragma mark -
+#pragma mark Private Methods
 
-    newFrame->m_placedObjects = [m_placedObjects retain];
-    newFrame->m_label = [m_label copy];
-    
-    return newFrame;
+
+- (void) _updateScene:(SwiftScene *)scene index1InScene:(NSUInteger)index1InScene
+{
+    m_scene = scene;
+    m_index1InScene = index1InScene;
 }
 
 
-- (SwiftColor *) backgroundColorPointer
+- (void) _updateLabel:(NSString *)label 
 {
-    return &m_backgroundColor;
+    [m_label release];
+    m_label = [label copy];
 }
 
 
-@synthesize index1InScene   = m_index1InScene,
-            placedObjects   = m_placedObjects,
-            scene           = m_scene,
-            label           = m_label,
-            backgroundColor = m_backgroundColor;
+#pragma mark -
+#pragma mark Accessors
+
+@synthesize index1InScene    = m_index1InScene,
+            placedObjects    = m_placedObjects,
+            scene            = m_scene,
+            label            = m_label,
+            streamSound      = m_streamSound,
+            soundEvents      = m_soundEvents,
+            streamBlockIndex = m_streamBlockIndex;
 
 @end

@@ -27,7 +27,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class SwiftFrame, SwiftMovie, SwiftSceneAndFrameLabelData;
+@class SwiftFrame, SwiftMovie, SwiftSceneAndFrameLabelData, SwiftSoundDefinition, SwiftSoundStreamData;
 
 @interface SwiftSpriteDefinition : NSObject <SwiftPlacableDefinition> {
 @private
@@ -40,6 +40,8 @@
     NSMutableArray  *m_frames;
     NSDictionary    *m_labelToFrameMap;
     SwiftSceneAndFrameLabelData *m_sceneAndFrameLabelData;
+    SwiftSoundDefinition  *m_currentStreamSoundDefinition;
+    NSUInteger             m_currentStreamBlockIndex;
 }
 
 - (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie;
