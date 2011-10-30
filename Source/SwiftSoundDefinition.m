@@ -27,6 +27,10 @@
 
 #import "SwiftSoundDefinition.h"
 
+
+#import "SwiftMPEGUtils.h"
+
+
 @interface SwiftSoundDefinition ()
 - (void) _readMP3FramesFromParser:(SwiftParser *)parser;
 @end
@@ -169,22 +173,22 @@ static size_t sGetStreamBlockSizeForFormat(UInt8 format)
 
 - (void) _readMP3FramesFromParser:(SwiftParser *)parser
 {
-    enum {
-        MpegVersion25 = 0,
-        MpegVersion2  = 2,
-        MpegVersion1  = 3
-    };
 
     while (SwiftParserGetBytesRemainingInCurrentTag(parser) > 0) {
+#if 0
         const void *frameStart = SwiftParserGetBytePointer(parser);
 
-        UInt32 syncWord, mpegVersion, layer, protectionBit,
+        UInt32 syncWord, rawVersion, rawLayer, protectionBit,
                rawBitrate, rawSamplingRate, paddingBit, reserved,
                channelMode, modeExtension, copyright, original, emphasis;
+        UInt16 crc16;
+        UInt16 bytesRead = 0;
         
         SwiftParserReadUBits(parser, 11, &syncWord);
-        SwiftParserReadUBits(parser,  2, &mpegVersion);
-        SwiftParserReadUBits(parser,  2, &layer);
+        if (syncWord != 0x7ff) SwiftWarn(@"MP3 syncWord incorrect.  Expected 0x7ff, actual: 0x%x", syncWord)
+        
+        SwiftParserReadUBits(parser,  2, &rawVersion);
+        SwiftParserReadUBits(parser,  2, &rawLayer);
         SwiftParserReadUBits(parser,  1, &protectionBit);
 
         SwiftParserReadUBits(parser,  4, &rawBitrate);
@@ -198,72 +202,88 @@ static size_t sGetStreamBlockSizeForFormat(UInt8 format)
         SwiftParserReadUBits(parser,  1, &original);
         SwiftParserReadUBits(parser,  2, &emphasis);
 
-        UInt32 bitrate = 0;
-        if (mpegVersion == MpegVersion1) {
-            switch (rawBitrate) {
-            case 1:   bitrate =  32000;  break;
-            case 2:   bitrate =  40000;  break;
-            case 3:   bitrate =  48000;  break;
-            case 4:   bitrate =  56000;  break;
-            case 5:   bitrate =  64000;  break;
-            case 6:   bitrate =  80000;  break;
-            case 7:   bitrate =  96000;  break;
-            case 8:   bitrate = 112000;  break;
-            case 9:   bitrate = 128000;  break;
-            case 10:  bitrate = 160000;  break;
-            case 11:  bitrate = 192000;  break;
-            case 12:  bitrate = 224000;  break;
-            case 13:  bitrate = 256000;  break;
-            case 14:  bitrate = 320000;  break;
-            }
-        } else {
-            switch (rawBitrate) {
-            case 1:   bitrate =   8000;  break;
-            case 2:   bitrate =  16000;  break;
-            case 3:   bitrate =  24000;  break;
-            case 4:   bitrate =  32000;  break;
-            case 5:   bitrate =  40000;  break;
-            case 6:   bitrate =  48000;  break;
-            case 7:   bitrate =  56000;  break;
-            case 8:   bitrate =  64000;  break;
-            case 9:   bitrate =  80000;  break;
-            case 10:  bitrate =  96000;  break;
-            case 11:  bitrate = 112000;  break;
-            case 12:  bitrate = 128000;  break;
-            case 13:  bitrate = 144000;  break;
-            case 14:  bitrate = 160000;  break;
-            }
-        }
-        
-        UInt32 samplingRate = 0;
-        if (mpegVersion == MpegVersion1) {
-            if      (rawSamplingRate == 0) samplingRate = 44100;
-            else if (rawSamplingRate == 1) samplingRate = 48000;
-            else if (rawSamplingRate == 2) samplingRate = 32000;
+        bytesRead += 4;
 
-        } else if (mpegVersion == MpegVersion2) {
-            if      (rawSamplingRate == 0) samplingRate = 22050;
-            else if (rawSamplingRate == 1) samplingRate = 24000;
-            else if (rawSamplingRate == 2) samplingRate = 16000;
-
-        } else if (mpegVersion == MpegVersion25) {
-            if      (rawSamplingRate == 0) samplingRate = 11025;
-            else if (rawSamplingRate == 1) samplingRate = 12000;
-            else if (rawSamplingRate == 2) samplingRate =  8000;
+        // protectionBit: 0 = CRC.  1 = no CRC
+        if (protectionBit == 0) {
+            SwiftParserReadUInt16(parser, &crc16);
+            bytesRead += 2;
         }
 
-        UInt32 size = samplingRate ? ((((mpegVersion == MpegVersion1) ? 144 : 72) * bitrate) / samplingRate) + paddingBit - 4 : 0;
+        SwiftMPEGVersion version      = SwiftMPEGGetVersion(rawVersion);
+        SwiftMPEGLayer   layer        = SwiftMPEGGetLayer(rawLayer);
+        NSInteger        bitrate      = SwiftMPEGGetBitrate(version, layer, rawBitrate);
+        NSInteger        samplingRate = SwiftMPEGGetSamplingRate(version, rawSamplingRate);
+        NSInteger        frameSize    = SwiftMPEGGetFrameSize(version, layer, bitrate, samplingRate, paddingBit);
 
-        const void *frameEnd = SwiftParserGetBytePointer(parser);
-        frameEnd += size;
-        
-        [self _appendMP3Frame:frameStart length:(frameEnd - frameStart)];
+
+        [self _appendMP3Frame:frameStart length:frameSize];
+
+        SwiftParserAdvance(parser, (frameSize - bytesRead));
+
+#else
+        const void *frameStart = SwiftParserGetBytePointer(parser);
+
+        SwiftMPEGHeader header;
+        SwiftMPEGError  error = SwiftMPEGReadHeader(frameStart, &header);
+        if (error != SwiftMPEGErrorNone) {
+            SwiftWarn(@"SwiftMPEGReadHeader() returned %d", error);
+        }
+       
+        [self _appendMP3Frame:frameStart length:header.frameSize];
+
+        SwiftParserAdvance(parser, header.frameSize);
+#endif
     }
 }
 
 
 #pragma mark -
 #pragma mark Public Methods
+
+void SwiftSoundDefinitionFillBuffer(
+    SwiftSoundDefinition *self,
+    UInt32 inFrameIndex, void *inBuffer, UInt32 inBufferCapacity,
+    UInt32 *outBytesWritten, UInt32 *outFramesWritten
+) {
+    CFIndex location      = kCFNotFound;
+    CFIndex bytesWritten  = 0;
+    UInt32  framesWritten = 0;
+    
+    while (1) {
+        NSRange rangeOfFrame = self->m_frameRangeArray[inFrameIndex + framesWritten];
+        
+        if (location == kCFNotFound) {
+            location = rangeOfFrame.location;
+        }
+        
+        if ((bytesWritten + rangeOfFrame.length) < inBufferCapacity) {
+            bytesWritten += rangeOfFrame.length;
+            framesWritten++;
+
+        } else {
+            break;
+        }
+    }
+
+    CFDataGetBytes((CFDataRef)self->m_data, CFRangeMake(location, bytesWritten), inBuffer);
+    *outBytesWritten  = bytesWritten;
+    *outFramesWritten = framesWritten;
+}
+
+
+CFDataRef SwiftSoundDefinitionGetData(SwiftSoundDefinition *self)
+{
+    return (__bridge CFDataRef)self->m_data;
+}
+
+
+CFRange SwiftSoundDefinitionGetFrameRangeAtIndex(SwiftSoundDefinition *self, CFIndex index)
+{
+    NSRange range = self->m_frameRangeArray[index];
+    return CFRangeMake(range.location, range.length);
+}
+
 
 - (NSUInteger) readSoundStreamBlockTagFromParser:(SwiftParser *)parser
 {

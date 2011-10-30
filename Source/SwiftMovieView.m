@@ -28,9 +28,13 @@
 #import "SwiftMovieView.h"
 
 #import "SwiftLayer.h"
+#import "SwiftSingleLayer.h"
+#import "SwiftMultiLayer.h"
 #import "SwiftScene.h"
 #import "SwiftFrame.h"
 #import "SwiftPlayhead.h"
+#import "SwiftSoundPlayer.h"
+
 
 @interface SwiftMovieView ()
 - (void) _displayLinkDidFire:(CADisplayLink *)displayLink;
@@ -77,7 +81,7 @@
     UIViewContentMode mode = [self contentMode];
 
     CGRect bounds    = [self bounds];
-    CGSize movieSize = [m_movie stageSize];
+    CGSize movieSize = [m_movie stageRect].size;
     CGRect frame     = { CGPointZero, movieSize };
 
     if (mode == UIViewContentModeScaleToFill) {
@@ -137,22 +141,44 @@
         m_displayLink = [[[newWindow screen] displayLinkWithTarget:self selector:@selector(_displayLinkDidFire:)] retain]; 
         [m_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
         [m_displayLink setPaused:!m_playing];
-        m_playStart = CACurrentMediaTime();
-        m_playIndex = 0;
+        m_displayLinkPlayStart = CACurrentMediaTime();
+        m_displayLinkPlayIndex = 0;
     }
 }
 
 
 - (void) _displayLinkDidFire:(CADisplayLink *)displayLink
 {
-    CFTimeInterval elapsed = ([m_displayLink timestamp] - m_playStart);
-    
-    long currentFrame = (long)(elapsed * m_framesPerSecond);
+    CFTimeInterval elapsed = ([m_displayLink timestamp] - m_displayLinkPlayStart);
 
-    if (m_playIndex != currentFrame) {
+    long currentIndex = (long)(elapsed * m_framesPerSecond);
+
+    if (m_displayLinkPlayIndex != currentIndex) {
         [m_playhead step];
-        m_playIndex = currentFrame;
+        m_displayLinkPlayIndex = currentIndex;
     }
+}
+
+
+- (void) _updateLayer
+{
+    Class cls = m_usesMultipleLayers ? [SwiftMultiLayer class] : [SwiftSingleLayer class];
+
+    [m_layer removeFromSuperlayer];
+    [m_layer release];
+
+    m_layer = [[cls alloc] initWithMovie:m_movie];
+    [m_layer setFrameAnimationDuration:(m_interpolatesFrames ? (1.0 / m_framesPerSecond) : 0.0)];
+    [m_layer setCurrentFrame:[m_playhead frame]];
+
+    if (m_showsBackgroundColor) {
+        m_showsBackgroundColor = ~m_showsBackgroundColor;
+        [self setShowsBackgroundColor:YES];
+    }
+
+    [[self layer] addSublayer:m_layer];
+    
+    [self layoutSubviews];
 }
 
 
@@ -174,6 +200,8 @@
         [m_delegate movieView:self willDisplayScene:scene frame:frame];
     }
 
+    [[SwiftSoundPlayer sharedInstance] processMovie:m_movie frame:frame];
+
     [m_layer setCurrentFrame:frame];
 }
 
@@ -187,34 +215,24 @@
         [m_movie release];
         m_movie = [movie retain];
         
-        [m_layer removeFromSuperlayer];
-        [m_layer release];
-
         m_framesPerSecond = [m_movie frameRate];
 
         [m_playhead release];
         m_playhead = [[SwiftPlayhead alloc] initWithMovie:m_movie delegate:(id<SwiftPlayheadDelegate>)self];
 
-        m_layer = [[SwiftLayer alloc] initWithMovie:m_movie];
-        [m_layer setUsesAcceleratedRendering:m_usesAcceleratedRendering];
-        [m_layer setFrameAnimationDuration:(m_interpolatesFrames ? (1.0 / m_framesPerSecond) : 0.0)];
-        [m_layer setCurrentFrame:[m_playhead frame]];
+        [self _updateLayer];
 
-        if (m_showsBackgroundColor) {
-            m_showsBackgroundColor = ~m_showsBackgroundColor;
-            [self setShowsBackgroundColor:YES];
-        }
-
-        [[self layer] addSublayer:m_layer];
         [self setNeedsLayout];
     }
 }
 
 
-- (void) setUsesAcceleratedRendering:(BOOL)yn
+- (void) setUsesMultipleLayers:(BOOL)yn
 {
-    m_usesAcceleratedRendering = yn;
-    [m_layer setUsesAcceleratedRendering:yn];
+    if (yn != m_usesMultipleLayers) {
+        m_usesMultipleLayers = yn;
+        [self _updateLayer];
+    }
 }
 
 
@@ -240,8 +258,8 @@
     if (m_playing != playing) {
         m_playing = playing;
         [m_displayLink setPaused:!m_playing];
-        m_playStart = CACurrentMediaTime();
-        m_playIndex = 0;
+        m_displayLinkPlayStart = CACurrentMediaTime();
+        m_displayLinkPlayIndex = 0;
     }
 }
 
@@ -266,7 +284,7 @@
             playing                  = m_playing,
             playhead                 = m_playhead,
             showsBackgroundColor     = m_showsBackgroundColor,
-            usesAcceleratedRendering = m_usesAcceleratedRendering,
+            usesMultipleLayers       = m_usesMultipleLayers,
             interpolatesFrames       = m_interpolatesFrames;
 
 @end

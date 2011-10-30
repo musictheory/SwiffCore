@@ -28,6 +28,30 @@
 			<key>author</key>
 			<string>SwiftCore</string>
 		</dict>
+		<dict>
+			<key>url</key>
+			<string>bundle:lesson44.swf</string>
+			<key>name</key>
+			<string>Roman Numeral Analysis: Triads</string>
+			<key>author</key>
+			<string>musictheory.net</string>
+		</dict>
+		<dict>
+			<key>url</key>
+			<string>bundle:lesson48.swf</string>
+			<key>name</key>
+			<string>More Seventh Chords</string>
+			<key>author</key>
+			<string>musictheory.net</string>
+		</dict>
+		<dict>
+			<key>url</key>
+			<string>bundle:lesson51.swf</string>
+			<key>name</key>
+			<string>Voicing Chords</string>
+			<key>author</key>
+			<string>musictheory.net</string>
+		</dict>
 	</array>
 </dict>
 </plist>

@@ -58,7 +58,7 @@
 
 - (BOOL) exportFrame:(SwiftFrame *)frame ofMovie:(SwiftMovie *)movie toURL:(NSURL *)fileURL
 {
-    CGSize     stageSize = [movie stageSize];
+    CGSize     stageSize = [movie stageRect].size;
     size_t     width     = stageSize.width;
     size_t     height    = stageSize.height;
     CGImageRef image     = NULL;

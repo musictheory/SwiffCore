@@ -33,6 +33,7 @@
 #import "SwiftPlacedStaticText.h"
 #import "SwiftPlacedText.h"
 #import "SwiftSceneAndFrameLabelData.h"
+#import "SwiftSoundDefinition.h"
 
 @interface SwiftPlacedObject (FriendMethods)
 @property (nonatomic, retain) NSString *instanceName;
@@ -46,7 +47,10 @@
 
 
 @interface SwiftFrame ()
-- (id) _initWithSortedPlacedObjects:(NSArray *)placedObjects;
+- (id) _initWithSortedPlacedObjects: (NSArray *) placedObjects
+                        soundEvents: (NSArray *) soundEvents
+                        streamSound: (SwiftSoundDefinition *) streamSound
+                   streamBlockIndex: (NSUInteger) streamBlockIndex;
 @end
 
 @interface SwiftSpriteDefinition ()
@@ -95,8 +99,6 @@
             m_depthToPlacedObjectMap = NULL;
         }
         
-        m_movie = nil;
-
         SwiftLog(@"END");
     
         if (!SwiftParserIsValid(parser)) {
@@ -295,8 +297,12 @@
             
             free(values);
         }
+        
+        SwiftFrame *frame = [[SwiftFrame alloc] _initWithSortedPlacedObjects: placedObjects
+                        soundEvents: nil
+                        streamSound: m_currentStreamSoundDefinition
+                   streamBlockIndex: m_currentStreamBlockIndex];
 
-        SwiftFrame *frame = [[SwiftFrame alloc] _initWithSortedPlacedObjects:placedObjects];
         [m_frames addObject:frame];
 
         m_lastFrame = frame;
@@ -324,7 +330,7 @@
 {
     if (tag == SwiftTagDefineSceneAndFrameLabelData) {
         [m_sceneAndFrameLabelData release];
-        m_sceneAndFrameLabelData = [[SwiftSceneAndFrameLabelData alloc] initWithParser:parser tag:tag version:version];
+        m_sceneAndFrameLabelData = [[SwiftSceneAndFrameLabelData alloc] initWithParser:parser];
 
     } else if (tag == SwiftTagPlaceObject) {
         [self _parser:parser didFindPlaceObjectTag:tag version:version];
@@ -337,6 +343,13 @@
 
     } else if (tag == SwiftTagFrameLabel) {
         [self _parser:parser didFindFrameLabelTag:tag version:version];
+
+    } else if (tag == SwiftTagSoundStreamHead) {
+        [m_currentStreamSoundDefinition release];
+        m_currentStreamSoundDefinition = [[SwiftSoundDefinition alloc] initWithParser:parser movie:m_movie];
+
+    } else if (tag == SwiftTagSoundStreamBlock) {
+        m_currentStreamBlockIndex = [m_currentStreamSoundDefinition readSoundStreamBlockTagFromParser:parser];
     }
 }
 

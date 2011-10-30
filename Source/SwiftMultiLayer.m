@@ -25,41 +25,28 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftLayer.h"
+#import "SwiftMultiLayer.h"
 #import "SwiftRenderer.h"
 
 static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 
-@implementation SwiftLayer
+@implementation SwiftMultiLayer
 
-- (id) _initWithSprite:(SwiftSpriteDefinition *)sprite
+
+- (id) initWithMovie:(SwiftMovie *)movie
 {
-    if ((self = [super init])) {
-        m_sprite = [sprite retain];
+    if ((self = [super initWithMovie:movie])) {
         m_depthToLayerMap = [[NSMutableDictionary alloc] init];
-
-        [self setMasksToBounds:YES];
     }
-    return self;
-}
 
-
-- (id) initWithMovie:(SwiftMovie *)movie;
-{
-    if ((self = [self _initWithSprite:movie])) {
-        m_movie = [movie retain];
-    }
-    
     return self;
 }
 
 
 - (void) dealloc
 {
-    [m_movie           release];  m_movie           = nil;
-    [m_sprite          release];  m_sprite          = nil;
-    [m_currentFrame    release];  m_currentFrame    = nil;
-    [m_depthToLayerMap release];  m_depthToLayerMap = nil;
+    [m_depthToLayerMap release];
+    m_depthToLayerMap = nil;
     
     [super dealloc];
 }
@@ -68,7 +55,7 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 #pragma mark -
 #pragma mark Private Methods
 
-- (void) _transitionToFrame:(SwiftFrame *)newFrame fromFrame:(SwiftFrame *)oldFrame
+- (void) transitionToFrame:(SwiftFrame *)newFrame fromFrame:(SwiftFrame *)oldFrame
 {
     NSEnumerator *oldEnumerator = [[oldFrame placedObjects] objectEnumerator];
     NSEnumerator *newEnumerator = [[newFrame placedObjects] objectEnumerator];
@@ -120,7 +107,7 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
             [layer setDelegate:self];
             [layer setZPosition:newDepth];
 
-            [layer setBackgroundColor:[[UIColor colorWithRed:((rand() % 16) / 15.0) green:((rand() % 16) / 15.0) blue:((rand() % 16) / 15.0) alpha:0.5] CGColor]];
+//            [layer setBackgroundColor:[[UIColor colorWithRed:((rand() % 16) / 15.0) green:((rand() % 16) / 15.0) blue:((rand() % 16) / 15.0) alpha:0.5] CGColor]];
 
             NSNumber *key = [[NSNumber alloc] initWithInteger:newDepth];
             [m_depthToLayerMap setObject:layer forKey:key];
@@ -159,7 +146,7 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 {
     [super setBounds:bounds];
 
-    CGSize movieSize  = [m_movie stageSize];
+    CGSize movieSize = [m_movie stageRect].size;
     m_baseTransform = CGAffineTransformMakeScale(bounds.size.width /  movieSize.width, bounds.size.height / movieSize.height);
 }
 
@@ -191,7 +178,7 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
     if (m_frameAnimationDuration > 0.0) {
         CABasicAnimation *basicAnimation = [CABasicAnimation animationWithKeyPath:event];
         
-        [basicAnimation setDuration:m_frameAnimationDuration];
+        [basicAnimation setDuration:[self frameAnimationDuration]];
         [basicAnimation setCumulative:YES];
 
         return basicAnimation;
@@ -200,26 +187,5 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
         return (id)[NSNull null];
     }
 }
-
-
-#pragma mark -
-#pragma mark Accessors
-
-- (void) setCurrentFrame:(SwiftFrame *)frame
-{
-    if (frame != m_currentFrame) {
-        [self _transitionToFrame:frame fromFrame:m_currentFrame];
-
-        [m_currentFrame release];
-        m_currentFrame = [frame retain];
-    }
-}
-
-@synthesize sprite       = m_sprite,
-            movie        = m_movie,
-            currentFrame = m_currentFrame;
-
-@synthesize usesMultipleLayers     = m_usesMultipleLayers,
-            frameAnimationDuration = m_frameAnimationDuration;
 
 @end

@@ -28,6 +28,10 @@
 
 #import "SwiftScene.h"
 
+@interface SwiftFrame (FriendMethods)
+- (void) _updateScene:(SwiftScene *)scene index1InScene:(NSUInteger)index1InScene;
+@end
+
 @implementation SwiftScene
 
 - (id) initWithName:(NSString *)name indexInMovie:(NSUInteger)indexInMovie frames:(NSArray *)frames
@@ -39,8 +43,7 @@
         
         NSInteger i = 1;
         for (SwiftFrame *frame in frames) {
-            [frame setScene:self];
-            [frame setIndex1InScene:i++];
+            [frame _updateScene:self index1InScene:i++];
         }
     }
     
@@ -50,7 +53,7 @@
 
 - (void) dealloc
 {
-    [m_frames makeObjectsPerformSelector:@selector(setScene:) withObject:nil];
+    [m_frames makeObjectsPerformSelector:@selector(clearWeakReferences) withObject:nil];
 
     [m_name            release];  m_name            = nil;
     [m_frames          release];  m_frames          = nil;

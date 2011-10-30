@@ -33,7 +33,7 @@
     NSDictionary *m_numberToFrameLabelMap;
 }
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version;
+- (id) initWithParser:(SwiftParser *)parser;
 
 - (void) applyLabelsToFrames:(NSArray *)frames;
 - (NSArray *) scenesForFrames:(NSArray *)frames;

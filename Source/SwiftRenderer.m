@@ -101,7 +101,7 @@ static void sApplyFillStyle(SwiftRendererState *state, SwiftFillStyle *style)
         CGContextSaveGState(context);
         CGContextEOClip(context);
 
-        CGGradientRef gradient = [[style gradient] CGGradient];
+        CGGradientRef gradient = [[style gradient] copyCGGradientWithColorTransformStack:state->colorTransforms];
         CGGradientDrawingOptions options = (kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
 
         if (type == SwiftFillStyleTypeLinearGradient) {
@@ -130,6 +130,7 @@ static void sApplyFillStyle(SwiftRendererState *state, SwiftFillStyle *style)
             CGContextDrawRadialGradient(context, gradient, centerPoint, 0, centerPoint, radius, options);
         }
         
+        CGGradientRelease(gradient);
         CGContextRestoreGState(context);
     }
 }
@@ -316,7 +317,7 @@ static void sDrawPlacedObject(SwiftRendererState *state, SwiftPlacedObject *plac
         state->affineTransform = CGAffineTransformConcat(newTransform, savedTransform);
     }
 
-    CFIndex colorTransformLastIndex = 0;
+    CFIndex colorTransformLastIndex = -1;
 
     if (applyColorTransform) {
         BOOL hasColorTransform = [placedObject hasColorTransform];
@@ -330,6 +331,8 @@ static void sDrawPlacedObject(SwiftRendererState *state, SwiftPlacedObject *plac
             CFArraySetValueAtIndex(state->colorTransforms, colorTransformLastIndex, [placedObject colorTransformPointer]);
         }
     }
+
+    CGContextSaveGState(state->context);
 
     UInt16 libraryID = [placedObject libraryID];
 
@@ -355,13 +358,15 @@ static void sDrawPlacedObject(SwiftRendererState *state, SwiftPlacedObject *plac
         }
     }
 
-    if (colorTransformLastIndex > 0) {
+    if (colorTransformLastIndex >= 0) {
         CFArrayRemoveValueAtIndex(state->colorTransforms, colorTransformLastIndex);
     }
 
     if (applyAffineTransform) {
         state->affineTransform = savedTransform;
     }
+    
+    CGContextRestoreGState(state->context);
 }
 
 

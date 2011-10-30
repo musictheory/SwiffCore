@@ -54,6 +54,20 @@ typedef struct _SwiftColor {
 } SwiftColor;
 
 
+enum _SwiftSoundFormat {
+//                                                     Description                      Minimum .swf version
+    SwiftSoundFormatUncompressedNativeEndian = 0,   // Uncompressed, native-endian      1
+    SwiftSoundFormatADPCM                    = 1,   // ADPCM                            1
+    SwiftSoundFormatMP3                      = 2,   // MP3                              4
+    SwiftSoundFormatUncompressedLittleEndian = 3,   // Uncompressed, little-endian      4
+    SwiftSoundFormatNellymoser16kHz          = 4,   // Nellymoser, 16kHz                10
+    SwiftSoundFormatNellymoser8kHZ           = 5,   // Nellymoser, 8kHz                 10
+    SwiftSoundFormatNellymoser               = 6,   // Nellymoser                       6
+    SwiftSoundFormatSpeex                    = 11   // Speex                            10
+};
+typedef NSInteger SwiftSoundFormat;
+
+
 enum _SwiftTag {
     SwiftTagEnd                          = 0,
     SwiftTagShowFrame                    = 1,
@@ -124,13 +138,16 @@ enum _SwiftTag {
 };
 typedef NSInteger SwiftTag;
 
+
+typedef NSInteger SwiftVersion;
+
+
 enum {
     SwiftParserOptionsDefault = 0,
     SwiftParserOptionNoHeader = (1 << 1)
 };
 typedef NSInteger SwiftParserOptions;
 
-typedef NSInteger SwiftVersion;
 
 typedef struct _SwiftParser SwiftParser;
 

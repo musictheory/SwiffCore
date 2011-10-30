@@ -110,7 +110,7 @@ static NSData *sGetCachedData(NSURL *url)
     m_movieView = [[SwiftMovieView alloc] initWithFrame:movieFrame];
     [m_movieView setDelegate:self];
     [m_movieView setContentMode:UIViewContentModeCenter];
-    [m_movieView setUsesAcceleratedRendering:YES];
+    [m_movieView setUsesMultipleLayers:YES];
     [m_movieView setInterpolatesFrames:YES];
     [m_movieView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
     [selfView addSubview:m_movieView];

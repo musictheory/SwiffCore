@@ -45,15 +45,17 @@
 - (id) initWithDepth:(NSInteger)depth;
 - (id) initWithPlacedObject:(SwiftPlacedObject *)placedObject;
 
+- (void) freeze;
+
 @property (nonatomic, retain) id<SwiftPlacableDefinition> definition;
 
-@property (nonatomic, copy,   readonly) NSString *instanceName;
-@property (nonatomic, assign, readonly) UInt16 libraryID;
-@property (nonatomic, assign, readonly) UInt16 depth;
-@property (nonatomic, assign, readonly) UInt16 clipDepth;
-@property (nonatomic, assign, readonly) CGFloat ratio;
-@property (nonatomic, assign, readonly) CGAffineTransform affineTransform;
-@property (nonatomic, assign, readonly) SwiftColorTransform colorTransform;
+@property (nonatomic, copy) NSString *instanceName;
+@property (nonatomic, assign) UInt16 libraryID;
+@property (nonatomic, assign) UInt16 depth;
+@property (nonatomic, assign) UInt16 clipDepth;
+@property (nonatomic, assign) CGFloat ratio;
+@property (nonatomic, assign) CGAffineTransform affineTransform;
+@property (nonatomic, assign) SwiftColorTransform colorTransform;
 
 // Inside pointers, valid for lifetime of the SwiftPlacedObject
 @property (nonatomic, assign, readonly) CGAffineTransform   *affineTransformPointer;

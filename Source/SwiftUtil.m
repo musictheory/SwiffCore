@@ -78,6 +78,13 @@ void _SwiftLog(NSInteger level, NSString *format, ...)
     va_end(v);
 }
 
+
+void _SwiftWarnFrozen(id self, const char * const prettyFunction)
+{
+    SwiftWarn(@"%s called on frozen object: <%@: %p>", prettyFunction, [self class], self);
+}
+
+
 static void sSwiftColorApplyColorTransformPointer(SwiftColor *color, SwiftColorTransform *transform)
 {
     color->red = (color->red * transform->redMultiply) + transform->redAdd;
@@ -108,6 +115,22 @@ CGColorRef SwiftColorCopyCGColor(SwiftColor color)
 }
 
 
+NSString *SwiftStringFromColor(SwiftColor color)
+{
+    NSString *alphaString = @"";
+    
+    if (color.alpha != 1.0) {
+        alphaString = [NSString stringWithFormat:@", alpha=%.02lf", color.alpha];
+    }
+    
+    return [NSString stringWithFormat:@"#%02lX%02lX%02lX%@",
+        (long)(color.red   * 255),
+        (long)(color.green * 255),
+        (long)(color.blue  * 255),
+        alphaString];
+}
+
+
 SwiftColor SwiftColorApplyColorTransform(SwiftColor color, SwiftColorTransform transform)
 {
     sSwiftColorApplyColorTransformPointer(&color, &transform);
@@ -126,3 +149,34 @@ SwiftColor SwiftColorApplyColorTransformStack(SwiftColor color, CFArrayRef stack
     return color;
 }
 
+
+NSString *SwiftStringFromColorTransform(SwiftColorTransform transform)
+{
+    return [NSString stringWithFormat:@"(r * %.02f) + %.02f, (g * %.02f) + %.02f, (b * %.02f) + %.02f, (a * %.02f) + %.02f",
+        (float)transform.redMultiply,   (float)transform.redAdd,
+        (float)transform.greenMultiply, (float)transform.greenAdd,
+        (float)transform.blueMultiply,  (float)transform.blueAdd,
+        (float)transform.alphaMultiply, (float)transform.alphaAdd];
+}
+
+
+NSString *SwiftStringFromColorTransformStack(CFArrayRef stack)
+{
+    if (!stack) return @"[ ]";
+
+    NSMutableString *result = [NSMutableString string];
+
+    [result appendString:@"[\n"];
+
+    CFIndex count = CFArrayGetCount(stack);
+    CFIndex lastI = (count - 1);
+    for (CFIndex i = 0; i < count; i++) {
+        SwiftColorTransform *transformPtr = (SwiftColorTransform *)CFArrayGetValueAtIndex(stack, i);
+        NSString *string = SwiftStringFromColorTransform(*transformPtr);
+        [result appendFormat:@"    %@%@\n", string, (i == lastI) ? @"" : @","];
+    }
+
+    [result appendString:@"]"];
+    
+    return result;
+}

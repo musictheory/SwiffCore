@@ -13,11 +13,19 @@
 
 #import <AudioToolbox/AudioToolbox.h>
 
+
+#define kBytesPerAudioBuffer  (1024 * 4)
+#define kNumberOfAudioBuffers 2
+#define kMaxPacketsPerAudioBuffer 32
+
 @interface _SwiftSoundChannel : NSObject {
 @private
     AudioQueueRef         m_queue;
+    AudioQueueBufferRef   m_buffer[kNumberOfAudioBuffers];
+    AudioStreamPacketDescription m_packetDescription[kNumberOfAudioBuffers][kMaxPacketsPerAudioBuffer];
     SwiftSoundEvent      *m_event;
     SwiftSoundDefinition *m_definition;
+    UInt32                m_frameIndex;
 }
 
 - (id) initWithEvent:(SwiftSoundEvent *)event definition:(SwiftSoundDefinition *)definition;
@@ -73,27 +81,93 @@ static void sFillASBDForSoundDefinition(AudioStreamBasicDescription *asbd, Swift
 
 static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer)
 {
+    _SwiftSoundChannel   *channel    = (_SwiftSoundChannel *)inUserData;
+    SwiftSoundDefinition *definition = channel->m_definition;
     
+    AudioStreamPacketDescription *aspd = inBuffer->mUserData;
+    
+    CFIndex location      = kCFNotFound;
+    CFIndex bytesWritten  = 0;
+    UInt32  framesWritten = 0;
+    
+    while (framesWritten < kMaxPacketsPerAudioBuffer) {
+        CFRange rangeOfFrame = SwiftSoundDefinitionGetFrameRangeAtIndex(definition, channel->m_frameIndex + framesWritten);
+        
+        if (location == kCFNotFound) {
+            location = rangeOfFrame.location;
+        }
+        
+        if ((bytesWritten + rangeOfFrame.length) < inBuffer->mAudioDataBytesCapacity) {
+            aspd[framesWritten].mStartOffset = bytesWritten;
+            aspd[framesWritten].mDataByteSize = rangeOfFrame.length;
+            aspd[framesWritten].mVariableFramesInPacket = 0;
+
+            bytesWritten += rangeOfFrame.length;
+            framesWritten++;
+
+        } else {
+            break;
+        }
+    }
+
+    CFDataRef data = SwiftSoundDefinitionGetData(definition);
+    CFDataGetBytes(data, CFRangeMake(location, bytesWritten), inBuffer->mAudioData);
+
+    inBuffer->mAudioDataByteSize = bytesWritten;
+
+    OSStatus err = AudioQueueEnqueueBuffer(inAQ, inBuffer, framesWritten, aspd);
+    if (err != noErr) {
+        SwiftWarn(@"AudioQueueEnqueueBuffer() returned 0x%x", err);
+    }
+
+    channel->m_frameIndex += framesWritten; 
 }
 
 
 - (id) initWithEvent:(SwiftSoundEvent *)event definition:(SwiftSoundDefinition *)definition
 {
     if ((self = [super init])) {
+        m_event      = [event retain];
+        m_definition = [definition retain];
+
         OSStatus err = noErr;
         
         AudioStreamBasicDescription inFormat;
         sFillASBDForSoundDefinition(&inFormat, definition);
-        
-        err = AudioQueueNewOutput(&inFormat, sAudioQueueCallback, self, CFRunLoopGetMain(), kCFRunLoopCommonModes, 0, &m_queue);
+
+        if (err == noErr) {
+            err = AudioQueueNewOutput(&inFormat, sAudioQueueCallback, self, CFRunLoopGetMain(), kCFRunLoopCommonModes, 0, &m_queue);
+            if (err != noErr) {
+                SwiftWarn(@"AudioQueueNewOutput() returned 0x%x", err);
+            }
+        }
+
+        if (err == noErr) {
+            NSUInteger i;
+            for (i = 0; i < kNumberOfAudioBuffers; i++) {
+                err = AudioQueueAllocateBuffer(m_queue, kBytesPerAudioBuffer, &m_buffer[i]);
+                
+                m_buffer[i]->mUserData = (void *)&m_packetDescription[i][0];
+                
+                if (err != noErr) {
+                    SwiftWarn(@"AudioQueueAllocateBuffer() returned 0x%x", err);
+                } else {
+                    sAudioQueueCallback(self, m_queue, m_buffer[i]);
+                }
+            }
+        }
+
+        if (err == noErr) {
+            err = AudioQueueStart(m_queue, NULL);
+            if (err != noErr) {
+                SwiftWarn(@"AudioQueueStart() returned 0x%x", err);
+            }
+        }
 
         if (err != noErr) {
             [self release];
             return nil;
         }
-
-        m_event = [event retain];
-        m_definition = [definition retain];
     }
     
     return self;

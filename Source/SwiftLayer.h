@@ -31,24 +31,20 @@
 @class SwiftMovie, SwiftSpriteDefinition, SwiftFrame;
 
 @interface SwiftLayer : CALayer {
-    SwiftMovie          *m_movie;
-    SwiftSpriteDefinition *m_sprite;
-    SwiftFrame          *m_currentFrame;
-    NSMutableDictionary *m_depthToLayerMap;
-    CGAffineTransform    m_baseTransform;
-    
-    BOOL    m_usesAcceleratedRendering;
-    CGFloat m_frameAnimationDuration;
+    SwiftMovie *m_movie;
+    SwiftFrame *m_currentFrame;
+    CGFloat     m_frameAnimationDuration;
 }
 
 - (id) initWithMovie:(SwiftMovie *)movie;
 
+// Subclasses to override
+- (void) transitionToFrame:(SwiftFrame *)newFrame fromFrame:(SwiftFrame *)oldFrame;
+
+// Properties
 @property (nonatomic, assign, readonly) SwiftMovie  *movie;
-@property (nonatomic, retain, readonly) SwiftSpriteDefinition *sprite;
 
 @property (nonatomic, retain) SwiftFrame *currentFrame;
-
-@property (nonatomic, assign) BOOL usesAcceleratedRendering;
 @property (nonatomic, assign) CGFloat frameAnimationDuration;
 
 @end

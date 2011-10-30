@@ -41,15 +41,16 @@
     SwiftLayer    *m_layer;
     SwiftMovie    *m_movie;
     SwiftPlayhead *m_playhead;
-    CADisplayLink *m_displayLink;
 
-    CFTimeInterval m_playStart;
-    long           m_playIndex;
+    CADisplayLink *m_displayLink;
+    CFTimeInterval m_displayLinkPlayStart;
+    long           m_displayLinkPlayIndex;
+
     CFTimeInterval m_framesPerSecond;
 
     BOOL m_playing;
     BOOL m_showsBackgroundColor;
-    BOOL m_usesAcceleratedRendering;
+    BOOL m_usesMultipleLayers;
     BOOL m_interpolatesFrames;
     BOOL m_delegate_movieView_willDisplayScene_frame;
     BOOL m_delegate_movieView_didDisplayScene_frame;
@@ -62,7 +63,7 @@
 
 @property (nonatomic, assign, getter=isPlaying) BOOL playing;
 @property (nonatomic, assign) BOOL showsBackgroundColor;
-@property (nonatomic, assign) BOOL usesAcceleratedRendering;
+@property (nonatomic, assign) BOOL usesMultipleLayers;  // Experimental, defaults to NO
 @property (nonatomic, assign) BOOL interpolatesFrames;
 
 @end
