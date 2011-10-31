@@ -14,13 +14,8 @@ SwiftMPEGError SwiftMPEGReadHeader(const UInt8 *buffer, SwiftMPEGHeader *header)
     UInt16 frameSync    = 0;
     UInt8  bitrateIndex = 0;
     UInt8  rateIndex    = 0;
-    UInt8  reserved;
 
-    UInt32 i = *((UInt32 *)buffer);
- 
-#if LITTLE_ENDIAN
-    i = ntohl(i);
-#endif
+    UInt32 i = ntohl(*((UInt32 *)buffer));
  
     frameSync             = ((i >> 21) & 0x7FF);
     header->version       = ((i >> 19) & 0x3);
@@ -29,7 +24,7 @@ SwiftMPEGError SwiftMPEGReadHeader(const UInt8 *buffer, SwiftMPEGHeader *header)
     bitrateIndex          = ((i >> 12) & 0xf);
     rateIndex             = ((i >> 10) & 0x3);
     header->hasPadding    = ((i >>  9) & 0x1);
-    reserved              = ((i >>  8) & 0x1);
+/*  UInt8 reserved        = ((i >>  8) & 0x1); */
     header->channelMode   = ((i >>  6) & 0x3);
     header->modeExtension = ((i >>  4) & 0x3);
     header->hasCopyright  = ((i >>  3) & 0x1);

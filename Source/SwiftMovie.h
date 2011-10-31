@@ -29,9 +29,11 @@
 #import <Foundation/Foundation.h>
 
 @class SwiftTextDefinition, SwiftFontDefinition, SwiftShapeDefinition, SwiftStaticTextDefinition, SwiftScene;
+@protocol SwiftMovieDecoder;
 
 @interface SwiftMovie : SwiftSpriteDefinition {
 @private
+    NSData              *m_data;
     NSArray             *m_scenes;
     NSDictionary        *m_sceneNameToSceneMap;
     NSMutableDictionary *m_definitionMap;
@@ -42,19 +44,15 @@
     SwiftColor           m_backgroundColor;
 }
 
-// data is raw data from the file
 - (id) initWithData:(NSData *)data;
-
-// data is uncompressed data starting at tag's RECORDHEADER
-- (id) initWithTagData: (NSData *) data
-               version: (NSInteger) version
-             stageRect: (CGRect) stageRect
-             frameRate: (CGFloat) frameRate;
 
 - (id) definitionWithLibraryID:(UInt16)libraryID;
 
+- (void) decode:(id<SwiftMovieDecoder>)decoder;
+
 - (SwiftFontDefinition       *) fontDefinitionWithLibraryID:(UInt16)libraryID;
 - (SwiftShapeDefinition      *) shapeDefinitionWithLibraryID:(UInt16)libraryID;
+- (SwiftSoundDefinition      *) soundDefinitionWithLibraryID:(UInt16)libraryID;
 - (SwiftSpriteDefinition     *) spriteDefinitionWithLibraryID:(UInt16)libraryID;
 - (SwiftStaticTextDefinition *) staticTextDefinitionWithLibraryID:(UInt16)libraryID;
 - (SwiftTextDefinition       *) textDefinitionWithLibraryID:(UInt16)libraryID;
@@ -71,4 +69,9 @@
 @property (nonatomic, assign, readonly) SwiftColor *backgroundColorPointer;
 
 
+@end
+
+
+@interface SwiftMovieDecoder
+- (void) movie:(SwiftMovie *)movie didDecodeFrame:(SwiftFrame *)frame;
 @end

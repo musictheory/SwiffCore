@@ -175,54 +175,7 @@ static size_t sGetStreamBlockSizeForFormat(UInt8 format)
 {
 
     while (SwiftParserGetBytesRemainingInCurrentTag(parser) > 0) {
-#if 0
-        const void *frameStart = SwiftParserGetBytePointer(parser);
-
-        UInt32 syncWord, rawVersion, rawLayer, protectionBit,
-               rawBitrate, rawSamplingRate, paddingBit, reserved,
-               channelMode, modeExtension, copyright, original, emphasis;
-        UInt16 crc16;
-        UInt16 bytesRead = 0;
-        
-        SwiftParserReadUBits(parser, 11, &syncWord);
-        if (syncWord != 0x7ff) SwiftWarn(@"MP3 syncWord incorrect.  Expected 0x7ff, actual: 0x%x", syncWord)
-        
-        SwiftParserReadUBits(parser,  2, &rawVersion);
-        SwiftParserReadUBits(parser,  2, &rawLayer);
-        SwiftParserReadUBits(parser,  1, &protectionBit);
-
-        SwiftParserReadUBits(parser,  4, &rawBitrate);
-        SwiftParserReadUBits(parser,  2, &rawSamplingRate);
-        SwiftParserReadUBits(parser,  1, &paddingBit);
-        SwiftParserReadUBits(parser,  1, &reserved);
-
-        SwiftParserReadUBits(parser,  2, &channelMode);
-        SwiftParserReadUBits(parser,  2, &modeExtension);
-        SwiftParserReadUBits(parser,  1, &copyright);
-        SwiftParserReadUBits(parser,  1, &original);
-        SwiftParserReadUBits(parser,  2, &emphasis);
-
-        bytesRead += 4;
-
-        // protectionBit: 0 = CRC.  1 = no CRC
-        if (protectionBit == 0) {
-            SwiftParserReadUInt16(parser, &crc16);
-            bytesRead += 2;
-        }
-
-        SwiftMPEGVersion version      = SwiftMPEGGetVersion(rawVersion);
-        SwiftMPEGLayer   layer        = SwiftMPEGGetLayer(rawLayer);
-        NSInteger        bitrate      = SwiftMPEGGetBitrate(version, layer, rawBitrate);
-        NSInteger        samplingRate = SwiftMPEGGetSamplingRate(version, rawSamplingRate);
-        NSInteger        frameSize    = SwiftMPEGGetFrameSize(version, layer, bitrate, samplingRate, paddingBit);
-
-
-        [self _appendMP3Frame:frameStart length:frameSize];
-
-        SwiftParserAdvance(parser, (frameSize - bytesRead));
-
-#else
-        const void *frameStart = SwiftParserGetBytePointer(parser);
+        const void *frameStart = SwiftParserGetCurrentBytePointer(parser);
 
         SwiftMPEGHeader header;
         SwiftMPEGError  error = SwiftMPEGReadHeader(frameStart, &header);
@@ -233,7 +186,6 @@ static size_t sGetStreamBlockSizeForFormat(UInt8 format)
         [self _appendMP3Frame:frameStart length:header.frameSize];
 
         SwiftParserAdvance(parser, header.frameSize);
-#endif
     }
 }
 

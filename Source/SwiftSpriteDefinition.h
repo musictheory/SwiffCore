@@ -39,9 +39,11 @@
     SwiftMovie      *m_movie;
     NSMutableArray  *m_frames;
     NSDictionary    *m_labelToFrameMap;
+
     SwiftSceneAndFrameLabelData *m_sceneAndFrameLabelData;
-    SwiftSoundDefinition  *m_currentStreamSoundDefinition;
-    NSUInteger             m_currentStreamBlockIndex;
+    NSMutableArray              *m_currentSoundEvents;
+    SwiftSoundDefinition        *m_currentStreamSoundDefinition;
+    NSInteger                    m_currentStreamBlockIndex;
 }
 
 - (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie;

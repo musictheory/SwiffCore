@@ -5,37 +5,39 @@ Metadata
 --------
 Bytes         Value
 ----------    -----
-       847    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"> <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/"> <xmp:CreatorTool>Adobe Flash CS4 Professional</xmp:CreatorTool> <xmp:CreateDate>2010-01-08T23:58:44-08:00</xmp:CreateDate> <xmp:MetadataDate>2011-10-19T22:48:33-07:00</xmp:MetadataDate> <xmp:ModifyDate>2011-10-19T22:48:33-07:00</xmp:ModifyDate> </rdf:Description> <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/"> <dc:format>application/x-shockwave-flash</dc:format> </rdf:Description> <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/" xmlns:stRef="http://ns.adobe.com/xap/1.0/sType/ResourceRef#"> <xmpMM:DerivedFrom rdf:parseType="Resource"> <stRef:instanceID>xmp.iid:ED7F11740720681180839FAFA8BC50EA</stRef:instanceID> <stRef:documentID>xmp.did:F77F117407206811AA5D85665D4D2865</stRef:documentID> <stRef:originalDocumentID>xmp.did:F77F117407206811AA5D85665D4D2865</stRef:originalDocumentID> </xmpMM:DerivedFrom> <xmpMM:DocumentID>xmp.did:EE7F11740720681180839FAFA8BC50EA</xmpMM:DocumentID> <xmpMM:InstanceID>xmp.iid:EE7F11740720681180839FAFA8BC50EA</xmpMM:InstanceID> <xmpMM:OriginalDocumentID>xmp.did:F77F117407206811AA5D85665D4D2865</xmpMM:OriginalDocumentID> </rdf:Description> </rdf:RDF> 
+       851    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"> <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/"> <xmp:CreatorTool>Adobe Flash CS4 Professional</xmp:CreatorTool> <xmp:CreateDate>2010-01-08T23:58:44-08:00</xmp:CreateDate> <xmp:MetadataDate>2011-10-29T21:52:15-07:00</xmp:MetadataDate> <xmp:ModifyDate>2011-10-29T21:52:15-07:00</xmp:ModifyDate> </rdf:Description> <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/"> <dc:format>application/x-shockwave-flash</dc:format> </rdf:Description> <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/" xmlns:stRef="http://ns.adobe.com/xap/1.0/sType/ResourceRef#"> <xmpMM:DerivedFrom rdf:parseType="Resource"> <stRef:instanceID>xmp.iid:F77F1174072068118C14E36A768C31C4</stRef:instanceID> <stRef:documentID>xmp.did:F77F117407206811AA5D85665D4D2865</stRef:documentID> <stRef:originalDocumentID>xmp.did:F77F117407206811AA5D85665D4D2865</stRef:originalDocumentID> </xmpMM:DerivedFrom> <xmpMM:DocumentID>xmp.did:F87F1174072068118C14E36A768C31C4</xmpMM:DocumentID> <xmpMM:InstanceID>xmp.iid:F87F1174072068118C14E36A768C31C4</xmpMM:InstanceID> <xmpMM:OriginalDocumentID>xmp.did:F77F117407206811AA5D85665D4D2865</xmpMM:OriginalDocumentID> </rdf:Description> </rdf:RDF> 
 
 Frame #    Frame Bytes    Total Bytes    Scene
 -------    -----------    -----------    -----
-      1           1455           1455    Scene 1 (AS 2.0 Classes Export Frame)
-      2            344           1799    
-      3            221           2020    
-      4           6517           8537    
-      5           1378           9915    
-      6            415          10330    
-      7            196          10526    
+      1           1462           1462    Scene 1 (AS 2.0 Classes Export Frame)
+      2            346           1808    
+      3            223           2031    
+      4           6547           8578    
+      5           1384           9962    
+      6            417          10379    
+      7            197          10576    
+      8            255          10831    
 
 Scene      Shape Bytes    Text Bytes    ActionScript Bytes
 -------    -----------    ----------    ------------------
-Scene 1           1692          1680                     0
+Scene 1           1811          1692                     0
 
 Symbol         Shape Bytes    Text Bytes    ActionScript Bytes
 -----------    -----------    ----------    ------------------
-Frame2Thing             66             0                     0
+Square                  35             0                     0
+Frame2Thing             67             0                     0
 Symbol 1                35             0                     0
 Symbol 2                35             0                     0
 Symbol 3                35             0                     0
 
 Font Name                            Bytes         Characters
 ---------------------------------    ----------    ----------
-_typewriter                                1031     HWdelor
-_serif                                      939     HWdelor
-_sans                                      1764     012468BEHJMWdeilopqrt
-Helvetica-BoldOblique Bold Italic           395    ehlo
-Helvetica-Bold Bold                         310    dlo
-Helvetica                                  1048     HWabcdehlorw
+_typewriter                                1036     HWdelor
+_serif                                      944     HWdelor
+_sans                                      1772     012468BEHJMWdeilopqrt
+Helvetica-BoldOblique Bold Italic           397    ehlo
+Helvetica-Bold Bold                         312    dlo
+Helvetica                                  1053     HWabcdehlorw
 
 
 

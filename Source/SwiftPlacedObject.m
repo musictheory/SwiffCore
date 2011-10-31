@@ -29,28 +29,7 @@
 #import "SwiftPlacedObject.h"
 
 
-@interface SwiftFrozenPlacedObject : SwiftPlacedObject
-@end
-
-
-@implementation SwiftFrozenPlacedObject
-- (void) setDefinition:(id<SwiftPlacableDefinition>)x  SwiftFrozenImplementation;
-- (void) setInstanceName:(NSString *)x                 SwiftFrozenImplementation;
-- (void) setLibraryID:(UInt16)x                        SwiftFrozenImplementation;
-- (void) setDepth:(UInt16)x                            SwiftFrozenImplementation;
-- (void) setClipDepth:(UInt16)x                        SwiftFrozenImplementation;
-- (void) setRatio:(CGFloat)x                           SwiftFrozenImplementation;
-- (void) setAffineTransform:(CGAffineTransform)x       SwiftFrozenImplementation;
-- (void) setColorTransform:(SwiftColorTransform)x      SwiftFrozenImplementation;
-@end
-
-
 @implementation SwiftPlacedObject
-
-- (void) freeze
-{
-    isa = [SwiftFrozenPlacedObject class];
-}
 
 
 - (id) initWithDepth:(NSInteger)depth

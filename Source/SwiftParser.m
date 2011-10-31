@@ -32,7 +32,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <zlib.h>
-#include <setjmp.h>
 #include <string.h>
 
 
@@ -40,11 +39,7 @@ struct _SwiftParser {
     const UInt8  *buffer;
     const UInt8  *end;
     const UInt8  *b;
-    const UInt8  *currentTagB;
     const UInt8  *nextTagB;
-    const UInt8  *nextTagInSpriteB;
-    const UInt8  *startOfHeader;
-    const UInt8  *endOfHeader;
     
     UInt32        length;
 
@@ -55,18 +50,41 @@ struct _SwiftParser {
 
     UInt16        currentTag;
     UInt8         currentTagVersion;
-    UInt8         movieVersion;
 };
 
 
-static BOOL _SwiftInflate(const UInt8 *inBuffer, UInt32 inLength, UInt8 *outBuffer, UInt32 outLength)
+SwiftParser *SwiftParserCreate(const UInt8 *buffer, UInt32 length)
+{
+    SwiftParser *parser = calloc(1, sizeof(SwiftParser));
+
+    parser->buffer        = buffer;
+    parser->length        = length;
+    parser->b             = parser->buffer;
+    parser->bitPosition   = 0;
+    parser->bitByte       = 0;
+    parser->isValid       = YES;
+    
+    return parser;
+}
+
+
+extern void SwiftParserFree(SwiftParser *parser)
+{
+    if (parser->bufferNeedsFree) {
+        free((void *)parser->buffer);
+    }
+    
+    free(parser);
+}
+
+
+static BOOL sInflate(const UInt8 *inBuffer, UInt32 inLength, UInt8 *outBuffer, UInt32 outLength)
 {
     z_stream stream;
+    bzero(&stream, sizeof(z_stream));
+
     int err;
 
-    stream.zalloc    = Z_NULL;
-    stream.zfree     = Z_NULL;
-    stream.opaque    = Z_NULL;
     stream.next_in   = (Bytef *)inBuffer;
     stream.avail_in  = inLength;
     stream.next_out  = (Bytef *)outBuffer;
@@ -89,23 +107,118 @@ static BOOL _SwiftInflate(const UInt8 *inBuffer, UInt32 inLength, UInt8 *outBuff
 }
 
 
-static BOOL sSwiftParserAdvanceToNextTag(SwiftParser *parser, BOOL inSprite)
+static BOOL sEnsureBuffer(SwiftParser *parser, int length)
+{
+    BOOL yn = ((parser->b + length) <= (parser->buffer + parser->length));
+
+    if (!yn) {
+        SwiftWarn(@"SwiftParser %p is no longer valid", parser);
+        parser->isValid = NO;
+    }
+
+    return yn;
+}
+
+
+BOOL SwiftParserReadHeader(SwiftParser *parser, SwiftHeader *outHeader)
+{
+    UInt8  sig1 = 0, sig2 = 0, sig3 = 0, version = 0;
+    BOOL   isCompressed   = NO;
+    BOOL   didInflateFail = NO;
+    UInt32 fileLength     = 0;
+
+    SwiftParserReadUInt8(parser, &sig1);
+    SwiftParserReadUInt8(parser, &sig2);
+    SwiftParserReadUInt8(parser, &sig3);
+    SwiftParserReadUInt8(parser, &version);
+
+    SwiftParserReadUInt32(parser, &fileLength);
+
+    if (sig1 == 'C' && sig2 == 'W' && sig3 == 'S') {
+        isCompressed = YES;
+
+        UInt8 *newBuffer = (UInt8 *)malloc(fileLength);
+
+        if (sInflate(parser->b, parser->length - 8, newBuffer, fileLength)) {
+            parser->buffer = newBuffer;
+            parser->b      = parser->buffer;
+            parser->length = fileLength;
+            parser->bufferNeedsFree = YES;
+        
+        } else {
+            free(newBuffer);
+            didInflateFail = YES;
+        }
+    }
+    
+    CGRect stageRect;
+    SwiftParserReadRect(parser, &stageRect);
+    
+    CGFloat frameRate;
+    SwiftParserReadFixed8(parser, &frameRate);
+
+    UInt16 frameCount;
+    SwiftParserReadUInt16(parser, &frameCount);
+    
+    if (outHeader) {
+        outHeader->version      = version;
+        outHeader->isCompressed = isCompressed;
+        outHeader->fileLength   = fileLength;
+        outHeader->stageRect    = stageRect;
+        outHeader->frameRate    = frameRate;
+        outHeader->frameCount   = frameCount;
+    }
+    
+    return (sig1 == 'F' || sig1 == 'C') &&
+            sig2 == 'W' &&
+            sig3 == 'S' &&
+           !didInflateFail &&
+            SwiftParserIsValid(parser);
+}
+
+
+BOOL SwiftParserIsValid(SwiftParser *parser)
+{
+    return parser->isValid;
+}
+
+
+void SwiftParserAdvance(SwiftParser *parser, UInt32 length)
+{
+    if (!sEnsureBuffer(parser, length)) {
+        return;
+    }
+
+    parser->b += length;
+}
+
+
+const UInt8 *SwiftParserGetCurrentBytePointer(SwiftParser *parser)
+{
+    return parser->b;
+}
+
+
+UInt32 SwiftParserGetBytesRemainingInCurrentTag(SwiftParser *parser)
+{
+    return (parser->nextTagB - parser->b);
+}
+
+
+
+#pragma mark -
+#pragma mark Tags
+
+void SwiftParserAdvanceToNextTag(SwiftParser *parser)
 {
     UInt16 tagCodeAndLength;
 
-    if (inSprite) {
-        if (parser->nextTagInSpriteB) {
-            parser->b = parser->nextTagInSpriteB;
-        }
-    } else {
-        if (parser->nextTagB) {
-            parser->b = parser->nextTagB;
-        }
+    if (parser->nextTagB) {
+        parser->b = parser->nextTagB;
     }
     
     SwiftParserByteAlign(parser);
 
-    parser->currentTagB = parser->b;
     SwiftParserReadUInt16(parser, &tagCodeAndLength);
 
     SwiftTag  tag     = (tagCodeAndLength >> 6);
@@ -144,33 +257,12 @@ static BOOL sSwiftParserAdvanceToNextTag(SwiftParser *parser, BOOL inSprite)
 
     parser->currentTag        = tag;
     parser->currentTagVersion = version;
-        
-    if (inSprite) {
-        parser->nextTagInSpriteB = parser->b + length;
+
+    if (tag == SwiftTagEnd) {
+        parser->nextTagB = 0;
     } else {
         parser->nextTagB = parser->b + length;
     }
-
-    if (tag == SwiftTagEnd) {
-        parser->nextTagInSpriteB = 0;
-        parser->nextTagB = 0;
-        
-        return NO;
-    }
-
-    return YES;
-}
-
-
-BOOL SwiftParserAdvanceToNextTag(SwiftParser *parser)
-{
-    return sSwiftParserAdvanceToNextTag(parser, NO);
-}
-
-
-BOOL SwiftParserAdvanceToNextTagInSprite(SwiftParser *parser)
-{
-    return sSwiftParserAdvanceToNextTag(parser, YES);
 }
 
 
@@ -186,88 +278,8 @@ NSInteger SwiftParserGetCurrentTagVersion(SwiftParser *parser)
 }
 
 
-NSData *SwiftParserGetCurrentTagData(SwiftParser *parser)
-{
-    return [NSData dataWithBytes:parser->currentTagB length:(parser->nextTagB - parser->currentTagB)];
-}
-
-
-NSInteger SwiftParserGetMovieVersion(SwiftParser *parser)
-{
-    return parser->movieVersion;
-}
-
-
-SwiftParser *SwiftParserCreate(const UInt8 *buffer, UInt32 length, SwiftParserOptions options)
-{
-    if (length < 8) return NULL;
-    
-    UInt8  sig1      = buffer[0];
-    UInt8  sig2      = buffer[1];
-    UInt8  sig3      = buffer[2];
-    UInt8  version   = buffer[3];
-    
-    // Verify Signature bytes
-    if ((sig1 != 'F' && sig1 != 'C') || sig2 != 'W' || sig3 != 'S') {
-        return NULL;
-    }
-
-    SwiftParser *parser = calloc(1, sizeof(SwiftParser));
-   
-    if (sig1 == 'C') {
-        UInt32 swfLength = *((UInt32 *)(buffer + 4));
-
-        swfLength -= 8;
-        UInt8 *newBuffer = (UInt8 *)malloc(swfLength);
-
-        if (!_SwiftInflate(buffer + 8, length - 8, newBuffer, swfLength)) {
-            free(newBuffer);
-            return NULL;
-        }
-        
-        parser->buffer = newBuffer;
-        parser->length = swfLength;
-        parser->bufferNeedsFree = YES;
-
-    } else {
-        parser->buffer = (buffer + 8);
-        parser->length = (length - 8);
-        parser->bufferNeedsFree = NO;
-    }
-    
-    parser->b             = parser->buffer;
-    parser->end           = (parser->buffer + parser->length);
-    parser->bitPosition   = 0;
-    parser->bitByte       = 0;
-    parser->isValid       = YES;
-    parser->movieVersion  = version;
-    
-    return parser;
-}
-
-
-extern void SwiftParserFree(SwiftParser *parser)
-{
-    if (parser->bufferNeedsFree) {
-        free((void *)parser->buffer);
-    }
-    
-    free(parser);
-}
-
-
-static __inline BOOL sSwiftParserEnsureBuffer(SwiftParser *parser, int length)
-{
-    BOOL yn = ((parser->b + length) <= parser->end);
-
-    if (!yn) {
-        SwiftWarn(@"SwiftParser %p is no longer valid", parser);
-        parser->isValid = NO;
-    }
-
-    return yn;
-}
-
+#pragma mark -
+#pragma mark Bitfields
 
 void SwiftParserByteAlign(SwiftParser *parser)
 {
@@ -276,63 +288,13 @@ void SwiftParserByteAlign(SwiftParser *parser)
 }
 
 
-void SwiftParserAdvance(SwiftParser *parser, UInt32 length)
+void SwiftParserReadFBits(SwiftParser *parser, UInt8 numberOfBits, CGFloat *outValue)
 {
-    if (!sSwiftParserEnsureBuffer(parser, length)) {
-        return;
-    }
-
-    parser->b += length;
-}
-
-
-const UInt8 *SwiftParserGetBytePointer(SwiftParser *parser)
-{
-    return parser->b;
-}
-
-
-UInt32 SwiftParserGetBytesRemainingInCurrentTag(SwiftParser *parser)
-{
-    return (parser->nextTagB - parser->b);
-}
-
-
-BOOL SwiftParserIsValid(SwiftParser *parser)
-{
-    return parser->isValid;
-}
-
-
-NSData *SwiftParserGetHeaderData(SwiftParser *parser)
-{
-    return [NSData dataWithBytes:parser->startOfHeader length:(parser->endOfHeader - parser->startOfHeader)];
-}
-
-
-void SwiftParserReadUBits(SwiftParser *parser, UInt8 numberOfBits, UInt32 *outValue)
-{
-    int i;
-    UInt32 value = 0;
-    UInt8 bp = parser->bitPosition;
-
-    for (i = 0; i < numberOfBits; i++) {
-        if (bp == 0) {
-            if (!sSwiftParserEnsureBuffer(parser, 1)) break;
-            parser->bitByte = *((UInt8 *)parser->b);
-            parser->b++;
-        }
-
-        UInt8 bit = ((parser->bitByte >> (7 - bp)) & 0x1);
-        value = (value << 1) + bit;
-
-        bp = (bp + 1) % 8;
-    }
-
-    parser->bitPosition = bp;
+    SInt32 s = 0;
+    SwiftParserReadSBits(parser, numberOfBits, &s);
 
     if (outValue) {
-        *outValue = value;
+        *outValue = (s / 65536.0);
     }
 }
 
@@ -351,14 +313,105 @@ void SwiftParserReadSBits(SwiftParser *parser, UInt8 numberOfBits, SInt32 *outVa
 }
 
 
-void SwiftParserReadFBits(SwiftParser *parser, UInt8 numberOfBits, CGFloat *outValue)
+void SwiftParserReadUBits(SwiftParser *parser, UInt8 numberOfBits, UInt32 *outValue)
 {
-    SInt32 s = 0;
-    SwiftParserReadSBits(parser, numberOfBits, &s);
+    int i;
+    UInt32 value = 0;
+    UInt8 bp = parser->bitPosition;
+
+    for (i = 0; i < numberOfBits; i++) {
+        if (bp == 0) {
+            if (!sEnsureBuffer(parser, 1)) break;
+            parser->bitByte = *((UInt8 *)parser->b);
+            parser->b++;
+        }
+
+        UInt8 bit = ((parser->bitByte >> (7 - bp)) & 0x1);
+        value = (value << 1) + bit;
+
+        bp = (bp + 1) % 8;
+    }
+
+    parser->bitPosition = bp;
 
     if (outValue) {
-        *outValue = (s / 65536.0);
+        *outValue = value;
     }
+}
+
+
+#pragma mark -
+#pragma mark Primitives
+
+void SwiftParserReadSInt8(SwiftParser *parser, SInt8 *i)
+{
+    if (!sEnsureBuffer(parser, sizeof(SInt8))) {
+        return;
+    }
+
+    if (i) *i = *((SInt8 *)parser->b);
+    parser->b += sizeof(SInt8);
+    SwiftParserByteAlign(parser);
+}
+
+
+void SwiftParserReadSInt16(SwiftParser *parser, SInt16 *i)
+{
+    if (!sEnsureBuffer(parser, sizeof(SInt16))) {
+        return;
+    }
+
+    if (i) *i = *((SInt16 *)parser->b);
+    parser->b += sizeof(SInt16);
+    SwiftParserByteAlign(parser);
+}
+
+
+void SwiftParserReadSInt32(SwiftParser *parser, SInt32 *i)
+{
+    if (!sEnsureBuffer(parser, sizeof(SInt32))) {
+        return;
+    }
+
+    if (i) *i = *((SInt32 *)parser->b);
+    parser->b += sizeof(SInt32);
+    SwiftParserByteAlign(parser);
+}
+
+
+void SwiftParserReadUInt8(SwiftParser *parser, UInt8 *i)
+{
+    if (!sEnsureBuffer(parser, sizeof(UInt8))) {
+        return;
+    }
+
+    if (i) *i = *((UInt8 *)parser->b);
+    parser->b += sizeof(UInt8);
+    SwiftParserByteAlign(parser);
+}
+
+
+void SwiftParserReadUInt16(SwiftParser *parser, UInt16 *i)
+{
+    if (!sEnsureBuffer(parser, sizeof(UInt16))) {
+        return;
+    }
+
+    if (i) *i = *((UInt16 *)parser->b);
+    parser->b += sizeof(UInt16);
+    SwiftParserByteAlign(parser);
+}
+
+
+void SwiftParserReadUInt32(SwiftParser *parser, UInt32 *i)
+{
+    if (!sEnsureBuffer(parser, sizeof(UInt32))) {
+        return;
+    }
+
+    if (i) *i = *((UInt32 *)parser->b);
+    parser->b += sizeof(UInt32);
+    SwiftParserByteAlign(parser);
 }
 
 
@@ -370,78 +423,6 @@ void SwiftParserReadFixed8(SwiftParser *parser, CGFloat *outValue)
     if (outValue) {
         *outValue = (i >> 8) + ((i & 0xff) / 255.0);
     }
-}
-
-
-void SwiftParserReadUInt8(SwiftParser *parser, UInt8 *i)
-{
-    if (!sSwiftParserEnsureBuffer(parser, sizeof(UInt8))) {
-        return;
-    }
-
-    if (i) *i = *((UInt8 *)parser->b);
-    parser->b += sizeof(UInt8);
-    SwiftParserByteAlign(parser);
-}
-
-
-void SwiftParserReadSInt8(SwiftParser *parser, SInt8 *i)
-{
-    if (!sSwiftParserEnsureBuffer(parser, sizeof(SInt8))) {
-        return;
-    }
-
-    if (i) *i = *((SInt8 *)parser->b);
-    parser->b += sizeof(SInt8);
-    SwiftParserByteAlign(parser);
-}
-
-
-void SwiftParserReadUInt16(SwiftParser *parser, UInt16 *i)
-{
-    if (!sSwiftParserEnsureBuffer(parser, sizeof(UInt16))) {
-        return;
-    }
-
-    if (i) *i = *((UInt16 *)parser->b);
-    parser->b += sizeof(UInt16);
-    SwiftParserByteAlign(parser);
-}
-
-
-void SwiftParserReadSInt16(SwiftParser *parser, SInt16 *i)
-{
-    if (!sSwiftParserEnsureBuffer(parser, sizeof(SInt16))) {
-        return;
-    }
-
-    if (i) *i = *((SInt16 *)parser->b);
-    parser->b += sizeof(SInt16);
-    SwiftParserByteAlign(parser);
-}
-
-
-void SwiftParserReadUInt32(SwiftParser *parser, UInt32 *i)
-{
-    if (!sSwiftParserEnsureBuffer(parser, sizeof(UInt32))) {
-        return;
-    }
-
-    if (i) *i = *((UInt32 *)parser->b);
-    parser->b += sizeof(UInt32);
-    SwiftParserByteAlign(parser);
-}
-
-
-void SwiftParserReadSInt32(SwiftParser *parser, SInt32 *i)
-{
-    if (!sSwiftParserEnsureBuffer(parser, sizeof(SInt32))) {
-        return;
-    }
-
-    if (i) *i = *((SInt32 *)parser->b);
-    parser->b += sizeof(SInt32);
-    SwiftParserByteAlign(parser);
 }
 
 
@@ -477,6 +458,33 @@ void SwiftParserReadEncodedU32(SwiftParser *parser, UInt32 *outValue)
 
     if (outValue) {
         *outValue = result;
+    }
+
+    SwiftParserByteAlign(parser);
+}
+
+
+#pragma mark -
+#pragma mark Structs
+
+void SwiftParserReadRect(SwiftParser *parser, CGRect *outValue)
+{
+    UInt32 nBits;
+    SInt32 minX, maxX, minY, maxY;
+
+    SwiftParserByteAlign(parser);
+    
+    SwiftParserReadUBits(parser, 5,     &nBits );
+    SwiftParserReadSBits(parser, nBits, &(minX));
+    SwiftParserReadSBits(parser, nBits, &(maxX));
+    SwiftParserReadSBits(parser, nBits, &(minY));
+    SwiftParserReadSBits(parser, nBits, &(maxY));
+    
+    if (outValue) {
+        outValue->origin.x    = SwiftFloatFromTwips(minX);
+        outValue->origin.y    = SwiftFloatFromTwips(minY);
+        outValue->size.width  = SwiftFloatFromTwips(maxX - minX);
+        outValue->size.height = SwiftFloatFromTwips(maxY - minY);
     }
 
     SwiftParserByteAlign(parser);
@@ -645,33 +653,12 @@ void SwiftParserReadColorTransformWithAlpha(SwiftParser *parser, SwiftColorTrans
 }
 
 
-void SwiftParserReadRect(SwiftParser *parser, CGRect *outValue)
-{
-    UInt32 nBits;
-    SInt32 minX, maxX, minY, maxY;
-
-    SwiftParserByteAlign(parser);
-    
-    SwiftParserReadUBits(parser, 5,     &nBits );
-    SwiftParserReadSBits(parser, nBits, &(minX));
-    SwiftParserReadSBits(parser, nBits, &(maxX));
-    SwiftParserReadSBits(parser, nBits, &(minY));
-    SwiftParserReadSBits(parser, nBits, &(maxY));
-    
-    if (outValue) {
-        outValue->origin.x    = SwiftFloatFromTwips(minX);
-        outValue->origin.y    = SwiftFloatFromTwips(minY);
-        outValue->size.width  = SwiftFloatFromTwips(maxX - minX);
-        outValue->size.height = SwiftFloatFromTwips(maxY - minY);
-    }
-
-    SwiftParserByteAlign(parser);
-}
-
+#pragma mark -
+#pragma mark Objects
 
 void SwiftParserReadData(SwiftParser *parser, UInt32 length, NSData **outValue)
 {
-    if (!sSwiftParserEnsureBuffer(parser, length)) {
+    if (!sEnsureBuffer(parser, length)) {
         return;
     }
 
@@ -685,15 +672,13 @@ void SwiftParserReadData(SwiftParser *parser, UInt32 length, NSData **outValue)
 
 void SwiftParserReadString(SwiftParser *parser, NSString **outValue)
 {
-    NSStringEncoding encoding = (parser->movieVersion >= 6) ? NSUTF8StringEncoding : NSASCIIStringEncoding;
-    SwiftParserReadStringWithEncoding(parser, encoding, outValue);
+    SwiftParserReadStringWithEncoding(parser, NSUTF8StringEncoding, outValue);
 }
 
 
 void SwiftParserReadPascalString(SwiftParser *parser, NSString **outValue)
 {
-    NSStringEncoding encoding = (parser->movieVersion >= 6) ? NSUTF8StringEncoding : NSASCIIStringEncoding;
-    SwiftParserReadPascalStringWithEncoding(parser, encoding, outValue);
+    SwiftParserReadPascalStringWithEncoding(parser, NSUTF8StringEncoding, outValue);
 }
 
 
@@ -709,6 +694,11 @@ void SwiftParserReadStringWithEncoding(SwiftParser *parser, NSStringEncoding enc
     UInt32 length = (parser->b - start);
     if (outValue) {
         *outValue = [[[NSString alloc] initWithBytes:start length:length encoding:encoding] autorelease];
+
+        // Fallback for legacy .swf files where encoding wasn't specified
+        if (*outValue == nil && (encoding == NSUTF8StringEncoding)) {
+            *outValue = [[[NSString alloc] initWithBytes:start length:length encoding:NSWindowsCP1252StringEncoding] autorelease];
+        }
     }
 }
 
@@ -718,12 +708,17 @@ void SwiftParserReadPascalStringWithEncoding(SwiftParser *parser, NSStringEncodi
     UInt8 length;
     SwiftParserReadUInt8(parser, &length);
 
-    if (!sSwiftParserEnsureBuffer(parser, length)) {
+    if (!sEnsureBuffer(parser, length)) {
         return;
     }
 
     if (outValue) {
         *outValue = [[[NSString alloc] initWithBytes:parser->b length:length encoding:encoding] autorelease];
+
+        // Fallback for legacy .swf files where encoding wasn't specified
+        if (*outValue == nil && (encoding == NSUTF8StringEncoding)) {
+            *outValue = [[[NSString alloc] initWithBytes:parser->b length:length encoding:NSWindowsCP1252StringEncoding] autorelease];
+        }
     }
 
     SwiftParserAdvance(parser, length);
