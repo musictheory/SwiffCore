@@ -71,7 +71,7 @@
 
 
 #pragma mark -
-#pragma mark Private Methods
+#pragma mark Friend Methods
 
 
 - (void) _updateScene:(SwiftScene *)scene index1InScene:(NSUInteger)index1InScene

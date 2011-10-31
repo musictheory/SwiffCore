@@ -54,6 +54,16 @@ typedef struct _SwiftColor {
 } SwiftColor;
 
 
+typedef struct _SwiftHeader {
+    UInt8   version;
+    BOOL    isCompressed;
+    UInt16  frameCount;
+    UInt32  fileLength;
+    CGRect  stageRect;
+    CGFloat frameRate;
+} SwiftHeader;
+
+
 enum _SwiftSoundFormat {
 //                                                     Description                      Minimum .swf version
     SwiftSoundFormatUncompressedNativeEndian = 0,   // Uncompressed, native-endian      1
@@ -138,16 +148,8 @@ enum _SwiftTag {
 };
 typedef NSInteger SwiftTag;
 
-
 typedef NSInteger SwiftVersion;
 
-
-enum {
-    SwiftParserOptionsDefault = 0,
-    SwiftParserOptionNoHeader = (1 << 1)
-};
-typedef NSInteger SwiftParserOptions;
-
-
 typedef struct _SwiftParser SwiftParser;
+typedef struct _SwiftWriter SwiftWriter;
 

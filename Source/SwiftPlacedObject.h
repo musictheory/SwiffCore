@@ -45,8 +45,6 @@
 - (id) initWithDepth:(NSInteger)depth;
 - (id) initWithPlacedObject:(SwiftPlacedObject *)placedObject;
 
-- (void) freeze;
-
 @property (nonatomic, retain) id<SwiftPlacableDefinition> definition;
 
 @property (nonatomic, copy) NSString *instanceName;

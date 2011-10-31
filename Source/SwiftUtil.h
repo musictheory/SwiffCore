@@ -26,7 +26,6 @@
 */
 
 extern void _SwiftLog(NSInteger level, NSString *format, ...) NS_FORMAT_FUNCTION(2,3);
-extern void _SwiftWarnFrozen(id self, const char * const prettyFunction);
 extern BOOL _SwiftShouldLog;
 
 extern void SwiftEnableLogging(void);
@@ -35,8 +34,6 @@ extern void SwiftEnableLogging(void);
 #define SwiftWarn(...) { _SwiftLog(4, __VA_ARGS__); }
 
 #define SwiftFloatFromTwips(TWIPS) ((TWIPS) / 20.0)
-
-#define SwiftFrozenImplementation { _SwiftWarnFrozen(self, __PRETTY_FUNCTION__); }
 
 extern CGColorRef SwiftColorCopyCGColor(SwiftColor color) CF_RETURNS_RETAINED;
 
@@ -50,3 +47,5 @@ extern SwiftColor SwiftColorApplyColorTransformStack(SwiftColor color, CFArrayRe
 
 extern NSString *SwiftStringFromColorTransform(SwiftColorTransform transform);
 extern NSString *SwiftStringFromColorTransformStack(CFArrayRef stack);
+
+extern NSData *SwiftGetDataFromHeader(SwiftHeader header);

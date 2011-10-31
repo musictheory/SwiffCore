@@ -48,90 +48,16 @@
 
 @implementation SwiftMovie
 
-- (id) _initWithParserAtTagStream:(SwiftParser *)parser 
-{
-    if ((self = [super init])) {
-        m_definitionMap = [[NSMutableDictionary alloc] init];
-        
-        SwiftColor white = { 1.0, 1.0, 1.0, 1.0 };
-        m_backgroundColor = white;
-
-        m_movie = self;
-
-        while (SwiftParserIsValid(parser) && SwiftParserAdvanceToNextTag(parser)) {
-            [self _parser: parser
-               didFindTag: SwiftParserGetCurrentTag(parser)
-                  version: SwiftParserGetCurrentTagVersion(parser)];
-        }
-
-        if (m_sceneAndFrameLabelData) {
-            [m_sceneAndFrameLabelData applyLabelsToFrames:m_frames];
-            m_scenes = [[m_sceneAndFrameLabelData scenesForFrames:m_frames] retain];
-            
-            [m_sceneAndFrameLabelData release];
-            m_sceneAndFrameLabelData = nil;
-        } else {
-            SwiftScene *scene = [[SwiftScene alloc] initWithName:nil indexInMovie:0 frames:m_frames];
-            m_scenes = [[NSArray alloc] initWithObjects:scene, nil];
-            [scene release];
-        }
-
-        m_movie = nil;
-    }
-
-    return self;
-}
-
-
 - (id) initWithData:(NSData *)data
 {
-    if (data) {
-        SwiftParser *parser = SwiftParserCreate([data bytes], [data length], SwiftParserOptionsDefault);
+    if ((self = [self init])) {
+        m_data = [data retain];
+        m_definitionMap = [[NSMutableDictionary alloc] init];
 
-        CGFloat frameRate  = 0;
-        UInt16  frameCount = 0;
-        CGRect  rect       = CGRectZero;
-
-        SwiftParserReadRect(parser, &rect);
-        SwiftParserReadFixed8(parser, &frameRate);
-        SwiftParserReadUInt16(parser, &frameCount);
-                
-        if ((self = [self _initWithParserAtTagStream:parser])) {
-            m_version   = SwiftParserGetMovieVersion(parser);
-            m_stageRect = rect;
-            m_frameRate = frameRate;
-        }
-        
-        SwiftParserFree(parser);
-
-    } else {
-        [self release];
-        return nil;
+        SwiftColor white = { 1.0, 1.0, 1.0, 1.0 };
+        m_backgroundColor = white;
     }
 
-    return self;
-}
-
-
-- (id) initWithTagData: (NSData *) data
-               version: (NSInteger) version
-             stageRect: (CGRect) stageRect
-             frameRate: (CGFloat) frameRate
-{
-    if (data) {
-        SwiftParser *parser = SwiftParserCreate([data bytes], [data length], SwiftParserOptionNoHeader);
-
-        if ((self = [self _initWithParserAtTagStream:parser])) {
-            m_version   = SwiftParserGetMovieVersion(parser);
-            m_stageRect = stageRect;
-            m_frameRate = frameRate;
-        }
-
-    } else {
-        [self release];
-        return nil;
-    }
-    
     return self;
 }
 
@@ -261,6 +187,60 @@
 #pragma mark -
 #pragma mark Public Methods
 
+- (void) decode:(id<SwiftMovieDecoder>)decoder
+{
+    if (!m_data) return;
+    
+    char bytes[4];
+    [m_data getBytes:bytes length:4];
+    
+    SwiftParser *parser = SwiftParserCreate([m_data bytes], [m_data length]);
+    
+    SwiftHeader header;
+    SwiftParserReadHeader(parser, &header);
+    
+    m_version   = header.version;
+    m_stageRect = header.stageRect;
+    m_frameRate = header.frameRate;
+
+    // Parse tags
+    {
+        m_movie = self;
+
+        while (SwiftParserIsValid(parser)) {
+            SwiftParserAdvanceToNextTag(parser);
+            
+            SwiftTag  tag     = SwiftParserGetCurrentTag(parser);
+            NSInteger version = SwiftParserGetCurrentTagVersion(parser);
+
+            if (tag == SwiftTagEnd) break;
+
+            [self _parser:parser didFindTag:tag version:version];
+        }
+        
+        m_movie = nil;
+    }
+
+    if (m_sceneAndFrameLabelData) {
+        [m_sceneAndFrameLabelData applyLabelsToFrames:m_frames];
+        m_scenes = [[m_sceneAndFrameLabelData scenesForFrames:m_frames] retain];
+        
+        [m_sceneAndFrameLabelData release];
+        m_sceneAndFrameLabelData = nil;
+
+    } else {
+        SwiftScene *scene = [[SwiftScene alloc] initWithName:nil indexInMovie:0 frames:m_frames];
+        m_scenes = [[NSArray alloc] initWithObjects:scene, nil];
+        [scene release];
+    }
+    
+    [m_data release];
+    m_data = nil;
+
+    SwiftParserFree(parser);
+}
+
+
 - (id) definitionWithLibraryID:(UInt16)libraryID
 {
     NSNumber *number = [[NSNumber alloc] initWithInteger:libraryID];
@@ -286,6 +266,9 @@
 
 - (SwiftFontDefinition *) fontDefinitionWithLibraryID:(UInt16)libraryID
     { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftFontDefinition class]]; }
+
+- (SwiftSoundDefinition *) soundDefinitionWithLibraryID:(UInt16)libraryID
+    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftSoundDefinition class]]; }
 
 - (SwiftStaticTextDefinition *) staticTextDefinitionWithLibraryID:(UInt16)libraryID
     { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftStaticTextDefinition class]]; }
@@ -317,7 +300,6 @@
 {
     return &m_backgroundColor;
 }
-
 
 @synthesize scenes          = m_scenes,
             version         = m_version,

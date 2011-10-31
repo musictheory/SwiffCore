@@ -110,7 +110,7 @@ static NSData *sGetCachedData(NSURL *url)
     m_movieView = [[SwiftMovieView alloc] initWithFrame:movieFrame];
     [m_movieView setDelegate:self];
     [m_movieView setContentMode:UIViewContentModeCenter];
-    [m_movieView setUsesMultipleLayers:YES];
+    [m_movieView setUsesMultipleLayers:NO];
     [m_movieView setInterpolatesFrames:YES];
     [m_movieView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
     [selfView addSubview:m_movieView];
@@ -163,6 +163,7 @@ static NSData *sGetCachedData(NSURL *url)
 - (void) _loadMovie
 {
     m_movie = [[SwiftMovie alloc] initWithData:m_movieData];
+    [m_movie decode:nil];
     
     [m_timelineSlider setMaximumValue:([[m_movie frames] count] - 1)];
     

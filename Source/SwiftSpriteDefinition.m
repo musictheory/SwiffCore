@@ -34,6 +34,7 @@
 #import "SwiftPlacedText.h"
 #import "SwiftSceneAndFrameLabelData.h"
 #import "SwiftSoundDefinition.h"
+#import "SwiftSoundEvent.h"
 
 @interface SwiftPlacedObject (FriendMethods)
 @property (nonatomic, retain) NSString *instanceName;
@@ -78,14 +79,21 @@
         UInt16 frameCount;
         SwiftParserReadUInt16(parser, &frameCount);
 
-        SwiftLog(@"DEFINESPRITE defines id %ld", (long)m_libraryID);
-
         m_movie = movie;
 
-        while (SwiftParserIsValid(parser) && SwiftParserAdvanceToNextTagInSprite(parser)) {
-            [self _parser: parser
-               didFindTag: SwiftParserGetCurrentTag(parser)
-                  version: SwiftParserGetCurrentTagVersion(parser)];
+        SwiftParser *subparser = SwiftParserCreate(SwiftParserGetCurrentBytePointer(parser), SwiftParserGetBytesRemainingInCurrentTag(parser));
+
+        SwiftLog(@"DEFINESPRITE defines id %ld", (long)m_libraryID);
+
+        while (SwiftParserIsValid(subparser)) {
+            SwiftParserAdvanceToNextTag(subparser);
+            
+            SwiftTag  tag     = SwiftParserGetCurrentTag(subparser);
+            NSInteger version = SwiftParserGetCurrentTagVersion(subparser);
+
+            if (tag == SwiftTagEnd) break;
+
+            [self _parser:subparser didFindTag:tag version:version];
         }
 
         if (m_sceneAndFrameLabelData) {
@@ -98,7 +106,9 @@
             CFRelease(m_depthToPlacedObjectMap);
             m_depthToPlacedObjectMap = NULL;
         }
-        
+
+        SwiftParserFree(subparser);
+
         SwiftLog(@"END");
     
         if (!SwiftParserIsValid(parser)) {
@@ -124,6 +134,12 @@
     
     [m_sceneAndFrameLabelData release];
     m_sceneAndFrameLabelData = nil;
+
+    [m_currentSoundEvents release];
+    m_currentSoundEvents = nil;
+
+    [m_currentStreamSoundDefinition release];
+    m_currentStreamSoundDefinition = nil;
 
     [super dealloc];
 }
@@ -298,10 +314,13 @@
             free(values);
         }
         
+        SwiftSoundDefinition *streamSound      = m_currentStreamBlockIndex >= 0 ? m_currentStreamSoundDefinition : nil;
+        NSInteger             streamBlockIndex = m_currentStreamBlockIndex >= 0 ? m_currentStreamBlockIndex      : 0;
+        
         SwiftFrame *frame = [[SwiftFrame alloc] _initWithSortedPlacedObjects: placedObjects
-                        soundEvents: nil
-                        streamSound: m_currentStreamSoundDefinition
-                   streamBlockIndex: m_currentStreamBlockIndex];
+                        soundEvents: m_currentSoundEvents
+                        streamSound: streamSound
+                   streamBlockIndex: streamBlockIndex];
 
         [m_frames addObject:frame];
 
@@ -341,15 +360,28 @@
     } else if (tag == SwiftTagShowFrame) {
         [self _parser:parser didFindShowFrameTag:tag version:version];
 
+        m_currentStreamBlockIndex = -1;
+        [m_currentSoundEvents release];
+        m_currentSoundEvents = nil;
+
     } else if (tag == SwiftTagFrameLabel) {
         [self _parser:parser didFindFrameLabelTag:tag version:version];
 
     } else if (tag == SwiftTagSoundStreamHead) {
         [m_currentStreamSoundDefinition release];
         m_currentStreamSoundDefinition = [[SwiftSoundDefinition alloc] initWithParser:parser movie:m_movie];
+        m_currentStreamBlockIndex = -1;
 
     } else if (tag == SwiftTagSoundStreamBlock) {
         m_currentStreamBlockIndex = [m_currentStreamSoundDefinition readSoundStreamBlockTagFromParser:parser];
+
+    } else if (tag == SwiftTagStartSound) {
+        SwiftSoundEvent *event = [[SwiftSoundEvent alloc] initWithParser:parser];
+    
+        if (!m_currentSoundEvents) m_currentSoundEvents = [[NSMutableArray alloc] init];
+        [m_currentSoundEvents addObject:event];
+        
+        [event release];
     }
 }
 

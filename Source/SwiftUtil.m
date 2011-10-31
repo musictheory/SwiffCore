@@ -79,12 +79,6 @@ void _SwiftLog(NSInteger level, NSString *format, ...)
 }
 
 
-void _SwiftWarnFrozen(id self, const char * const prettyFunction)
-{
-    SwiftWarn(@"%s called on frozen object: <%@: %p>", prettyFunction, [self class], self);
-}
-
-
 static void sSwiftColorApplyColorTransformPointer(SwiftColor *color, SwiftColorTransform *transform)
 {
     color->red = (color->red * transform->redMultiply) + transform->redAdd;
@@ -180,3 +174,4 @@ NSString *SwiftStringFromColorTransformStack(CFArrayRef stack)
     
     return result;
 }
+
