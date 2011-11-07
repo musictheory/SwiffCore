@@ -25,10 +25,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
+#import <SwiftDefinition.h>
+#import <SwiftParser.h>
 
 @class SwiftMovie;
+
 
 @interface SwiftShapeDefinition : NSObject <SwiftPlacableDefinition> {
 @private

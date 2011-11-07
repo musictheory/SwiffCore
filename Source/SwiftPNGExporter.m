@@ -26,7 +26,14 @@
 */
 
 #import "SwiftPNGExporter.h"
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+#import <UIKit/UIKit.h>
+#endif
+
+#import "SwiftMovie.h"
 #import "SwiftRenderer.h"
+
 
 
 @implementation SwiftPNGExporter

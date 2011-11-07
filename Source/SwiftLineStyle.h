@@ -25,10 +25,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
+#import <SwiftBase.h>
+#import <SwiftParser.h>
 
 @class SwiftFillStyle;
+
 
 extern const CGFloat SwiftLineStyleHairlineWidth;
 

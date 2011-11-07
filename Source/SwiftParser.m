@@ -27,8 +27,6 @@
 
 #import "SwiftParser.h"
 
-#import "SwiftUtil.h"
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <zlib.h>
@@ -258,11 +256,7 @@ void SwiftParserAdvanceToNextTag(SwiftParser *parser)
     parser->currentTag        = tag;
     parser->currentTagVersion = version;
 
-    if (tag == SwiftTagEnd) {
-        parser->nextTagB = 0;
-    } else {
-        parser->nextTagB = parser->b + length;
-    }
+    parser->nextTagB = parser->b + length;
 }
 
 

@@ -25,9 +25,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
+#import <SwiftBase.h>
+#import <SwiftPlacedObject.h>
+#import <SwiftStaticTextDefinition.h>
 
-@class SwiftMovie, SwiftStaticTextDefinition;
+@class SwiftMovie;
+
 
 @interface SwiftPlacedStaticText : SwiftPlacedObject {
 @private

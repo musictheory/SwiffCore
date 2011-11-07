@@ -26,8 +26,11 @@
 */
 
 #import "SwiftPlayhead.h"
-#import "SwiftScene.h"
+
 #import "SwiftFrame.h"
+#import "SwiftMovie.h"
+#import "SwiftScene.h"
+
 
 @implementation SwiftPlayhead
 

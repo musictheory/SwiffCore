@@ -25,14 +25,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <CoreFoundation/CoreFoundation.h>
+#import <SwiftImport.h>
+#import <SwiftBase.h>
 
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-#import <CoreGraphics/CoreGraphics.h>
-#else
-#import <ApplicationServices/ApplicationServices.h>
-#endif
 
+typedef struct _SwiftParser SwiftParser;
 
 extern SwiftParser *SwiftParserCreate(const UInt8 *buffer, UInt32 length);
 extern void SwiftParserFree(SwiftParser *reader);

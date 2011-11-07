@@ -14,8 +14,7 @@
 		550C99BA145A04FD00836C62 /* SwiftSoundEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 550C99B9145A04FD00836C62 /* SwiftSoundEvent.m */; };
 		5516B4C61446D0EA00231D67 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5516B4C51446D0EA00231D67 /* Cocoa.framework */; };
 		5516B4DD1446D75900231D67 /* SwiftParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A7214429C9E00E12C27 /* SwiftParser.m */; };
-		5516B4DE1446D75900231D67 /* SwiftTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A5E14429C9E00E12C27 /* SwiftTypes.m */; };
-		5516B4DF1446D75900231D67 /* SwiftUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 5595A5931442A7CC00DECD41 /* SwiftUtil.m */; };
+		5516B4DE1446D75900231D67 /* SwiftBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A5E14429C9E00E12C27 /* SwiftBase.m */; };
 		5516B4E01446D75900231D67 /* SwiftTextDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A6014429C9E00E12C27 /* SwiftTextDefinition.m */; };
 		5516B4E11446D75900231D67 /* SwiftFillStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A6214429C9E00E12C27 /* SwiftFillStyle.m */; };
 		5516B4E21446D75900231D67 /* SwiftFontDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A6414429C9E00E12C27 /* SwiftFontDefinition.m */; };
@@ -39,6 +38,11 @@
 		5516B50F14479D5300231D67 /* SwiftPNGExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5516B50A144799FA00231D67 /* SwiftPNGExporter.m */; };
 		5516B51014479D5300231D67 /* SwiftSVGExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5516B50D14479A0D00231D67 /* SwiftSVGExporter.m */; };
 		5545A6B11458B70A001428F6 /* SwiftSoundDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 5545A6B01458B70A001428F6 /* SwiftSoundDefinition.m */; };
+		55468097145F558C00BB74EB /* SwiftMPEGUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 5574A09D145CAB2C00DA4FB7 /* SwiftMPEGUtils.m */; };
+		55468098145F558C00BB74EB /* SwiftWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5574A0A2145D238700DA4FB7 /* SwiftWriter.m */; };
+		55468099145F558C00BB74EB /* SwiftSoundDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 5545A6B01458B70A001428F6 /* SwiftSoundDefinition.m */; };
+		5546809A145F558C00BB74EB /* SwiftSoundEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 550C99B9145A04FD00836C62 /* SwiftSoundEvent.m */; };
+		5546809B145F558C00BB74EB /* SwiftSoundPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 550C99B5145A03F200836C62 /* SwiftSoundPlayer.m */; };
 		5574A09E145CAB2C00DA4FB7 /* SwiftMPEGUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 5574A09D145CAB2C00DA4FB7 /* SwiftMPEGUtils.m */; };
 		5574A0A3145D238800DA4FB7 /* SwiftWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5574A0A2145D238700DA4FB7 /* SwiftWriter.m */; };
 		5595A5F51442C03300DECD41 /* SwiftTextDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A6014429C9E00E12C27 /* SwiftTextDefinition.m */; };
@@ -57,8 +61,7 @@
 		5595A6031442C03300DECD41 /* SwiftSpriteDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A7C14429C9E00E12C27 /* SwiftSpriteDefinition.m */; };
 		5595A6041442C03300DECD41 /* SwiftStaticTextDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A7E14429C9E00E12C27 /* SwiftStaticTextDefinition.m */; };
 		5595A6051442C03300DECD41 /* SwiftTextRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A8014429C9E00E12C27 /* SwiftTextRecord.m */; };
-		5595A6061442C03300DECD41 /* SwiftTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A5E14429C9E00E12C27 /* SwiftTypes.m */; };
-		5595A6071442C03300DECD41 /* SwiftUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 5595A5931442A7CC00DECD41 /* SwiftUtil.m */; };
+		5595A6061442C03300DECD41 /* SwiftBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A5E14429C9E00E12C27 /* SwiftBase.m */; };
 		55DBFAB61443A454003AA0DA /* SwiftLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFAB51443A453003AA0DA /* SwiftLayer.m */; };
 		55DBFABE1444EAAE003AA0DA /* SwiftMovieView.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFABD1444EAAE003AA0DA /* SwiftMovieView.m */; };
 		55DBFAC11444EE22003AA0DA /* SwiftScene.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFAC01444EE20003AA0DA /* SwiftScene.m */; };
@@ -89,8 +92,6 @@
 		5516B4C51446D0EA00231D67 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		5516B4C81446D0EA00231D67 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		5516B4CA1446D0EA00231D67 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		5516B4D51446D12F00231D67 /* MacDebug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = MacDebug.xcconfig; path = Config/MacDebug.xcconfig; sourceTree = "<group>"; };
-		5516B4D61446D13500231D67 /* MacRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = MacRelease.xcconfig; path = Config/MacRelease.xcconfig; sourceTree = "<group>"; };
 		5516B509144799FA00231D67 /* SwiftPNGExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftPNGExporter.h; path = Source/SwiftPNGExporter.h; sourceTree = "<group>"; };
 		5516B50A144799FA00231D67 /* SwiftPNGExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftPNGExporter.m; path = Source/SwiftPNGExporter.m; sourceTree = "<group>"; };
 		5516B50C14479A0D00231D67 /* SwiftSVGExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftSVGExporter.h; path = Source/SwiftSVGExporter.h; sourceTree = "<group>"; };
@@ -102,10 +103,17 @@
 		5574A0A0145D1BB300DA4FB7 /* SwiftDefinition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftDefinition.h; path = Source/SwiftDefinition.h; sourceTree = "<group>"; };
 		5574A0A1145D238700DA4FB7 /* SwiftWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftWriter.h; path = Source/SwiftWriter.h; sourceTree = "<group>"; };
 		5574A0A2145D238700DA4FB7 /* SwiftWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftWriter.m; path = Source/SwiftWriter.m; sourceTree = "<group>"; };
-		5595A5921442A7CC00DECD41 /* SwiftUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftUtil.h; path = Source/SwiftUtil.h; sourceTree = "<group>"; };
-		5595A5931442A7CC00DECD41 /* SwiftUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftUtil.m; path = Source/SwiftUtil.m; sourceTree = "<group>"; };
 		5595A5E91442BFFA00DECD41 /* libSwiftCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSwiftCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		55DBFA851442C1F0003AA0DA /* Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Prefix.pch; path = Source/Prefix.pch; sourceTree = "<group>"; };
+		55C1B1EE14688E5B0010CB82 /* SwiftCore_iOS_Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = SwiftCore_iOS_Debug.xcconfig; sourceTree = "<group>"; };
+		55C1B1EF14688E5B0010CB82 /* SwiftCore_iOS_Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = SwiftCore_iOS_Release.xcconfig; sourceTree = "<group>"; };
+		55C1B1F014688E5B0010CB82 /* SwiftCore_Mac_Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = SwiftCore_Mac_Debug.xcconfig; sourceTree = "<group>"; };
+		55C1B1F114688E5B0010CB82 /* SwiftCore_Mac_Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = SwiftCore_Mac_Release.xcconfig; sourceTree = "<group>"; };
+		55C1B1F214688E5B0010CB82 /* SwiftCore_Base.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = SwiftCore_Base.xcconfig; path = Config/SwiftCore_Base.xcconfig; sourceTree = "<group>"; };
+		55C1B1F314688E5B0010CB82 /* SwiftCore_Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = SwiftCore_Debug.xcconfig; path = Config/SwiftCore_Debug.xcconfig; sourceTree = "<group>"; };
+		55C1B1F414688E5B0010CB82 /* SwiftCore_iOS.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = SwiftCore_iOS.xcconfig; path = Config/SwiftCore_iOS.xcconfig; sourceTree = "<group>"; };
+		55C1B1F514688E5B0010CB82 /* SwiftCore_Mac.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = SwiftCore_Mac.xcconfig; path = Config/SwiftCore_Mac.xcconfig; sourceTree = "<group>"; };
+		55C1B1F614688E5B0010CB82 /* SwiftCore_Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = SwiftCore_Release.xcconfig; path = Config/SwiftCore_Release.xcconfig; sourceTree = "<group>"; };
+		55C1B1F7146890790010CB82 /* SwiftImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftImport.h; path = Source/SwiftImport.h; sourceTree = "<group>"; };
 		55DBFAB41443A453003AA0DA /* SwiftLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftLayer.h; path = Source/SwiftLayer.h; sourceTree = "<group>"; };
 		55DBFAB51443A453003AA0DA /* SwiftLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftLayer.m; path = Source/SwiftLayer.m; sourceTree = "<group>"; };
 		55DBFABC1444EAAE003AA0DA /* SwiftMovieView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftMovieView.h; path = Source/SwiftMovieView.h; sourceTree = "<group>"; };
@@ -118,8 +126,8 @@
 		55ED37AD14538F280085EEC3 /* SwiftSingleLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftSingleLayer.m; path = Source/SwiftSingleLayer.m; sourceTree = "<group>"; };
 		55F01684144F8BAE0068002B /* SwiftPlacedStaticText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftPlacedStaticText.h; path = Source/SwiftPlacedStaticText.h; sourceTree = "<group>"; };
 		55F01685144F8BAE0068002B /* SwiftPlacedStaticText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftPlacedStaticText.m; path = Source/SwiftPlacedStaticText.m; sourceTree = "<group>"; };
-		55F65A5D14429C9E00E12C27 /* SwiftTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftTypes.h; path = Source/SwiftTypes.h; sourceTree = "<group>"; };
-		55F65A5E14429C9E00E12C27 /* SwiftTypes.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftTypes.m; path = Source/SwiftTypes.m; sourceTree = "<group>"; };
+		55F65A5D14429C9E00E12C27 /* SwiftBase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftBase.h; path = Source/SwiftBase.h; sourceTree = "<group>"; };
+		55F65A5E14429C9E00E12C27 /* SwiftBase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftBase.m; path = Source/SwiftBase.m; sourceTree = "<group>"; };
 		55F65A5F14429C9E00E12C27 /* SwiftTextDefinition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftTextDefinition.h; path = Source/SwiftTextDefinition.h; sourceTree = "<group>"; };
 		55F65A6014429C9E00E12C27 /* SwiftTextDefinition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftTextDefinition.m; path = Source/SwiftTextDefinition.m; sourceTree = "<group>"; };
 		55F65A6114429C9E00E12C27 /* SwiftFillStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftFillStyle.h; path = Source/SwiftFillStyle.h; sourceTree = "<group>"; };
@@ -153,8 +161,6 @@
 		55F65A7F14429C9E00E12C27 /* SwiftTextRecord.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftTextRecord.h; path = Source/SwiftTextRecord.h; sourceTree = "<group>"; };
 		55F65A8014429C9E00E12C27 /* SwiftTextRecord.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SwiftTextRecord.m; path = Source/SwiftTextRecord.m; sourceTree = "<group>"; };
 		55F65A8814429D1400E12C27 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		55F65A9314429D4100E12C27 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Config/Debug.xcconfig; sourceTree = "<group>"; };
-		55F65A9614429D4100E12C27 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Config/Release.xcconfig; sourceTree = "<group>"; };
 		55F65AF014429F0D00E12C27 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		55F65AFE1442A01000E12C27 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = Resources/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		55F65B251442A2B300E12C27 /* SwiftCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftCore.h; path = Source/SwiftCore.h; sourceTree = "<group>"; };
@@ -244,6 +250,18 @@
 			name = Exporters;
 			sourceTree = "<group>";
 		};
+		55C1B1ED14688E5B0010CB82 /* Combined */ = {
+			isa = PBXGroup;
+			children = (
+				55C1B1EE14688E5B0010CB82 /* SwiftCore_iOS_Debug.xcconfig */,
+				55C1B1EF14688E5B0010CB82 /* SwiftCore_iOS_Release.xcconfig */,
+				55C1B1F014688E5B0010CB82 /* SwiftCore_Mac_Debug.xcconfig */,
+				55C1B1F114688E5B0010CB82 /* SwiftCore_Mac_Release.xcconfig */,
+			);
+			name = Combined;
+			path = Config/Combined;
+			sourceTree = "<group>";
+		};
 		55DBFAB71443A556003AA0DA /* Movie */ = {
 			isa = PBXGroup;
 			children = (
@@ -272,16 +290,14 @@
 		55DBFAB81443A56D003AA0DA /* Base */ = {
 			isa = PBXGroup;
 			children = (
-				55DBFA851442C1F0003AA0DA /* Prefix.pch */,
 				55F65B251442A2B300E12C27 /* SwiftCore.h */,
+				55C1B1F7146890790010CB82 /* SwiftImport.h */,
+				55F65A5D14429C9E00E12C27 /* SwiftBase.h */,
+				55F65A5E14429C9E00E12C27 /* SwiftBase.m */,
 				5574A09C145CAB2B00DA4FB7 /* SwiftMPEGUtils.h */,
 				5574A09D145CAB2C00DA4FB7 /* SwiftMPEGUtils.m */,
 				55F65A7114429C9E00E12C27 /* SwiftParser.h */,
 				55F65A7214429C9E00E12C27 /* SwiftParser.m */,
-				55F65A5D14429C9E00E12C27 /* SwiftTypes.h */,
-				55F65A5E14429C9E00E12C27 /* SwiftTypes.m */,
-				5595A5921442A7CC00DECD41 /* SwiftUtil.h */,
-				5595A5931442A7CC00DECD41 /* SwiftUtil.m */,
 				5574A0A1145D238700DA4FB7 /* SwiftWriter.h */,
 				5574A0A2145D238700DA4FB7 /* SwiftWriter.m */,
 			);
@@ -332,10 +348,12 @@
 		55F65A3814429C3400E12C27 /* Config */ = {
 			isa = PBXGroup;
 			children = (
-				55F65A9314429D4100E12C27 /* Debug.xcconfig */,
-				55F65A9614429D4100E12C27 /* Release.xcconfig */,
-				5516B4D51446D12F00231D67 /* MacDebug.xcconfig */,
-				5516B4D61446D13500231D67 /* MacRelease.xcconfig */,
+				55C1B1ED14688E5B0010CB82 /* Combined */,
+				55C1B1F214688E5B0010CB82 /* SwiftCore_Base.xcconfig */,
+				55C1B1F314688E5B0010CB82 /* SwiftCore_Debug.xcconfig */,
+				55C1B1F614688E5B0010CB82 /* SwiftCore_Release.xcconfig */,
+				55C1B1F414688E5B0010CB82 /* SwiftCore_iOS.xcconfig */,
+				55C1B1F514688E5B0010CB82 /* SwiftCore_Mac.xcconfig */,
 			);
 			name = Config;
 			sourceTree = "<group>";
@@ -445,6 +463,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				55468097145F558C00BB74EB /* SwiftMPEGUtils.m in Sources */,
+				55468098145F558C00BB74EB /* SwiftWriter.m in Sources */,
+				55468099145F558C00BB74EB /* SwiftSoundDefinition.m in Sources */,
+				5546809A145F558C00BB74EB /* SwiftSoundEvent.m in Sources */,
+				5546809B145F558C00BB74EB /* SwiftSoundPlayer.m in Sources */,
 				55ED37D9145409280085EEC3 /* SwiftHTMLToCoreTextConverter.m in Sources */,
 				55ED37DA145409280085EEC3 /* SwiftPlacedStaticText.m in Sources */,
 				55ED37DB145409280085EEC3 /* SwiftPlacedText.m in Sources */,
@@ -454,8 +477,7 @@
 				5516B50F14479D5300231D67 /* SwiftPNGExporter.m in Sources */,
 				5516B51014479D5300231D67 /* SwiftSVGExporter.m in Sources */,
 				5516B4DD1446D75900231D67 /* SwiftParser.m in Sources */,
-				5516B4DE1446D75900231D67 /* SwiftTypes.m in Sources */,
-				5516B4DF1446D75900231D67 /* SwiftUtil.m in Sources */,
+				5516B4DE1446D75900231D67 /* SwiftBase.m in Sources */,
 				5516B4E01446D75900231D67 /* SwiftTextDefinition.m in Sources */,
 				5516B4E11446D75900231D67 /* SwiftFillStyle.m in Sources */,
 				5516B4E21446D75900231D67 /* SwiftFontDefinition.m in Sources */,
@@ -497,8 +519,7 @@
 				5595A6031442C03300DECD41 /* SwiftSpriteDefinition.m in Sources */,
 				5595A6041442C03300DECD41 /* SwiftStaticTextDefinition.m in Sources */,
 				5595A6051442C03300DECD41 /* SwiftTextRecord.m in Sources */,
-				5595A6061442C03300DECD41 /* SwiftTypes.m in Sources */,
-				5595A6071442C03300DECD41 /* SwiftUtil.m in Sources */,
+				5595A6061442C03300DECD41 /* SwiftBase.m in Sources */,
 				55DBFAB61443A454003AA0DA /* SwiftLayer.m in Sources */,
 				55DBFABE1444EAAE003AA0DA /* SwiftMovieView.m in Sources */,
 				55DBFAC11444EE22003AA0DA /* SwiftScene.m in Sources */,
@@ -535,29 +556,45 @@
 /* Begin XCBuildConfiguration section */
 		5516B4D11446D0EA00231D67 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5516B4D51446D12F00231D67 /* MacDebug.xcconfig */;
+			baseConfigurationReference = 55C1B1F014688E5B0010CB82 /* SwiftCore_Mac_Debug.xcconfig */;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/include/libxml2",
+				);
 			};
 			name = Debug;
 		};
 		5516B4D21446D0EA00231D67 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5516B4D61446D13500231D67 /* MacRelease.xcconfig */;
+			baseConfigurationReference = 55C1B1F114688E5B0010CB82 /* SwiftCore_Mac_Release.xcconfig */;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/include/libxml2",
+				);
 			};
 			name = Release;
 		};
 		5595A5F11442BFFA00DECD41 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 55F65A9314429D4100E12C27 /* Debug.xcconfig */;
+			baseConfigurationReference = 55C1B1EE14688E5B0010CB82 /* SwiftCore_iOS_Debug.xcconfig */;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/include/libxml2",
+				);
 			};
 			name = Debug;
 		};
 		5595A5F21442BFFA00DECD41 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 55F65A9614429D4100E12C27 /* Release.xcconfig */;
+			baseConfigurationReference = 55C1B1EF14688E5B0010CB82 /* SwiftCore_iOS_Release.xcconfig */;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/include/libxml2",
+				);
 			};
 			name = Release;
 		};

@@ -25,14 +25,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-#import <Foundation/Foundation.h>
-
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-#import <CoreGraphics/CoreGraphics.h>
-#else
-#import <ApplicationServices/ApplicationServices.h>
-#endif
+#import <SwiftImport.h>
+#import <SwiftBase.h>
+#import <SwiftParser.h>
 
 
 enum {

@@ -25,7 +25,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#import <SwiftImport.h>
+
 @class SwiftMovie;
+
 
 @protocol SwiftDefinition <NSObject>
 - (void) clearWeakReferences;

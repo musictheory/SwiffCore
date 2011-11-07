@@ -25,9 +25,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
+#import <SwiftBase.h>
+#import <SwiftDefinition.h>
+#import <SwiftParser.h>
 
-@class SwiftMovie;
+@class SwiftMovie, SwiftSoundDefinition;
+
 
 typedef struct _SwiftSoundStreamBlock {
     UInt32  frameRangeIndex;

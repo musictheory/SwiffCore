@@ -25,12 +25,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <Foundation/Foundation.h>
-#import <QuartzCore/QuartzCore.h>
-
-#import "SwiftLayer.h"
+#import <SwiftImport.h>
+#import <SwiftLayer.h>
 
 @class SwiftMovie, SwiftSpriteDefinition, SwiftFrame;
+
 
 @interface SwiftMultiLayer : SwiftLayer {
     NSMutableDictionary   *m_depthToLayerMap;

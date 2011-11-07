@@ -27,7 +27,10 @@
 
 #import "SwiftPlacedStaticText.h"
 
+#import "SwiftFontDefinition.h"
+#import "SwiftMovie.h"
 #import "SwiftTextRecord.h"
+
 
 static CFStringRef sCreateGlyphs(SwiftFontDefinition *fontDefinition, SwiftTextRecord *textRecord) CF_RETURNS_RETAINED;
 

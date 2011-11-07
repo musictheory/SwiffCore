@@ -25,8 +25,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#import <SwiftImport.h>
+#import <SwiftBase.h>
+#import <SwiftImport.h>
+#import <SwiftDefinition.h>
 
-#import <Foundation/Foundation.h>
 
 @interface SwiftPlacedObject : NSObject {
 @private

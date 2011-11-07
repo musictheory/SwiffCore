@@ -28,6 +28,7 @@
 #import "SwiftSpriteDefinition.h"
 
 #import "SwiftFrame.h"
+#import "SwiftMovie.h"
 #import "SwiftParser.h"
 #import "SwiftPlacedObject.h"
 #import "SwiftPlacedStaticText.h"

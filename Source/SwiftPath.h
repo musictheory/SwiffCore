@@ -25,17 +25,15 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#import <SwiftImport.h>
 
-#import <Foundation/Foundation.h>
+@class SwiftLineStyle, SwiftFillStyle;
 
 
 extern const CGFloat SwiftPathOperationMove;  // Followed by { CGFloat toX, CGFloat toY }
 extern const CGFloat SwiftPathOperationLine;  // Followed by { CGFloat toX, CGFloat toY }
 extern const CGFloat SwiftPathOperationCurve; // Followed by { CGFloat toX, CGFloat toY, CGFloat controlX, CGFloat controlY }
 extern const CGFloat SwiftPathOperationEnd;   // Followed by { NAN, NAN }.  Designates end of CGFloat array
-
-@class SwiftLineStyle;
-@class SwiftFillStyle;
 
 
 @interface SwiftPath : NSObject {

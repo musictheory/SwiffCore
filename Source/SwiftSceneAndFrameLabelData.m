@@ -26,7 +26,9 @@
 */
 
 #import "SwiftSceneAndFrameLabelData.h"
+
 #import "SwiftScene.h"
+#import "SwiftFrame.h"
 
 
 @interface SwiftFrame (FriendMethods)

@@ -1,5 +1,5 @@
 /*
-    SwiftTypes.h
+    SwiftBase.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
 
 
 typedef struct _SwiftPoint {
@@ -150,6 +150,30 @@ typedef NSInteger SwiftTag;
 
 typedef NSInteger SwiftVersion;
 
-typedef struct _SwiftParser SwiftParser;
-typedef struct _SwiftWriter SwiftWriter;
+
+
+extern void _SwiftLog(NSInteger level, NSString *format, ...) NS_FORMAT_FUNCTION(2,3);
+extern BOOL _SwiftShouldLog;
+
+extern void SwiftEnableLogging(void);
+#define SwiftShouldLog() _SwiftShouldLog
+#define SwiftLog( ...) { if (_SwiftShouldLog) _SwiftLog(6, __VA_ARGS__); }
+#define SwiftWarn(...) { _SwiftLog(4, __VA_ARGS__); }
+
+#define SwiftFloatFromTwips(TWIPS) ((TWIPS) / 20.0)
+
+extern CGColorRef SwiftColorCopyCGColor(SwiftColor color) CF_RETURNS_RETAINED;
+
+extern SwiftColor SwiftColorApplyColorTransform(SwiftColor color, SwiftColorTransform transform);
+
+extern NSString *SwiftStringFromColor(SwiftColor color);
+
+
+// CFArrayRef values must be valid (SwiftColorTransform *).  If stack is NULL, color is returned
+extern SwiftColor SwiftColorApplyColorTransformStack(SwiftColor color, CFArrayRef stack);
+
+extern NSString *SwiftStringFromColorTransform(SwiftColorTransform transform);
+extern NSString *SwiftStringFromColorTransformStack(CFArrayRef stack);
+
+extern NSData *SwiftGetDataFromHeader(SwiftHeader header);
 

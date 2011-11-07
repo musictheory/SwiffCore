@@ -25,7 +25,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
+#import <SwiftBase.h>
+#import <SwiftParser.h>
+
 
 typedef struct _SwiftGlyphEntry {
     UInt16  index;

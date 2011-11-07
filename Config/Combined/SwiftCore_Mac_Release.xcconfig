@@ -1,0 +1,3 @@
+#include "../SwiftCore_Base.xcconfig"
+#include "../SwiftCore_Release.xcconfig"
+#include "../SwiftCore_Mac.xcconfig"

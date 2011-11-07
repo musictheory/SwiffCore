@@ -27,9 +27,16 @@
 
 #import "SwiftSVGExporter.h"
 
+#import "SwiftFillStyle.h"
+#import "SwiftFrame.h"
+#import "SwiftGradient.h"
+#import "SwiftLineStyle.h"
+#import "SwiftMovie.h"
+#import "SwiftPath.h"
 #import "SwiftPlacedObject.h"
 #import "SwiftPlacedStaticText.h"
 #import "SwiftPlacedText.h"
+#import "SwiftShapeDefinition.h"
 
 
 typedef struct _SwiftSVGExporterState {

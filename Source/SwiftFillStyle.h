@@ -25,7 +25,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
+#import <SwiftBase.h>
+#import <SwiftParser.h>
+
+@class SwiftGradient;
+
 
 enum {
     SwiftFillStyleTypeColor = 0,
@@ -41,7 +46,6 @@ enum {
 };
 typedef NSInteger SwiftFillStyleType;
 
-@class SwiftGradient;
 
 @interface SwiftFillStyle : NSObject {
 @private

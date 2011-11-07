@@ -8,6 +8,8 @@
 
 #import "SwiftSoundPlayer.h"
 
+#import "SwiftFrame.h"
+#import "SwiftMovie.h"
 #import "SwiftSoundEvent.h"
 #import "SwiftSoundDefinition.h"
 

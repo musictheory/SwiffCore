@@ -25,35 +25,32 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftTypes.h"
-#import "SwiftUtil.h"
+#import <SwiftBase.h>
 
-// Protocols
-#import "SwiftDefinition.h"
+#import <SwiftDefinition.h>
 
-// Definition
-#import "SwiftTextDefinition.h"
-#import "SwiftFontDefinition.h"
-#import "SwiftShapeDefinition.h"
-#import "SwiftSpriteDefinition.h"
-#import "SwiftStaticTextDefinition.h"
+#import <SwiftTextDefinition.h>
+#import <SwiftFontDefinition.h>
+#import <SwiftShapeDefinition.h>
+#import <SwiftSpriteDefinition.h>
+#import <SwiftStaticTextDefinition.h>
 
-#import "SwiftFillStyle.h"
-#import "SwiftFontGlyph.h"
-#import "SwiftFrame.h"
-#import "SwiftGradient.h"
-#import "SwiftHTMLToCoreTextConverter.h"
-#import "SwiftLineStyle.h"
-#import "SwiftMovieView.h"
-#import "SwiftParser.h"
-#import "SwiftPath.h"
-#import "SwiftPlacedObject.h"
-#import "SwiftPlayhead.h"
-#import "SwiftRenderer.h"
-#import "SwiftTextRecord.h"
+#import <SwiftFillStyle.h>
+#import <SwiftFontGlyph.h>
+#import <SwiftFrame.h>
+#import <SwiftGradient.h>
+#import <SwiftHTMLToCoreTextConverter.h>
+#import <SwiftLineStyle.h>
+#import <SwiftMovieView.h>
+#import <SwiftParser.h>
+#import <SwiftPath.h>
+#import <SwiftPlacedObject.h>
+#import <SwiftPlayhead.h>
+#import <SwiftRenderer.h>
+#import <SwiftTextRecord.h>
+#import <SwiftWriter.h>
 
-#import "SwiftPNGExporter.h"
-#import "SwiftSVGExporter.h"
+#import <SwiftPNGExporter.h>
+#import <SwiftSVGExporter.h>
 
-// Subclasses
-#import "SwiftMovie.h"
+#import <SwiftMovie.h>

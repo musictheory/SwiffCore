@@ -26,7 +26,12 @@
 */
 
 #import "SwiftMultiLayer.h"
+
+#import "SwiftFrame.h"
+#import "SwiftMovie.h"
+#import "SwiftPlacedObject.h"
 #import "SwiftRenderer.h"
+
 
 static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 
