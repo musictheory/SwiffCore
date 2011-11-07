@@ -1,5 +1,5 @@
 /*
-    SwiftUtil.m
+    SwiftBase.m
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,14 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftUtil.h"
+#import "SwiftBase.h"
 #import <asl.h>
+
+
+const SwiftColorTransform SwiftColorTransformIdentity = {
+    1.0, 1.0, 1.0, 1.0,
+    0.0, 0.0, 0.0, 0.0
+};
 
 
 BOOL _SwiftShouldLog = NO;

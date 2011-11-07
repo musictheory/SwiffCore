@@ -25,10 +25,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
 
 @class SwiftScene, SwiftSoundDefinition;
+
 
 @interface SwiftFrame : NSObject {
 @private
@@ -37,6 +37,7 @@
 
     NSString             *m_label;
     NSArray              *m_placedObjects;
+    NSDictionary         *m_instanceNameToPlacedObjectMap;
 
     SwiftSoundDefinition *m_streamSound;
     NSArray              *m_soundEvents;

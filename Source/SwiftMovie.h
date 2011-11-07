@@ -25,11 +25,14 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#import <SwiftImport.h>
+#import <SwiftBase.h>
+#import <SwiftSpriteDefinition.h>
 
-#import <Foundation/Foundation.h>
-
-@class SwiftTextDefinition, SwiftFontDefinition, SwiftShapeDefinition, SwiftStaticTextDefinition, SwiftScene;
+@class SwiftFontDefinition,  SwiftShapeDefinition, SwiftStaticTextDefinition;
+@class SwiftSoundDefinition, SwiftTextDefinition,  SwiftScene;
 @protocol SwiftMovieDecoder;
+
 
 @interface SwiftMovie : SwiftSpriteDefinition {
 @private
@@ -42,6 +45,9 @@
     CGRect               m_stageRect;
     CGFloat              m_frameRate;
     SwiftColor           m_backgroundColor;
+    
+    id<SwiftMovieDecoder> m_decoder;
+    BOOL m_decoder_movie_didDecodeFrame;
 }
 
 - (id) initWithData:(NSData *)data;
@@ -72,6 +78,6 @@
 @end
 
 
-@interface SwiftMovieDecoder
+@protocol SwiftMovieDecoder <NSObject>
 - (void) movie:(SwiftMovie *)movie didDecodeFrame:(SwiftFrame *)frame;
 @end

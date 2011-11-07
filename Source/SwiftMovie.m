@@ -191,6 +191,9 @@
 {
     if (!m_data) return;
     
+    m_decoder = decoder;
+    m_decoder_movie_didDecodeFrame = [m_decoder respondsToSelector:@selector(movie:didDecodeFrame:)];
+
     char bytes[4];
     [m_data getBytes:bytes length:4];
     
@@ -238,6 +241,9 @@
     m_data = nil;
 
     SwiftParserFree(parser);
+    
+    m_decoder = nil;
+    m_decoder_movie_didDecodeFrame = NO;
 }
 
 

@@ -1,5 +1,5 @@
 /*
-    SwiftTypes.m
+    SwiftImport.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftTypes.h"
+#import <Foundation/Foundation.h>
 
-const SwiftColorTransform SwiftColorTransformIdentity = {
-    1.0, 1.0, 1.0, 1.0,
-    0.0, 0.0, 0.0, 0.0
-};
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+#import <CoreGraphics/CoreGraphics.h>
+#import <CoreText/CoreText.h>
+#else
+#import <ApplicationServices/ApplicationServices.h>
+#endif
+

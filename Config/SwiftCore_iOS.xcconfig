@@ -1,0 +1,5 @@
+ARCHS = armv7
+IPHONEOS_DEPLOYMENT_TARGET = 4.3
+TARGETED_DEVICE_FAMILY = 1,2
+SDKROOT = iphoneos
+CODE_SIGN_IDENTITY[sdk=iphoneos*] = iPhone Developer

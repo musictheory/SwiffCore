@@ -29,6 +29,7 @@
 
 #import "SwiftLayer.h"
 #import "SwiftSingleLayer.h"
+#import "SwiftMovie.h"
 #import "SwiftMultiLayer.h"
 #import "SwiftScene.h"
 #import "SwiftFrame.h"

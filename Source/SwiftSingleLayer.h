@@ -25,10 +25,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <Foundation/Foundation.h>
-#import <QuartzCore/QuartzCore.h>
+#import <SwiftImport.h>
+#import <SwiftLayer.h>
 
-#import "SwiftLayer.h"
 
 @interface SwiftSingleLayer : SwiftLayer {
     CALayer *m_layer;

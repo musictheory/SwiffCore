@@ -25,8 +25,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#import <SwiftImport.h>
 
-@class SwiftFrame, SwiftMovie;
+
+@class SwiftFrame, SwiftMovie, SwiftPlacedObject;
 
 @interface SwiftRenderer : NSObject
 

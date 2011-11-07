@@ -25,15 +25,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <Foundation/Foundation.h>
-
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-#import <CoreText/CoreText.h>
-#else
-#import <ApplicationServices/ApplicationServices.h>
-#endif
+#import <SwiftImport.h>
+#import <SwiftBase.h>
+#import <SwiftDefinition.h>
+#import <SwiftParser.h>
 
 @class SwiftMovie;
+
 
 @interface SwiftTextDefinition : NSObject <SwiftPlacableDefinition> {
 @private

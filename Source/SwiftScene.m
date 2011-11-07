@@ -27,6 +27,7 @@
 
 
 #import "SwiftScene.h"
+#import "SwiftFrame.h"
 
 @interface SwiftFrame (FriendMethods)
 - (void) _updateScene:(SwiftScene *)scene index1InScene:(NSUInteger)index1InScene;

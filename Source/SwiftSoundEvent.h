@@ -25,7 +25,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
+#import <SwiftParser.h>
+
+@class SwiftSoundDefinition;
+
 
 typedef struct {
     UInt32 position;
@@ -33,7 +37,6 @@ typedef struct {
     float  rightLevel;
 } SwiftSoundEnvelope;
 
-@class SwiftSoundDefinition;
 
 @interface SwiftSoundEvent : NSObject {
 @private

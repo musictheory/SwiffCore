@@ -25,7 +25,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
 
 @class SwiftScene, SwiftFrame, SwiftMovie;
 @protocol SwiftPlayheadDelegate;

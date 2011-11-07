@@ -26,7 +26,7 @@
 */
 
 
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
 
 @interface SwiftFontGlyph : NSObject
 

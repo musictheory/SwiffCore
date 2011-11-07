@@ -28,6 +28,8 @@
 
 #import "SwiftGradient.h"
 #import "SwiftParser.h"
+#import "SwiftBase.h"
+
 
 @implementation SwiftGradient
 

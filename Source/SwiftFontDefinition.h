@@ -26,9 +26,12 @@
 */
 
 
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
+#import <SwiftDefinition.h>
+#import <SwiftParser.h>
 
 @class SwiftMovie;
+
 
 @interface SwiftFontDefinition : NSObject <SwiftDefinition> {
 @private

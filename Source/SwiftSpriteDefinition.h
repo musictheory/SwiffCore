@@ -25,9 +25,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <Foundation/Foundation.h>
+#import <SwiftImport.h>
+#import <SwiftParser.h>
+#import <SwiftDefinition.h>
 
 @class SwiftFrame, SwiftMovie, SwiftSceneAndFrameLabelData, SwiftSoundDefinition, SwiftSoundStreamData;
+
 
 @interface SwiftSpriteDefinition : NSObject <SwiftPlacableDefinition> {
 @private

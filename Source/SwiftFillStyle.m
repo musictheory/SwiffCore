@@ -29,8 +29,8 @@
 #import "SwiftParser.h"
 #import "SwiftGradient.h"
 
-@implementation SwiftFillStyle
 
+@implementation SwiftFillStyle
 
 + (NSArray *) fillStyleArrayWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version
 {
