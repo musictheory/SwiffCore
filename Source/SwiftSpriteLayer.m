@@ -1,5 +1,5 @@
 /*
-    SwiftLayer.m
+    SwiftSpriteLayer.m
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftMultiLayer.h"
+#import "SwiftSpriteLayer.h"
 
 #import "SwiftFrame.h"
 #import "SwiftMovie.h"
@@ -35,56 +35,140 @@
 
 static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 
-@implementation SwiftMultiLayer
+@interface SwiftSpriteLayer ()
+- (void) _clearContent;
+- (void) _setupContent;
+@end
 
 
-- (id) initWithMovie:(SwiftMovie *)movie
+@implementation SwiftSpriteLayer
+
+- (id) init
 {
-    if ((self = [super initWithMovie:movie])) {
-        m_depthToLayerMap = [[NSMutableDictionary alloc] init];
+    if ((self = [super init])) {
+        [self _setupContent];
     }
 
     return self;
 }
 
 
+- (id) initWithSpriteDefinition: (SwiftSpriteDefinition *) spriteDefinition
+{
+    if ((self = [self init])) {
+        m_spriteDefinition = [spriteDefinition retain];
+    }
+    
+    return self;
+}
+
+
 - (void) dealloc
 {
-    [m_depthToLayerMap release];
-    m_depthToLayerMap = nil;
+    [self _clearContent];
+    
+    [m_currentFrame release];
+    m_currentFrame = nil;
     
     [super dealloc];
 }
 
 
+
 #pragma mark -
 #pragma mark Private Methods
 
-- (void) transitionToFrame:(SwiftFrame *)newFrame fromFrame:(SwiftFrame *)oldFrame
+- (void) _clearContent
 {
-    NSEnumerator *oldEnumerator = [[oldFrame placedObjects] objectEnumerator];
-    NSEnumerator *newEnumerator = [[newFrame placedObjects] objectEnumerator];
+    if (m_usesSublayers) {
+        for (CALayer *layer in [m_content.depthToLayerMap allValues]) {
+            [layer setDelegate:nil];
+            [layer removeFromSuperlayer];
+        }
+
+        [m_content.depthToLayerMap release];
+        m_content.depthToLayerMap = nil;
+
+    } else {
+        [m_content.layer setDelegate:nil];
+        [m_content.layer removeFromSuperlayer];
+        [m_content.layer release];
+        m_content.layer = nil;
+    }
+}
+
+
+- (void) _setupContent
+{
+    if (m_usesSublayers) {
+        [m_content.depthToLayerMap release];
+        m_content.depthToLayerMap = [[NSMutableDictionary alloc] init];
+
+    } else {
+        [m_content.layer setDelegate:nil];
+        [m_content.layer release];
+        m_content.layer = [[CALayer alloc] init];
+
+        [m_content.layer setDelegate:self];
+        [self addSublayer:m_content.layer];
+    }
+}
+
+
+- (BOOL) _spriteLayer:(SwiftSpriteLayer *)layer shouldInterpolateFromFrame:(SwiftFrame *)fromFrame toFrame:(SwiftFrame *)toFrame
+{
+    CALayer *superlayer = [self superlayer];
+
+    // Send up layer hierarchy until we find our SwiftMovieLayer
+    if ([superlayer isKindOfClass:[SwiftSpriteLayer class]]) {
+        return [(SwiftSpriteLayer *)superlayer _spriteLayer:layer shouldInterpolateFromFrame:fromFrame toFrame:toFrame];
+    }
+    
+    return NO;
+}
+
+
+- (CGAffineTransform) _baseTransform
+{
+    CGSize movieSize = [m_movie stageRect].size;
+    CGRect bounds    = [self bounds];
+
+    return CGAffineTransformMakeScale(bounds.size.width /  movieSize.width, bounds.size.height / movieSize.height);
+}
+
+
+- (void) _transitionToFrame:(SwiftFrame *)toFrame
+{
+    if (!m_usesSublayers) {
+        [m_content.layer setNeedsDisplay];
+        return;
+    }
+
+    NSEnumerator *oldEnumerator = [[m_currentFrame placedObjects] objectEnumerator];
+    NSEnumerator *newEnumerator = [[toFrame        placedObjects] objectEnumerator];
     
     SwiftPlacedObject *oldPlacedObject = [oldEnumerator nextObject];
     SwiftPlacedObject *newPlacedObject = [newEnumerator nextObject];
 
     NSInteger oldDepth = oldPlacedObject ? [oldPlacedObject depth] : NSIntegerMax;
     NSInteger newDepth = newPlacedObject ? [newPlacedObject depth] : NSIntegerMax;
-    
+
+    CGAffineTransform baseTransform = [self _baseTransform];
+
     void (^updateLayer)(CALayer *layer, SwiftPlacedObject *) = ^(CALayer *layer, SwiftPlacedObject *placedObject) {
         UInt16 libraryID = [placedObject libraryID];
         id definition = [m_movie definitionWithLibraryID:libraryID];
 
         CGRect bounds = [definition bounds];
-        bounds = CGRectApplyAffineTransform(bounds, m_baseTransform);
+        bounds = CGRectApplyAffineTransform(bounds, baseTransform);
         
         [layer setValue:placedObject forKey:PlacedObjectKey];
         [layer setBounds:bounds];
         [layer setAnchorPoint:CGPointMake(-bounds.origin.x / bounds.size.width, (-bounds.origin.y / bounds.size.height))];
 
         CGAffineTransform layerTransform = [placedObject affineTransform];
-        layerTransform.tx *= m_baseTransform.a;
-        layerTransform.ty *= m_baseTransform.d;
+        layerTransform.tx *= baseTransform.a;
+        layerTransform.ty *= baseTransform.d;
 
         [layer setAffineTransform:layerTransform];
     };
@@ -95,7 +179,7 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
             UInt16 newLibraryID = [newPlacedObject libraryID];
             
             NSNumber *key = [[NSNumber alloc] initWithInteger:newDepth];
-            CALayer *layer = [m_depthToLayerMap objectForKey:key];
+            CALayer *layer = [m_content.depthToLayerMap objectForKey:key];
             if (oldLibraryID != newLibraryID) [layer setNeedsDisplay];
             if (layer) updateLayer(layer, newPlacedObject);
 
@@ -112,10 +196,8 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
             [layer setDelegate:self];
             [layer setZPosition:newDepth];
 
-//            [layer setBackgroundColor:[[UIColor colorWithRed:((rand() % 16) / 15.0) green:((rand() % 16) / 15.0) blue:((rand() % 16) / 15.0) alpha:0.5] CGColor]];
-
             NSNumber *key = [[NSNumber alloc] initWithInteger:newDepth];
-            [m_depthToLayerMap setObject:layer forKey:key];
+            [m_content.depthToLayerMap setObject:layer forKey:key];
             [key release];
 
             updateLayer(layer, newPlacedObject);
@@ -130,11 +212,11 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
         } else if (oldDepth < newDepth) {
             NSNumber *key = [[NSNumber alloc] initWithInteger:oldDepth];
 
-            CALayer *layer = [m_depthToLayerMap objectForKey:key];
+            CALayer *layer = [m_content.depthToLayerMap objectForKey:key];
             [layer setDelegate:nil];
             [layer removeFromSuperlayer];
 
-            [m_depthToLayerMap removeObjectForKey:key];
+            [m_content.depthToLayerMap removeObjectForKey:key];
             [key release];
 
             oldPlacedObject = [oldEnumerator nextObject];
@@ -147,12 +229,14 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 #pragma mark -
 #pragma mark CALayer Logic
 
-- (void) setBounds:(CGRect)bounds
+- (void) layoutSublayers
 {
-    [super setBounds:bounds];
+    [super layoutSublayers];
 
-    CGSize movieSize = [m_movie stageRect].size;
-    m_baseTransform = CGAffineTransformMakeScale(bounds.size.width /  movieSize.width, bounds.size.height / movieSize.height);
+    if (!m_usesSublayers) {
+        [m_content.layer setFrame:[self bounds]];
+        [m_content.layer setNeedsDisplay];
+    }
 }
 
 
@@ -160,13 +244,23 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 {
     CGContextSaveGState(context);
 
-    SwiftPlacedObject *placedObject = [layer valueForKey:PlacedObjectKey];
-    CGPoint position = [layer position];
+    if (m_usesSublayers) {
+        SwiftPlacedObject *placedObject = [layer valueForKey:PlacedObjectKey];
+        CGPoint position = [layer position];
 
-    CGContextTranslateCTM(context, -position.x, -position.y);
-    CGContextConcatCTM(context, m_baseTransform);
+        CGContextTranslateCTM(context, -position.x, -position.y);
+        CGContextConcatCTM(context, [self _baseTransform]);
 
-    [[SwiftRenderer sharedInstance] renderPlacedObject:placedObject movie:m_movie context:context];
+        [[SwiftRenderer sharedInstance] renderPlacedObject:placedObject movie:m_movie context:context];
+
+    } else if (m_spriteDefinition) {
+
+    } else {
+
+        CGContextConcatCTM(context, [self _baseTransform]);
+
+        [[SwiftRenderer sharedInstance] renderFrame:m_currentFrame movie:m_movie context:context];
+    }
 
     CGContextRestoreGState(context);
 }
@@ -180,10 +274,10 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 
 - (id<CAAction>) actionForLayer:(CALayer *)layer forKey:(NSString *)event
 {
-    if (m_frameAnimationDuration > 0.0) {
+    if (m_interpolateFrame) {
         CABasicAnimation *basicAnimation = [CABasicAnimation animationWithKeyPath:event];
         
-        [basicAnimation setDuration:[self frameAnimationDuration]];
+        [basicAnimation setDuration:(1.0 / [m_movie frameRate])];
         [basicAnimation setCumulative:YES];
 
         return basicAnimation;
@@ -192,5 +286,37 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
         return (id)[NSNull null];
     }
 }
+
+
+#pragma mark -
+#pragma mark Accessors
+
+- (void) setCurrentFrame:(SwiftFrame *)frame
+{
+    if (frame != m_currentFrame) {
+        m_interpolateFrame = [self _spriteLayer:self shouldInterpolateFromFrame:m_currentFrame toFrame:frame];
+        
+        [self _transitionToFrame:frame];
+
+        [m_currentFrame release];
+        m_currentFrame = [frame retain];
+    }
+}
+
+
+- (void) setUsesSublayers:(BOOL)usesSublayers
+{
+    if (m_usesSublayers != usesSublayers) {
+        [self _clearContent];
+        m_usesSublayers = usesSublayers;
+        [self _setupContent];
+    }
+}
+
+
+@synthesize movie            = m_movie,
+            currentFrame     = m_currentFrame,
+            spriteDefinition = m_spriteDefinition,
+            usesSublayers    = m_usesSublayers;
 
 @end

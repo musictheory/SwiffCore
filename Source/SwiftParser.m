@@ -50,6 +50,8 @@ struct _SwiftParser {
     UInt8         currentTagVersion;
 };
 
+void _SwiftParserEnsureBufferError(SwiftParser *parser);
+
 
 SwiftParser *SwiftParserCreate(const UInt8 *buffer, UInt32 length)
 {
@@ -105,12 +107,18 @@ static BOOL sInflate(const UInt8 *inBuffer, UInt32 inLength, UInt8 *outBuffer, U
 }
 
 
+void _SwiftParserEnsureBufferError(SwiftParser *parser)
+{
+    SwiftWarn(@"SwiftParser %p is no longer valid.  Break on _SwiftParserEnsureBufferError to debug.", parser);
+}
+
+
 static BOOL sEnsureBuffer(SwiftParser *parser, int length)
 {
     BOOL yn = ((parser->b + length) <= (parser->buffer + parser->length));
 
     if (!yn) {
-        SwiftWarn(@"SwiftParser %p is no longer valid", parser);
+        _SwiftParserEnsureBufferError(parser);
         parser->isValid = NO;
     }
 

@@ -5,4 +5,4 @@
     #import <Foundation/Foundation.h>
 #endif
 
-#import "SwiftCore.h"
+#import <SwiftCore.h>

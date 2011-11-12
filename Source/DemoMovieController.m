@@ -109,9 +109,7 @@ static NSData *sGetCachedData(NSURL *url)
 
     m_movieView = [[SwiftMovieView alloc] initWithFrame:movieFrame];
     [m_movieView setDelegate:self];
-    [m_movieView setContentMode:UIViewContentModeCenter];
-    [m_movieView setUsesMultipleLayers:NO];
-    [m_movieView setInterpolatesFrames:YES];
+    [m_movieView setUsesSublayers:YES];
     [m_movieView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
     [selfView addSubview:m_movieView];
 
@@ -228,8 +226,8 @@ static NSData *sGetCachedData(NSURL *url)
 
 - (void) _handlePlayButtonTapped:(id)sender
 {
-    BOOL isPlaying = ![m_movieView isPlaying];
-    [m_movieView setPlaying:isPlaying];
+    BOOL isPlaying = ![[m_movieView playhead] isPlaying];
+    [[m_movieView playhead] setPlaying:isPlaying];
     [m_playButton setTitle:(isPlaying ? @"Pause" : @"Play") forState:UIControlStateNormal];
 }
 
@@ -237,10 +235,29 @@ static NSData *sGetCachedData(NSURL *url)
 #pragma mark -
 #pragma mark SwiftMovieView Delegate
 
-- (void) movieView:(SwiftMovieView *)movieView willDisplayScene:(SwiftScene *)scene frame:(SwiftFrame *)frame
+- (void) movieView:(SwiftMovieView *)movieView willDisplayFrame:(SwiftFrame *)frame
 {
     NSInteger i = [[movieView playhead] rawFrameIndex];
     [m_timelineSlider setValue:(float)i];
 }
+
+
+- (BOOL) movieView:(SwiftMovieView *)movieView spriteLayer:(SwiftSpriteLayer *)spriteLayer shouldInterpolateFromFrame:(SwiftFrame *)fromFrame toFrame:(SwiftFrame *)toFrame
+{
+    if ([m_movieView usesSublayers]) {
+        SwiftScene *fromScene = [fromFrame scene];
+        SwiftScene *toScene   = [toFrame   scene];
+        
+        if (fromScene == toScene) {
+            return YES;
+        } else {
+            NSLog(@"different scenes, returning NO");
+            return NO;
+        }
+    }
+    
+    return NO;
+}
+
 
 @end

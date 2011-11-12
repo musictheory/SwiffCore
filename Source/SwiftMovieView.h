@@ -25,54 +25,52 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#import <SwiftImport.h>
+#import <SwiftMovieLayer.h>
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR || TARGET_HAS_UIKIT
+#define SwiftMovieViewUsesUIKit 1
+#endif
+
+#if SwiftMovieViewUsesUIKit
 #import <UIKit/UIKit.h>
-#import <QuartzCore/QuartzCore.h>
+#define SwiftMovieViewSuperclass UIView
+#else
+#import <AppKit/AppKit.h>
+#define SwiftMovieViewSuperclass NSView
+#endif
 
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 
-@class SwiftLayer, SwiftMovie, SwiftScene, SwiftFrame, SwiftPlayhead;
+@class SwiftLayer, SwiftMovie, SwiftFrame, SwiftPlayhead;
+@class SwiftMovieLayer, SwiftSpriteLayer;
 
 @protocol SwiftMovieViewDelegate;
 
-@interface SwiftMovieView : UIView {
+@interface SwiftMovieView : SwiftMovieViewSuperclass <SwiftMovieLayerDelegate> {
 @private
     id<SwiftMovieViewDelegate> m_delegate;
-
-    SwiftLayer    *m_layer;
-    SwiftMovie    *m_movie;
-    SwiftPlayhead *m_playhead;
-
-    CADisplayLink *m_displayLink;
-    CFTimeInterval m_displayLinkPlayStart;
-    long           m_displayLinkPlayIndex;
-
-    CFTimeInterval m_framesPerSecond;
-
-    BOOL m_playing;
-    BOOL m_showsBackgroundColor;
-    BOOL m_usesMultipleLayers;
-    BOOL m_interpolatesFrames;
-    BOOL m_delegate_movieView_willDisplayScene_frame;
-    BOOL m_delegate_movieView_didDisplayScene_frame;
+    SwiftMovie *m_movie;
+    
+    BOOL m_delegate_movieView_willDisplayFrame;
+    BOOL m_delegate_movieView_didDisplayFrame;
+    BOOL m_delegate_movieView_spriteLayer_shouldInterpolateFromFrame_toFrame;
 }
 
 @property (nonatomic, retain) SwiftMovie *movie;
+
 @property (nonatomic, assign) id<SwiftMovieViewDelegate> delegate;
+@property (nonatomic, assign) BOOL drawsBackground;
+@property (nonatomic, assign) BOOL usesSublayers;
 
+@property (nonatomic, retain, readonly) SwiftMovieLayer *layer;
 @property (nonatomic, retain, readonly) SwiftPlayhead *playhead;
-
-@property (nonatomic, assign, getter=isPlaying) BOOL playing;
-@property (nonatomic, assign) BOOL showsBackgroundColor;
-@property (nonatomic, assign) BOOL usesMultipleLayers;  // Experimental, defaults to NO
-@property (nonatomic, assign) BOOL interpolatesFrames;
 
 @end
 
 
 @protocol SwiftMovieViewDelegate <NSObject>
 @optional
-- (void) movieView:(SwiftMovieView *)movieView willDisplayScene:(SwiftScene *)scene frame:(SwiftFrame *)frame;
-- (void) movieView:(SwiftMovieView *)movieView didDisplayScene:(SwiftScene *)scene  frame:(SwiftFrame *)frame;
+- (void) movieView:(SwiftMovieView *)movieView willDisplayFrame:(SwiftFrame *)frame;
+- (void) movieView:(SwiftMovieView *)movieView didDisplayFrame:(SwiftFrame *)frame;
+- (BOOL) movieView:(SwiftMovieView *)movieView spriteLayer:(SwiftSpriteLayer *)spriteLayer shouldInterpolateFromFrame:(SwiftFrame *)fromFrame toFrame:(SwiftFrame *)toFrame;
 @end
-
-#endif

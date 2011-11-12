@@ -79,7 +79,7 @@ NSData *SwiftWriterGetDataWithHeader(SwiftWriter *writer, SwiftHeader header)
 
     SwiftWriterAppendRect(subwriter,   header.stageRect);
     SwiftWriterAppendFixed8(subwriter, header.frameRate);
-    SwiftWriterAppendFixed8(subwriter, writer->frameCount);
+    SwiftWriterAppendUInt16(subwriter, writer->frameCount);
     SwiftWriterAppendData(subwriter, (__bridge NSData *)writer->data);
 
     UInt32 fileSize = CFDataGetLength(subwriter->data) + 8;
@@ -121,6 +121,8 @@ NSData *SwiftWriterGetDataWithHeader(SwiftWriter *writer, SwiftHeader header)
             
         // Fallback to uncompressed
         } else {
+            SwiftWarn(@"SwiftWriterGetDataWithHeader(): falling back to uncompressed");
+
             [result replaceBytesInRange:NSMakeRange(0, 1) withBytes:"F"];
             [result appendData:(__bridge NSData *)subwriter->data];
         }
@@ -192,6 +194,10 @@ void SwiftWriterStartTag(SwiftWriter *writer, SwiftTag tag, NSInteger version)
         writer->baseData = writer->data;
         writer->data = CFDataCreateMutable(NULL, 0);
         writer->currentTag = tag;
+        
+        if (tag == SwiftTagShowFrame) {
+            writer->frameCount++;
+        }
 
     } else {
         SwiftWarn(@"SwiftWriterStartTag() called without ending previous tag with SwiftWriterEnd()");
@@ -210,7 +216,7 @@ void SwiftWriterEndTag(SwiftWriter *writer)
         writer->currentTag = 0;
     
         CFIndex length    = CFDataGetLength(tagData);
-        BOOL    needsLong = length > 63;
+        BOOL    needsLong = length >= 63;
 
         SwiftWriterAppendUInt16(writer, (tag << 6) | (needsLong ? 0x3F : length));
 
@@ -252,7 +258,7 @@ static void sCalculateBitsForUInt32(UInt32 u, UInt32 *inOutBits)
 
 static void sCalculateBitsForSInt32(SInt32 s, UInt32 *inOutBits)
 {
-    UInt32 u = (s > 0) ? s : ~s;
+    UInt32 u = (s >= 0) ? s : ~s;
     sCalculateBitsForUInt32(u << 1, inOutBits);
 }
 
@@ -285,7 +291,6 @@ void SwiftWriterAppendSBits(SwiftWriter *writer, UInt8 numberOfBits, SInt32 valu
 {
     SwiftWriterAppendUBits(writer, numberOfBits, *((UInt32 *)&value));
 }
-
 
 
 #pragma mark -
@@ -342,7 +347,8 @@ void SwiftWriterAppendUInt32(SwiftWriter *writer, UInt32 value)
 
 void SwiftWriterAppendFixed8(SwiftWriter *writer, CGFloat value)
 {
-
+    SwiftWriterByteAlign(writer);
+    SwiftWriterAppendSInt16(writer, (SInt16)(value * 256));
 }
 
 
@@ -351,17 +357,18 @@ void SwiftWriterAppendFixed8(SwiftWriter *writer, CGFloat value)
 
 void SwiftWriterAppendRect(SwiftWriter *writer, CGRect rect)
 {
-    SInt32 xMin = lround(CGRectGetMinX(rect));
-    SInt32 xMax = lround(CGRectGetMaxX(rect));
-    SInt32 yMin = lround(CGRectGetMinY(rect));
-    SInt32 yMax = lround(CGRectGetMaxY(rect));
+    SInt32 xMin = lround(CGRectGetMinX(rect) * 20);
+    SInt32 xMax = lround(CGRectGetMaxX(rect) * 20);
+    SInt32 yMin = lround(CGRectGetMinY(rect) * 20);
+    SInt32 yMax = lround(CGRectGetMaxY(rect) * 20);
 
     UInt32 nBits = 0;
     sCalculateBitsForSInt32(xMin, &nBits);
     sCalculateBitsForSInt32(xMax, &nBits);
     sCalculateBitsForSInt32(yMin, &nBits);
     sCalculateBitsForSInt32(yMax, &nBits);
-    
+
+    SwiftWriterAppendUBits(writer, 5, nBits);
     SwiftWriterAppendSBits(writer, nBits, xMin);
     SwiftWriterAppendSBits(writer, nBits, xMax);
     SwiftWriterAppendSBits(writer, nBits, yMin);

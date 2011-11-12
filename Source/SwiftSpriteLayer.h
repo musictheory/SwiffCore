@@ -1,5 +1,5 @@
 /*
-    SwiftLayer.h
+    SwiftSpriteLayer.m
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,31 @@
 */
 
 #import <SwiftImport.h>
-#import <SwiftLayer.h>
+#import <QuartzCore/QuartzCore.h>
+
+@class SwiftMovie, SwiftFrame, SwiftSpriteDefinition;
 
 
-@interface SwiftSingleLayer : SwiftLayer {
-    CALayer *m_layer;
+@interface SwiftSpriteLayer : CALayer {
+    SwiftMovie              *m_movie;
+    SwiftSpriteDefinition   *m_spriteDefinition;
+    SwiftFrame              *m_currentFrame;
+
+    union {
+        CALayer             *layer;           // usesSublayers = NO
+        NSMutableDictionary *depthToLayerMap; // usesSublayers = YES
+    } m_content;
+
+    BOOL                     m_usesSublayers;
+    BOOL                     m_interpolateFrame;
 }
+
+- (id) initWithSpriteDefinition: (SwiftSpriteDefinition *) spriteDefinition;
+
+@property (nonatomic, retain, readonly) SwiftSpriteDefinition *spriteDefinition;
+
+@property (nonatomic, retain) SwiftMovie *movie;
+@property (nonatomic, assign) BOOL usesSublayers;
+@property (nonatomic, retain) SwiftFrame *currentFrame;
 
 @end

@@ -1,5 +1,5 @@
 /*
-    SwiftLayer.m
+    SwiftMovieLayer.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,83 +25,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftLayer.h"
+#import <SwiftSpriteLayer.h>
+#import <SwiftPlayhead.h>
+
+@protocol SwiftMovieLayerDelegate;
+
+@class SwiftScene;
 
 
-@implementation SwiftLayer
-
-- (id) initWithMovie:(SwiftMovie *)movie;
-{
-    if ((self = [super init])) {
-        m_movie = [movie retain];
-        [self setMasksToBounds:YES];
-    }
-    
-    return self;
+@interface SwiftMovieLayer : SwiftSpriteLayer <SwiftPlayheadDelegate> {
+@private
+    id<SwiftMovieLayerDelegate> m_movieLayerDelegate;
+    SwiftPlayhead *m_playhead;
+   
+    BOOL        m_movieLayerDelegate_movieLayer_willDisplayFrame;
+    BOOL        m_movieLayerDelegate_movieLayer_didDisplayFrame;
+    BOOL        m_movieLayerDelegate_movieLayer_spriteLayer_shouldInterpolateFromFrame_toFrame;
 }
 
+@property (nonatomic, assign) id<SwiftMovieLayerDelegate> movieLayerDelegate;
 
-- (void) dealloc
-{
-    [m_movie release];
-    m_movie = nil;
-
-    [m_currentFrame release];
-    m_currentFrame = nil;
-    
-    [super dealloc];
-}
-
-
-#pragma mark -
-#pragma mark CALayer Logic
-
-- (id<CAAction>) actionForKey:(NSString *)event
-{
-    return nil;
-}
-
-
-- (id<CAAction>) actionForLayer:(CALayer *)layer forKey:(NSString *)event
-{
-    if (m_frameAnimationDuration > 0.0) {
-        CABasicAnimation *basicAnimation = [CABasicAnimation animationWithKeyPath:event];
-        
-        [basicAnimation setDuration:m_frameAnimationDuration];
-        [basicAnimation setCumulative:YES];
-
-        return basicAnimation;
-
-    } else {
-        return (id)[NSNull null];
-    }
-}
-
-
-#pragma mark -
-#pragma mark Subclasses to Override
-
-- (void) transitionToFrame:(SwiftFrame *)newFrame fromFrame:(SwiftFrame *)oldFrame
-{
-    // Subclasses to override
-}
-
-
-#pragma mark -
-#pragma mark Accessors
-
-- (void) setCurrentFrame:(SwiftFrame *)frame
-{
-    if (frame != m_currentFrame) {
-        [self transitionToFrame:frame fromFrame:m_currentFrame];
-
-        [m_currentFrame release];
-        m_currentFrame = [frame retain];
-    }
-}
-
-@synthesize movie                  = m_movie,
-            currentFrame           = m_currentFrame,
-            frameAnimationDuration = m_frameAnimationDuration;
+@property (nonatomic, retain, readonly) SwiftPlayhead *playhead;
+@property (nonatomic, assign) BOOL drawsBackground;
 
 @end
+
+
+@protocol SwiftMovieLayerDelegate <NSObject>
+- (void) movieLayer:(SwiftMovieLayer *)movieLayer willDisplayFrame:(SwiftFrame *)frame;
+- (void) movieLayer:(SwiftMovieLayer *)movieLayer didDisplayFrame:(SwiftFrame *)frame;
+- (BOOL) movieLayer:(SwiftMovieLayer *)movieLayer spriteLayer:(SwiftSpriteLayer *)spriteLayer shouldInterpolateFromFrame:(SwiftFrame *)fromFrame toFrame:(SwiftFrame *)toFrame;
+@end
+
