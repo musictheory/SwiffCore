@@ -27,96 +27,18 @@
 
 #import "SwiftMovieView.h"
 
-#import "SwiftLayer.h"
-#import "SwiftSingleLayer.h"
-#import "SwiftMovie.h"
-#import "SwiftMultiLayer.h"
-#import "SwiftScene.h"
-#import "SwiftFrame.h"
-#import "SwiftPlayhead.h"
-#import "SwiftSoundPlayer.h"
-
-
-@interface SwiftMovieView ()
-- (void) _displayLinkDidFire:(CADisplayLink *)displayLink;
-@end
-
+#define LAYER ((SwiftMovieLayer *)[self layer])
 
 @implementation SwiftMovieView
 
-- (id) initWithFrame:(CGRect)frame
-{
-    if ((self = [super initWithFrame:frame])) {
-        m_showsBackgroundColor = YES;
-    }
-    
-    return self;
-}
-
-
-- (void) dealloc
-{
-    [m_displayLink invalidate];
-
-    [m_movie        release];  m_movie        = nil;
-    [m_playhead     release];  m_playhead     = nil;
-    [m_displayLink  release];  m_displayLink  = nil;
-    [m_layer        release];  m_layer        = nil;
-
-    [super dealloc];
-}
-
 
 #pragma mark -
-#pragma mark Superclass Overrides
+#pragma mark UIKit Implementation
+#ifdef SwiftMovieViewUsesUIKit
 
-- (void) setFrame:(CGRect)frame
++ (Class) layerClass
 {
-    [super setFrame:frame];
-    [self setNeedsLayout];
-}
-
-
-- (void) layoutSubviews
-{
-    UIViewContentMode mode = [self contentMode];
-
-    CGRect bounds    = [self bounds];
-    CGSize movieSize = [m_movie stageRect].size;
-    CGRect frame     = { CGPointZero, movieSize };
-
-    if (mode == UIViewContentModeScaleToFill) {
-        frame = bounds;
-
-    } else if ((mode == UIViewContentModeScaleAspectFit) || (mode == UIViewContentModeScaleAspectFit)) {
-        
-        
-    } else if (mode == UIViewContentModeScaleAspectFill) {
-        
-    
-    } else {
-        CGFloat x = 0.0, y = 0.0;
-
-        if ((mode == UIViewContentModeTopLeft) || (mode == UIViewContentModeLeft) || (mode == UIViewContentModeBottomLeft)) {
-            x = 0.0;
-        } else if ((mode == UIViewContentModeTop) || (mode == UIViewContentModeCenter) || (mode == UIViewContentModeBottom)) {
-            x = round((bounds.size.width - movieSize.width) / 2.0);
-        } else if ((mode == UIViewContentModeTopRight) || (mode == UIViewContentModeRight) || (mode == UIViewContentModeBottomRight)) {
-            x = bounds.size.width - movieSize.width;
-        }
-
-        if ((mode == UIViewContentModeTopLeft) || (mode == UIViewContentModeTop) || (mode == UIViewContentModeTopRight)) {
-            y = 0.0;
-        } else if ((mode == UIViewContentModeLeft) || (mode == UIViewContentModeCenter) || (mode == UIViewContentModeRight)) {
-            y = round((bounds.size.height - movieSize.height) / 2.0);
-        } else if ((mode == UIViewContentModeBottomLeft) || (mode == UIViewContentModeBottom) || (mode == UIViewContentModeBottomRight)) {
-            y = bounds.size.height - movieSize.height;
-        }
-
-        frame = CGRectMake(x, y, movieSize.width, movieSize.height);
-    }
-
-    [m_layer setFrame:frame];
+    return [SwiftMovieLayer class];
 }
 
 
@@ -133,159 +55,75 @@
         CGFloat scale = [newWindow contentScaleFactor];
         if (scale < 1) scale = 1;
         [self setContentScaleFactor:scale];
-        [m_layer setContentsScale:scale];
-
-        [m_displayLink invalidate];
-        [m_displayLink release];
-        m_displayLink = nil;
-        
-        m_displayLink = [[[newWindow screen] displayLinkWithTarget:self selector:@selector(_displayLinkDidFire:)] retain]; 
-        [m_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
-        [m_displayLink setPaused:!m_playing];
-        m_displayLinkPlayStart = CACurrentMediaTime();
-        m_displayLinkPlayIndex = 0;
+        [[self layer] setContentsScale:scale];
     }
 }
 
-
-- (void) _displayLinkDidFire:(CADisplayLink *)displayLink
-{
-    CFTimeInterval elapsed = ([m_displayLink timestamp] - m_displayLinkPlayStart);
-
-    long currentIndex = (long)(elapsed * m_framesPerSecond);
-
-    if (m_displayLinkPlayIndex != currentIndex) {
-        [m_playhead step];
-        m_displayLinkPlayIndex = currentIndex;
-    }
-}
-
-
-- (void) _updateLayer
-{
-    Class cls = m_usesMultipleLayers ? [SwiftMultiLayer class] : [SwiftSingleLayer class];
-
-    [m_layer removeFromSuperlayer];
-    [m_layer release];
-
-    m_layer = [[cls alloc] initWithMovie:m_movie];
-    [m_layer setFrameAnimationDuration:(m_interpolatesFrames ? (1.0 / m_framesPerSecond) : 0.0)];
-    [m_layer setCurrentFrame:[m_playhead frame]];
-
-    if (m_showsBackgroundColor) {
-        m_showsBackgroundColor = ~m_showsBackgroundColor;
-        [self setShowsBackgroundColor:YES];
-    }
-
-    [[self layer] addSublayer:m_layer];
-    
-    [self layoutSubviews];
-}
+#endif
 
 
 #pragma mark -
-#pragma mark Playhead Delegate
+#pragma mark AppKit Implementation
+#ifndef SwiftMovieViewUsesUIKit
 
-- (void) playheadReachedEnd:(SwiftPlayhead *)playhead
+#endif
+
+
+#pragma mark
+#pragma mark
+
+- (void) movieLayer:(SwiftMovieLayer *)movieLayer willDisplayFrame:(SwiftFrame *)frame
 {
-    [self setPlaying:NO];
+    if (m_delegate_movieView_willDisplayFrame) {
+        [m_delegate movieView:self willDisplayFrame:frame];
+    }
 }
 
 
-- (void) playheadDidUpdate:(SwiftPlayhead *)playhead
+- (void) movieLayer:(SwiftMovieLayer *)movieLayer didDisplayFrame:(SwiftFrame *)frame
 {
-    SwiftScene *scene = [playhead scene];
-    SwiftFrame *frame = [playhead frame];
-
-    if (m_delegate_movieView_willDisplayScene_frame) {
-        [m_delegate movieView:self willDisplayScene:scene frame:frame];
+    if (m_delegate_movieView_willDisplayFrame) {
+        [m_delegate movieView:self didDisplayFrame:frame];
     }
+}
 
-    [[SwiftSoundPlayer sharedInstance] processMovie:m_movie frame:frame];
 
-    [m_layer setCurrentFrame:frame];
+- (BOOL) movieLayer:(SwiftMovieLayer *)movieLayer spriteLayer:(SwiftSpriteLayer *)spriteLayer shouldInterpolateFromFrame:(SwiftFrame *)fromFrame toFrame:(SwiftFrame *)toFrame
+{
+    if (m_delegate_movieView_spriteLayer_shouldInterpolateFromFrame_toFrame) {
+        return [m_delegate movieView:self spriteLayer:spriteLayer shouldInterpolateFromFrame:fromFrame toFrame:toFrame];
+    }
+        
+    return NO;
 }
 
 
 #pragma mark -
 #pragma mark Accessors
 
-- (void) setMovie:(SwiftMovie *)movie
-{
-    if (m_movie != movie) {
-        [m_movie release];
-        m_movie = [movie retain];
-        
-        m_framesPerSecond = [m_movie frameRate];
-
-        [m_playhead release];
-        m_playhead = [[SwiftPlayhead alloc] initWithMovie:m_movie delegate:(id<SwiftPlayheadDelegate>)self];
-
-        [self _updateLayer];
-
-        [self setNeedsLayout];
-    }
-}
-
-
-- (void) setUsesMultipleLayers:(BOOL)yn
-{
-    if (yn != m_usesMultipleLayers) {
-        m_usesMultipleLayers = yn;
-        [self _updateLayer];
-    }
-}
-
-
-- (void) setInterpolatesFrames:(BOOL)yn
-{
-    m_interpolatesFrames = yn;
-    [m_layer setFrameAnimationDuration:(yn ? (1.0 / [m_movie frameRate]) : 0.0)];
-}
-
-
 - (void) setDelegate:(id<SwiftMovieViewDelegate>)delegate
 {
-    if (delegate != m_delegate) {
+    if (m_delegate != delegate) {
+        [LAYER setMovieLayerDelegate:(delegate ? self : nil)];
+
         m_delegate = delegate;
-        m_delegate_movieView_didDisplayScene_frame  = [delegate respondsToSelector:@selector(movieView:didDisplayScene:frame:)];
-        m_delegate_movieView_willDisplayScene_frame = [delegate respondsToSelector:@selector(movieView:willDisplayScene:frame:)];
-    }
-} 
-
-
-- (void) setPlaying:(BOOL)playing
-{
-    if (m_playing != playing) {
-        m_playing = playing;
-        [m_displayLink setPaused:!m_playing];
-        m_displayLinkPlayStart = CACurrentMediaTime();
-        m_displayLinkPlayIndex = 0;
+        
+        m_delegate_movieView_willDisplayFrame = [m_delegate respondsToSelector:@selector(movieView:willDisplayFrame:)];
+        m_delegate_movieView_didDisplayFrame  = [m_delegate respondsToSelector:@selector(movieView:didDisplayFrame:)];
+        m_delegate_movieView_spriteLayer_shouldInterpolateFromFrame_toFrame = [m_delegate respondsToSelector:@selector(movieView:spriteLayer:shouldInterpolateFromFrame:toFrame:)];
     }
 }
 
+- (void) setMovie:(SwiftMovie *)movie             { [LAYER setMovie:movie]; }
+- (void) setDrawsBackground:(BOOL)drawsBackground { [LAYER setDrawsBackground:drawsBackground]; }
+- (void) setUsesSublayers:(BOOL)usesSublayers     { [LAYER setUsesSublayers:usesSublayers]; }
 
-- (void) setShowsBackgroundColor:(BOOL)showsBackgroundColor
-{
-    if (showsBackgroundColor != m_showsBackgroundColor) {
-        if (showsBackgroundColor) {
-            CGColorRef backgroundColor = SwiftColorCopyCGColor([m_movie backgroundColor]);
-            [m_layer setBackgroundColor:backgroundColor];
-            CGColorRelease(backgroundColor);
-        } else {
-            [m_layer setBackgroundColor:NULL];
-        }
+- (SwiftMovie    *) movie    { return [LAYER movie];           }
+- (SwiftPlayhead *) playhead { return [LAYER playhead];        }
+- (BOOL) drawsBackground     { return [LAYER drawsBackground]; }
+- (BOOL) usesSublayers       { return [LAYER usesSublayers];   }
 
-        m_showsBackgroundColor = showsBackgroundColor;
-    }
-}
-
-@synthesize movie                    = m_movie,
-            delegate                 = m_delegate,
-            playing                  = m_playing,
-            playhead                 = m_playhead,
-            showsBackgroundColor     = m_showsBackgroundColor,
-            usesMultipleLayers       = m_usesMultipleLayers,
-            interpolatesFrames       = m_interpolatesFrames;
+@synthesize delegate = m_delegate;
+@dynamic layer;
 
 @end

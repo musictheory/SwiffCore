@@ -35,15 +35,25 @@
 @private
     id<SwiftPlayheadDelegate> m_delegate;
 
-    SwiftMovie *m_movie;
-    NSUInteger  m_rawFrameIndex;
-    BOOL        m_loopsMovie;
-    BOOL        m_loopsScene;
-    BOOL        m_delegate_playheadDidUpdate;
-    BOOL        m_delegate_playheadReachedEnd;
+    SwiftMovie    *m_movie;
+    NSUInteger     m_rawFrameIndex;
+
+    NSTimer       *m_timer;
+    CFTimeInterval m_timerPlayStart;
+    long           m_timerPlayIndex;
+
+    BOOL           m_loopsMovie;
+    BOOL           m_loopsScene;
+    BOOL           m_playing;
+    BOOL           m_delegate_playheadDidUpdate;
 }
 
 - (id) initWithMovie:(SwiftMovie *)movie delegate:(id<SwiftPlayheadDelegate>)delegate;
+
+- (void) gotoSceneName:(NSString *)sceneName frame:(NSUInteger)frameIndex1 play:(BOOL)play;
+- (void) gotoAndPlay:(NSUInteger)frameIndex1;
+- (void) gotoAndStop:(NSUInteger)frameIndex1;
+- (void) stop;
 
 - (void) step;
 
@@ -59,6 +69,7 @@
 
 @property (nonatomic, assign) BOOL loopsMovie;
 @property (nonatomic, assign) BOOL loopsScene;
+@property (nonatomic, assign, getter=isPlaying) BOOL playing;
 
 @property (nonatomic, assign) NSUInteger rawFrameIndex; // 0-based, relative to movie
 
@@ -68,5 +79,4 @@
 @protocol SwiftPlayheadDelegate <NSObject>
 @optional
 - (void) playheadDidUpdate:(SwiftPlayhead *)playhead;
-- (void) playheadReachedEnd:(SwiftPlayhead *)playhead;
 @end

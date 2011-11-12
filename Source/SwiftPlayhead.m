@@ -31,6 +31,14 @@
 #import "SwiftMovie.h"
 #import "SwiftScene.h"
 
+#import <QuartzCore/QuartzCore.h>
+
+
+@interface SwiftPlayhead ()
+- (void) _cleanupTimer;
+- (void) _tick;
+@end
+
 
 @implementation SwiftPlayhead
 
@@ -47,10 +55,65 @@
 
 - (void) dealloc
 {
+    [self _cleanupTimer];
+
     [m_movie release];
     m_movie = nil;
     
     [super dealloc];
+}
+
+
+#pragma mark -
+#pragma mark - Private Methods
+
+- (void) _cleanupTimer
+{
+    [m_timer invalidate];
+    [m_timer release];
+    m_timer = nil;
+}
+
+
+- (void) _tick
+{
+    long currentIndex = (long)((CACurrentMediaTime() - m_timerPlayStart) * [m_movie frameRate]);
+
+    if (m_timerPlayIndex != currentIndex) {
+        [self step];
+        m_timerPlayIndex = currentIndex;
+    }
+}
+
+
+#pragma mark -
+#pragma mark Public Methods
+
+- (void) gotoSceneName:(NSString *)sceneName frame:(NSUInteger)frameIndex1 play:(BOOL)play
+{
+    [self setSceneName:sceneName];
+    [self setFrameIndex1:frameIndex1];
+    [self setPlaying:play];
+}
+
+
+- (void) gotoAndPlay:(NSUInteger)frameIndex1
+{
+    [self setFrameIndex1:frameIndex1];
+    [self setPlaying:YES];
+}
+
+
+- (void) gotoAndStop:(NSUInteger)frameIndex1
+{
+    [self setFrameIndex1:frameIndex1];
+    [self setPlaying:NO];
+}
+
+
+- (void) stop
+{
+    [self setPlaying:NO];
 }
 
 
@@ -78,12 +141,15 @@
     }
     
     if (atEnd) {
-        [m_delegate playheadReachedEnd:self];
-    } else {
-        [m_delegate playheadDidUpdate:self];
+        [self setPlaying:NO];
     }
+
+    [m_delegate playheadDidUpdate:self];
 }
 
+
+#pragma mark -
+#pragma mark Accessors
 
 - (void) setRawFrameIndex:(NSUInteger)rawFrameIndex
 {
@@ -163,9 +229,34 @@
 {
     if (m_delegate != delegate) {
         m_delegate = delegate;
-        m_delegate_playheadDidUpdate  = [m_delegate respondsToSelector:@selector(playheadDidUpdate:)];
-        m_delegate_playheadReachedEnd = [m_delegate respondsToSelector:@selector(playheadReachedEnd:)];
+        m_delegate_playheadDidUpdate = [m_delegate respondsToSelector:@selector(playheadDidUpdate:)];
     }
+}
+
+
+- (void) setPlaying:(BOOL)playing
+{
+    if ([self isPlaying] != playing) {
+        [self _cleanupTimer];
+
+        if (playing) {
+            NSMethodSignature *signature = [self methodSignatureForSelector:@selector(_tick)];
+            NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+            
+            [invocation setTarget:self];
+            [invocation setSelector:@selector(_tick)];
+            
+            m_timer = [[NSTimer scheduledTimerWithTimeInterval:(1 / 60.0) invocation:invocation repeats:YES] retain];
+            m_timerPlayStart = CACurrentMediaTime();
+            m_timerPlayIndex = 0;
+        }
+    }
+}
+
+
+- (BOOL) isPlaying
+{
+    return m_timer != nil;
 }
 
 

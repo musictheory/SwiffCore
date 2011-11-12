@@ -27,8 +27,8 @@
 
 #import <SwiftImport.h>
 
-
 @class SwiftFrame, SwiftMovie, SwiftPlacedObject;
+
 
 @interface SwiftRenderer : NSObject
 

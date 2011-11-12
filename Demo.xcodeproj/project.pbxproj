@@ -21,9 +21,6 @@
 		55BA68E9144B9C4B00D83AA8 /* DemoMovies.plist in Resources */ = {isa = PBXBuildFile; fileRef = 55BA68E8144B9C4B00D83AA8 /* DemoMovies.plist */; };
 		55BA68EC144BA50100D83AA8 /* DemoMovieController.m in Sources */ = {isa = PBXBuildFile; fileRef = 55BA68EB144BA50100D83AA8 /* DemoMovieController.m */; };
 		55BA68EF144BACA600D83AA8 /* TestSuite.swf in Resources */ = {isa = PBXBuildFile; fileRef = 55BA68EE144BACA600D83AA8 /* TestSuite.swf */; };
-		55ED37B1145395A80085EEC3 /* lesson48.swf in Resources */ = {isa = PBXBuildFile; fileRef = 55ED37AF145395A80085EEC3 /* lesson48.swf */; };
-		55ED37B2145395A80085EEC3 /* lesson51.swf in Resources */ = {isa = PBXBuildFile; fileRef = 55ED37B0145395A80085EEC3 /* lesson51.swf */; };
-		55ED37B4145395B40085EEC3 /* lesson44.swf in Resources */ = {isa = PBXBuildFile; fileRef = 55ED37B3145395B40085EEC3 /* lesson44.swf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,9 +68,6 @@
 		55BA68EA144BA50100D83AA8 /* DemoMovieController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DemoMovieController.h; path = Source/DemoMovieController.h; sourceTree = SOURCE_ROOT; };
 		55BA68EB144BA50100D83AA8 /* DemoMovieController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DemoMovieController.m; path = Source/DemoMovieController.m; sourceTree = SOURCE_ROOT; };
 		55BA68EE144BACA600D83AA8 /* TestSuite.swf */ = {isa = PBXFileReference; lastKnownFileType = file; name = TestSuite.swf; path = Tests/TestSuite.swf; sourceTree = "<group>"; };
-		55ED37AF145395A80085EEC3 /* lesson48.swf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = lesson48.swf; path = ../TheoryLessons/Resources/lesson48.swf; sourceTree = "<group>"; };
-		55ED37B0145395A80085EEC3 /* lesson51.swf */ = {isa = PBXFileReference; lastKnownFileType = file; name = lesson51.swf; path = ../TheoryLessons/Resources/lesson51.swf; sourceTree = "<group>"; };
-		55ED37B3145395B40085EEC3 /* lesson44.swf */ = {isa = PBXFileReference; lastKnownFileType = file; name = lesson44.swf; path = ../TheoryLessons/Resources/lesson44.swf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -156,9 +150,6 @@
 		55BA68ED144BAC8A00D83AA8 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				55ED37B3145395B40085EEC3 /* lesson44.swf */,
-				55ED37AF145395A80085EEC3 /* lesson48.swf */,
-				55ED37B0145395A80085EEC3 /* lesson51.swf */,
 				55BA68EE144BACA600D83AA8 /* TestSuite.swf */,
 				558B13DF1446BB2C0054AF76 /* DemoInfo.plist */,
 				55BA68E8144B9C4B00D83AA8 /* DemoMovies.plist */,
@@ -242,9 +233,6 @@
 			files = (
 				55BA68E9144B9C4B00D83AA8 /* DemoMovies.plist in Resources */,
 				55BA68EF144BACA600D83AA8 /* TestSuite.swf in Resources */,
-				55ED37B1145395A80085EEC3 /* lesson48.swf in Resources */,
-				55ED37B2145395A80085EEC3 /* lesson51.swf in Resources */,
-				55ED37B4145395B40085EEC3 /* lesson44.swf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

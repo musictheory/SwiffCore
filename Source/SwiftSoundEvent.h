@@ -1,5 +1,5 @@
 /*
-    SwiftPlayedSound.h
+    SwiftSoundEvent.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without

@@ -31,7 +31,6 @@
 		5516B4EE1446D75900231D67 /* SwiftSpriteDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A7C14429C9E00E12C27 /* SwiftSpriteDefinition.m */; };
 		5516B4EF1446D75900231D67 /* SwiftStaticTextDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A7E14429C9E00E12C27 /* SwiftStaticTextDefinition.m */; };
 		5516B4F01446D75900231D67 /* SwiftTextRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A8014429C9E00E12C27 /* SwiftTextRecord.m */; };
-		5516B4F11446D75900231D67 /* SwiftLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFAB51443A453003AA0DA /* SwiftLayer.m */; };
 		5516B4F21446D75900231D67 /* SwiftRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A7014429C9E00E12C27 /* SwiftRenderer.m */; };
 		5516B50B144799FA00231D67 /* SwiftPNGExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5516B50A144799FA00231D67 /* SwiftPNGExporter.m */; };
 		5516B50E14479A0D00231D67 /* SwiftSVGExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5516B50D14479A0D00231D67 /* SwiftSVGExporter.m */; };
@@ -45,6 +44,8 @@
 		5546809B145F558C00BB74EB /* SwiftSoundPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 550C99B5145A03F200836C62 /* SwiftSoundPlayer.m */; };
 		5574A09E145CAB2C00DA4FB7 /* SwiftMPEGUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 5574A09D145CAB2C00DA4FB7 /* SwiftMPEGUtils.m */; };
 		5574A0A3145D238800DA4FB7 /* SwiftWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5574A0A2145D238700DA4FB7 /* SwiftWriter.m */; };
+		5580F4D5146DE203005F2AC0 /* SwiftMovieLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5580F4D4146DE202005F2AC0 /* SwiftMovieLayer.m */; };
+		5580F4D9146DE35E005F2AC0 /* SwiftSpriteLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5580F4D8146DE35E005F2AC0 /* SwiftSpriteLayer.m */; };
 		5595A5F51442C03300DECD41 /* SwiftTextDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A6014429C9E00E12C27 /* SwiftTextDefinition.m */; };
 		5595A5F61442C03300DECD41 /* SwiftFillStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A6214429C9E00E12C27 /* SwiftFillStyle.m */; };
 		5595A5F71442C03300DECD41 /* SwiftFontDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A6414429C9E00E12C27 /* SwiftFontDefinition.m */; };
@@ -62,17 +63,12 @@
 		5595A6041442C03300DECD41 /* SwiftStaticTextDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A7E14429C9E00E12C27 /* SwiftStaticTextDefinition.m */; };
 		5595A6051442C03300DECD41 /* SwiftTextRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A8014429C9E00E12C27 /* SwiftTextRecord.m */; };
 		5595A6061442C03300DECD41 /* SwiftBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A5E14429C9E00E12C27 /* SwiftBase.m */; };
-		55DBFAB61443A454003AA0DA /* SwiftLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFAB51443A453003AA0DA /* SwiftLayer.m */; };
 		55DBFABE1444EAAE003AA0DA /* SwiftMovieView.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFABD1444EAAE003AA0DA /* SwiftMovieView.m */; };
 		55DBFAC11444EE22003AA0DA /* SwiftScene.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFAC01444EE20003AA0DA /* SwiftScene.m */; };
-		55ED37AA14538C840085EEC3 /* SwiftMultiLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 55ED37A914538C840085EEC3 /* SwiftMultiLayer.m */; };
-		55ED37AE14538F290085EEC3 /* SwiftSingleLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 55ED37AD14538F280085EEC3 /* SwiftSingleLayer.m */; };
 		55ED37D9145409280085EEC3 /* SwiftHTMLToCoreTextConverter.m in Sources */ = {isa = PBXBuildFile; fileRef = 55038DE6144E489E00EA5841 /* SwiftHTMLToCoreTextConverter.m */; };
 		55ED37DA145409280085EEC3 /* SwiftPlacedStaticText.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F01685144F8BAE0068002B /* SwiftPlacedStaticText.m */; };
 		55ED37DB145409280085EEC3 /* SwiftPlacedText.m in Sources */ = {isa = PBXBuildFile; fileRef = 55038DE3144E399D00EA5841 /* SwiftPlacedText.m */; };
 		55ED37DC145409280085EEC3 /* SwiftPlayhead.m in Sources */ = {isa = PBXBuildFile; fileRef = 55038DDF144CDA4900EA5841 /* SwiftPlayhead.m */; };
-		55ED37DD145409280085EEC3 /* SwiftMultiLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 55ED37A914538C840085EEC3 /* SwiftMultiLayer.m */; };
-		55ED37DE145409280085EEC3 /* SwiftSingleLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 55ED37AD14538F280085EEC3 /* SwiftSingleLayer.m */; };
 		55F01686144F8BAE0068002B /* SwiftPlacedStaticText.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F01685144F8BAE0068002B /* SwiftPlacedStaticText.m */; };
 		55F9C75814464B1300FE8E4F /* SwiftSceneAndFrameLabelData.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F9C75714464B1300FE8E4F /* SwiftSceneAndFrameLabelData.m */; };
 /* End PBXBuildFile section */
@@ -103,6 +99,10 @@
 		5574A0A0145D1BB300DA4FB7 /* SwiftDefinition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftDefinition.h; path = Source/SwiftDefinition.h; sourceTree = "<group>"; };
 		5574A0A1145D238700DA4FB7 /* SwiftWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftWriter.h; path = Source/SwiftWriter.h; sourceTree = "<group>"; };
 		5574A0A2145D238700DA4FB7 /* SwiftWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftWriter.m; path = Source/SwiftWriter.m; sourceTree = "<group>"; };
+		5580F4D3146DE202005F2AC0 /* SwiftMovieLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftMovieLayer.h; path = Source/SwiftMovieLayer.h; sourceTree = "<group>"; };
+		5580F4D4146DE202005F2AC0 /* SwiftMovieLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftMovieLayer.m; path = Source/SwiftMovieLayer.m; sourceTree = "<group>"; };
+		5580F4D7146DE35E005F2AC0 /* SwiftSpriteLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftSpriteLayer.h; path = Source/SwiftSpriteLayer.h; sourceTree = "<group>"; };
+		5580F4D8146DE35E005F2AC0 /* SwiftSpriteLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftSpriteLayer.m; path = Source/SwiftSpriteLayer.m; sourceTree = "<group>"; };
 		5595A5E91442BFFA00DECD41 /* libSwiftCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSwiftCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55C1B1EE14688E5B0010CB82 /* SwiftCore_iOS_Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = SwiftCore_iOS_Debug.xcconfig; sourceTree = "<group>"; };
 		55C1B1EF14688E5B0010CB82 /* SwiftCore_iOS_Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = SwiftCore_iOS_Release.xcconfig; sourceTree = "<group>"; };
@@ -114,16 +114,10 @@
 		55C1B1F514688E5B0010CB82 /* SwiftCore_Mac.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = SwiftCore_Mac.xcconfig; path = Config/SwiftCore_Mac.xcconfig; sourceTree = "<group>"; };
 		55C1B1F614688E5B0010CB82 /* SwiftCore_Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = SwiftCore_Release.xcconfig; path = Config/SwiftCore_Release.xcconfig; sourceTree = "<group>"; };
 		55C1B1F7146890790010CB82 /* SwiftImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftImport.h; path = Source/SwiftImport.h; sourceTree = "<group>"; };
-		55DBFAB41443A453003AA0DA /* SwiftLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftLayer.h; path = Source/SwiftLayer.h; sourceTree = "<group>"; };
-		55DBFAB51443A453003AA0DA /* SwiftLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftLayer.m; path = Source/SwiftLayer.m; sourceTree = "<group>"; };
 		55DBFABC1444EAAE003AA0DA /* SwiftMovieView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftMovieView.h; path = Source/SwiftMovieView.h; sourceTree = "<group>"; };
 		55DBFABD1444EAAE003AA0DA /* SwiftMovieView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftMovieView.m; path = Source/SwiftMovieView.m; sourceTree = "<group>"; };
 		55DBFABF1444EE1F003AA0DA /* SwiftScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftScene.h; path = Source/SwiftScene.h; sourceTree = "<group>"; };
 		55DBFAC01444EE20003AA0DA /* SwiftScene.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftScene.m; path = Source/SwiftScene.m; sourceTree = "<group>"; };
-		55ED37A814538C840085EEC3 /* SwiftMultiLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftMultiLayer.h; path = Source/SwiftMultiLayer.h; sourceTree = "<group>"; };
-		55ED37A914538C840085EEC3 /* SwiftMultiLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftMultiLayer.m; path = Source/SwiftMultiLayer.m; sourceTree = "<group>"; };
-		55ED37AC14538F280085EEC3 /* SwiftSingleLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftSingleLayer.h; path = Source/SwiftSingleLayer.h; sourceTree = "<group>"; };
-		55ED37AD14538F280085EEC3 /* SwiftSingleLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftSingleLayer.m; path = Source/SwiftSingleLayer.m; sourceTree = "<group>"; };
 		55F01684144F8BAE0068002B /* SwiftPlacedStaticText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftPlacedStaticText.h; path = Source/SwiftPlacedStaticText.h; sourceTree = "<group>"; };
 		55F01685144F8BAE0068002B /* SwiftPlacedStaticText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftPlacedStaticText.m; path = Source/SwiftPlacedStaticText.m; sourceTree = "<group>"; };
 		55F65A5D14429C9E00E12C27 /* SwiftBase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftBase.h; path = Source/SwiftBase.h; sourceTree = "<group>"; };
@@ -307,14 +301,12 @@
 		55DBFAB91443A5C1003AA0DA /* Rendering */ = {
 			isa = PBXGroup;
 			children = (
-				55DBFAB41443A453003AA0DA /* SwiftLayer.h */,
-				55DBFAB51443A453003AA0DA /* SwiftLayer.m */,
-				55ED37A814538C840085EEC3 /* SwiftMultiLayer.h */,
-				55ED37A914538C840085EEC3 /* SwiftMultiLayer.m */,
-				55ED37AC14538F280085EEC3 /* SwiftSingleLayer.h */,
-				55ED37AD14538F280085EEC3 /* SwiftSingleLayer.m */,
 				55F65A6F14429C9E00E12C27 /* SwiftRenderer.h */,
 				55F65A7014429C9E00E12C27 /* SwiftRenderer.m */,
+				5580F4D3146DE202005F2AC0 /* SwiftMovieLayer.h */,
+				5580F4D4146DE202005F2AC0 /* SwiftMovieLayer.m */,
+				5580F4D7146DE35E005F2AC0 /* SwiftSpriteLayer.h */,
+				5580F4D8146DE35E005F2AC0 /* SwiftSpriteLayer.m */,
 				55DBFABC1444EAAE003AA0DA /* SwiftMovieView.h */,
 				55DBFABD1444EAAE003AA0DA /* SwiftMovieView.m */,
 			);
@@ -472,8 +464,6 @@
 				55ED37DA145409280085EEC3 /* SwiftPlacedStaticText.m in Sources */,
 				55ED37DB145409280085EEC3 /* SwiftPlacedText.m in Sources */,
 				55ED37DC145409280085EEC3 /* SwiftPlayhead.m in Sources */,
-				55ED37DD145409280085EEC3 /* SwiftMultiLayer.m in Sources */,
-				55ED37DE145409280085EEC3 /* SwiftSingleLayer.m in Sources */,
 				5516B50F14479D5300231D67 /* SwiftPNGExporter.m in Sources */,
 				5516B51014479D5300231D67 /* SwiftSVGExporter.m in Sources */,
 				5516B4DD1446D75900231D67 /* SwiftParser.m in Sources */,
@@ -494,7 +484,6 @@
 				5516B4EE1446D75900231D67 /* SwiftSpriteDefinition.m in Sources */,
 				5516B4EF1446D75900231D67 /* SwiftStaticTextDefinition.m in Sources */,
 				5516B4F01446D75900231D67 /* SwiftTextRecord.m in Sources */,
-				5516B4F11446D75900231D67 /* SwiftLayer.m in Sources */,
 				5516B4F21446D75900231D67 /* SwiftRenderer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -520,7 +509,6 @@
 				5595A6041442C03300DECD41 /* SwiftStaticTextDefinition.m in Sources */,
 				5595A6051442C03300DECD41 /* SwiftTextRecord.m in Sources */,
 				5595A6061442C03300DECD41 /* SwiftBase.m in Sources */,
-				55DBFAB61443A454003AA0DA /* SwiftLayer.m in Sources */,
 				55DBFABE1444EAAE003AA0DA /* SwiftMovieView.m in Sources */,
 				55DBFAC11444EE22003AA0DA /* SwiftScene.m in Sources */,
 				55F9C75814464B1300FE8E4F /* SwiftSceneAndFrameLabelData.m in Sources */,
@@ -530,13 +518,13 @@
 				55038DE4144E399F00EA5841 /* SwiftPlacedText.m in Sources */,
 				55038DE7144E489F00EA5841 /* SwiftHTMLToCoreTextConverter.m in Sources */,
 				55F01686144F8BAE0068002B /* SwiftPlacedStaticText.m in Sources */,
-				55ED37AA14538C840085EEC3 /* SwiftMultiLayer.m in Sources */,
-				55ED37AE14538F290085EEC3 /* SwiftSingleLayer.m in Sources */,
 				5545A6B11458B70A001428F6 /* SwiftSoundDefinition.m in Sources */,
 				550C99B6145A03F200836C62 /* SwiftSoundPlayer.m in Sources */,
 				550C99BA145A04FD00836C62 /* SwiftSoundEvent.m in Sources */,
 				5574A09E145CAB2C00DA4FB7 /* SwiftMPEGUtils.m in Sources */,
 				5574A0A3145D238800DA4FB7 /* SwiftWriter.m in Sources */,
+				5580F4D5146DE203005F2AC0 /* SwiftMovieLayer.m in Sources */,
+				5580F4D9146DE35E005F2AC0 /* SwiftSpriteLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

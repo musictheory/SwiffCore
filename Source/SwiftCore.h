@@ -41,7 +41,6 @@
 #import <SwiftGradient.h>
 #import <SwiftHTMLToCoreTextConverter.h>
 #import <SwiftLineStyle.h>
-#import <SwiftMovieView.h>
 #import <SwiftParser.h>
 #import <SwiftPath.h>
 #import <SwiftPlacedObject.h>
@@ -54,3 +53,7 @@
 #import <SwiftSVGExporter.h>
 
 #import <SwiftMovie.h>
+
+#import <SwiftSpriteLayer.h>
+#import <SwiftMovieLayer.h>
+#import <SwiftMovieView.h>
