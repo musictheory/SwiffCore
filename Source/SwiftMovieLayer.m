@@ -32,7 +32,25 @@
 #import "SwiftSoundPlayer.h"
 
 
+@interface SwiftSpriteLayer (Protected)
+- (CGAffineTransform) _baseAffineTransform;
+- (void) _setNeedsLayoutOnAll;
+- (void) _setNeedsDisplayOnAll;
+@end
+
+
 @implementation SwiftMovieLayer
+
+- (id) init
+{
+    if ((self = [super init])) {
+        m_baseAffineTransform = CGAffineTransformIdentity;
+        m_baseColorTransform  = SwiftColorTransformIdentity;
+    }
+
+    return self;
+}
+
 
 - (void) dealloc
 {
@@ -47,6 +65,28 @@
 #pragma mark -
 #pragma mark Private Methods
 
+- (void) _updateBackgroundColor
+{
+    SwiftColor *backgroundColorPointer = [[self movie] backgroundColorPointer];
+
+    if (m_drawsBackground && backgroundColorPointer) {
+        CGColorSpaceRef rgb = CGColorSpaceCreateDeviceRGB();
+        CGColorRef color = CGColorCreate(rgb, (CGFloat *)backgroundColorPointer); 
+        
+        [self setBackgroundColor:color];
+
+        if (color) CFRelease(color);
+        if (rgb)   CFRelease(rgb);
+
+    } else {
+        [self setBackgroundColor:NULL];
+    }
+}
+
+
+#pragma mark -
+#pragma mark Overrides
+
 - (BOOL) _spriteLayer:(SwiftSpriteLayer *)layer shouldInterpolateFromFrame:(SwiftFrame *)fromFrame toFrame:(SwiftFrame *)toFrame
 {
     if (m_movieLayerDelegate_movieLayer_spriteLayer_shouldInterpolateFromFrame_toFrame) {
@@ -56,6 +96,18 @@
     return NO;
 }
 
+
+- (CGAffineTransform) _baseAffineTransform
+{
+    CGAffineTransform superTransform = [super _baseAffineTransform];
+    return CGAffineTransformConcat(m_baseAffineTransform, superTransform);
+}
+
+
+- (SwiftColorTransform) _baseColorTransform
+{
+    return m_baseColorTransform;
+}
 
 
 #pragma mark -
@@ -86,6 +138,11 @@
         [m_playhead setDelegate:nil];
         [m_playhead release];
         m_playhead = [[SwiftPlayhead alloc] initWithMovie:m_movie delegate:self];
+        [m_playhead setFrame:[movie frameAtIndex1:1]];
+
+        [self _updateBackgroundColor];
+
+        [self playheadDidUpdate:m_playhead];
     }
 }
 
@@ -104,30 +161,36 @@
 
 - (void) setDrawsBackground:(BOOL)drawsBackground
 {
-    if ([self drawsBackground] != drawsBackground) {
-        if (drawsBackground) {
-            CGColorSpaceRef rgb = CGColorSpaceCreateDeviceRGB();
-            CGColorRef color = CGColorCreate(rgb, (CGFloat *)[[self movie] backgroundColorPointer]); 
-            
-            [self setBackgroundColor:color];
-
-            CFRelease(color);
-            CFRelease(rgb);
-
-        } else {
-            [self setBackgroundColor:NULL];
-        }
+    if (m_drawsBackground != drawsBackground) {
+        m_drawsBackground = drawsBackground;
+        [self _updateBackgroundColor];
     }
 }
 
 
-- (BOOL) drawsBackground
+- (void) setBaseAffineTransform:(CGAffineTransform)baseAffineTransform
 {
-    return [self backgroundColor] != nil;
+    if (!CGAffineTransformEqualToTransform(baseAffineTransform, m_baseAffineTransform)) {
+        m_baseAffineTransform = baseAffineTransform;
+        [self _setNeedsLayoutOnAll];
+        [self _setNeedsDisplayOnAll];
+    }
 }
 
 
-@synthesize movieLayerDelegate = m_movieLayerDelegate,
-            playhead           = m_playhead;
+- (void) setBaseColorTransform:(SwiftColorTransform)baseColorTransform
+{
+    if (!SwiftColorTransformEqualToTransform(baseColorTransform, m_baseColorTransform)) {
+        m_baseColorTransform = baseColorTransform;
+        [self _setNeedsDisplayOnAll];
+    }
+}
+
+
+@synthesize movieLayerDelegate  = m_movieLayerDelegate,
+            playhead            = m_playhead,
+            drawsBackground     = m_drawsBackground,
+            baseAffineTransform = m_baseAffineTransform,
+            baseColorTransform  = m_baseColorTransform;
 
 @end

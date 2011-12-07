@@ -28,7 +28,7 @@
 
 #import "SwiftFontDefinition.h"
 #import "SwiftParser.h"
-
+#import "SwiftShapeDefinition.h"
 
 @implementation SwiftFontDefinition
 
@@ -48,6 +48,15 @@
     [m_name      release];  m_name      = nil;
     [m_fullName  release];  m_fullName  = nil;
     [m_copyright release];  m_copyright = nil;
+    
+    if (m_glyphs) {
+        for (NSInteger i = 0; i < m_glyphCount; i++) {
+            [m_glyphs[i] release];
+            m_glyphs[i] = NULL;
+        }
+        
+        free(m_glyphs);
+    }
     
     if (m_fontDescriptor) {
         CFRelease(m_fontDescriptor);
@@ -71,7 +80,9 @@
 
 - (void) _readCodeTableFromParser:(SwiftParser *)parser wide:(BOOL)wide
 {
-    m_codeTable = malloc(m_glyphCount * sizeof(UInt16));
+    if (!m_codeTable) {
+        m_codeTable = malloc(m_glyphCount * sizeof(UInt16));
+    }
 
     for (NSUInteger i = 0; i < m_glyphCount; i++) {
         UInt16 value;
@@ -101,10 +112,14 @@
         UInt16 offset;
         SwiftParserReadUInt16(parser, &offset);
         m_glyphCount = (offset / 2);
+        m_glyphs     = calloc(sizeof(void *), m_glyphCount);
 
-        // Not yet implemented: Glyph Text Support
-        // Read offset table here
-        // Read shape table here
+        // Skip through OffsetTable
+        SwiftParserAdvance(parser, sizeof(UInt16) * m_glyphCount);
+
+        for (NSInteger i = 0; i < m_glyphCount; i++) {
+            m_glyphs[i] = [[SwiftShapeDefinition alloc] initWithParser:parser movie:m_movie];
+        }
 
     } else if (version == 2 || version == 3) {
         UInt32 hasLayout, isShiftJIS, isSmallText, isANSIEncoding,
@@ -121,6 +136,8 @@
 
         m_italic    = isItalic;
         m_bold      = isBold;
+        m_largerEmSquare = (version == 3);
+
         // Not yet implemented: Glyph Text Support.
         // Save isANSIEncoding, isShiftJIS, isSmallText for later use
 
@@ -130,33 +147,19 @@
         // Save languageCode for later use
     
         NSString *name = nil;
-        SwiftParserReadPascalString(parser, &name);
+        SwiftParserReadLengthPrefixedString(parser, &name);
         m_name = [name retain];
         
         UInt16 glyphCount;
         SwiftParserReadUInt16(parser, &glyphCount);
         m_glyphCount = glyphCount;
+        m_glyphs     = calloc(sizeof(void *), m_glyphCount);
     
-        // Not yet implemented: Glyph Text Support.
-        // Read OffsetTable.  For now, just advance through it, since we need CodeTableOffset
-        NSInteger bytesInOffsetTable = (usesWideOffsets ? sizeof(UInt32) : sizeof(UInt16)) * glyphCount;
-        NSInteger skippedBytes       = bytesInOffsetTable;
-        SwiftParserAdvance(parser, bytesInOffsetTable);
+        // Skip OffsetTable and CodeTableOffset
+        SwiftParserAdvance(parser, (usesWideOffsets ? sizeof(UInt32) : sizeof(UInt16)) * (glyphCount + 1));
 
-        // Read CodeTableOffset, and advance to CodeTable
-        if (usesWideOffsets) {
-            UInt32 bytesFromOffsetTableToCodeTable;
-            SwiftParserReadUInt32(parser, &bytesFromOffsetTableToCodeTable);
-
-            skippedBytes += sizeof(UInt32);
-            SwiftParserAdvance(parser, bytesFromOffsetTableToCodeTable - skippedBytes);
-
-        } else {
-            UInt16 bytesFromOffsetTableToCodeTable;
-            SwiftParserReadUInt16(parser, &bytesFromOffsetTableToCodeTable);
-
-            skippedBytes += sizeof(UInt16);
-            SwiftParserAdvance(parser, bytesFromOffsetTableToCodeTable - skippedBytes);
+        for (NSInteger i = 0; i < m_glyphCount; i++) {
+            m_glyphs[i] = [[SwiftShapeDefinition alloc] initWithParser:parser movie:m_movie];
         }
 
         [self _readCodeTableFromParser:parser wide:usesWideCodes];
@@ -197,7 +200,7 @@
     UInt32 reserved, isSmallText, isShiftJIS, isANSIEncoding, isItalic, isBold, usesWideCodes;
 
     NSString *name;
-    SwiftParserReadPascalString(parser, &name);
+    SwiftParserReadLengthPrefixedString(parser, &name);
     m_name = [name retain];
 
     SwiftParserReadUBits(parser, 2, &reserved);
@@ -235,6 +238,21 @@
 
 
 #pragma mark -
+#pragma mark Public Methods
+
+- (CGFloat) multiplierForPointSize:(CGFloat)pointSize
+{
+    CGFloat emHeightInUnits = SwiftGetCGFloatFromTwips(1024);
+    
+    if (m_largerEmSquare) {
+        emHeightInUnits *= 20;
+    }
+
+    return (1.0 / emHeightInUnits) * pointSize;
+}
+
+
+#pragma mark -
 #pragma mark Accessors
 
 - (CTFontDescriptorRef) fontDescriptor
@@ -250,18 +268,27 @@
             CTFontRef font = CTFontCreateWithName((CFStringRef)name, 12.0, &CGAffineTransformIdentity);
             if (!font) continue;
 
+            CTFontSymbolicTraits desiredTraits = 0;
+            if (m_bold)   desiredTraits |= kCTFontBoldTrait;
+            if (m_italic) desiredTraits |= kCTFontItalicTrait;
+
             CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(font);
-            CTFontSymbolicTraits mask   = (kCTFontItalicTrait | kCTFontBoldTrait);
-        
-            if (m_bold)   traits |= kCTFontBoldTrait;
-            if (m_italic) traits |= kCTFontItalicTrait;
+            CTFontSymbolicTraits mask   = (kCTFontBoldTrait | kCTFontItalicTrait);
 
-            CTFontRef fontWithTraits = CTFontCreateCopyWithSymbolicTraits(font, CTFontGetSize(font), NULL, traits, mask);
-            m_fontDescriptor = CTFontCopyFontDescriptor(fontWithTraits);
+            if ((traits & mask) != desiredTraits) {
+                CTFontRef fontWithTraits = CTFontCreateCopyWithSymbolicTraits(font, 0, NULL, desiredTraits, mask);
+                
+                if (fontWithTraits) {
+                    CFRelease(font);
+                    font = fontWithTraits;
+                }
+            }
 
-            if (fontWithTraits) CFRelease(fontWithTraits);
-            if (font) CFRelease(font);
-            
+            if (font) {
+                m_fontDescriptor = CTFontCopyFontDescriptor(font);
+                CFRelease(font);
+            }
+
             if (m_fontDescriptor) {
                 break;
             }
@@ -278,6 +305,7 @@
             fullName        = m_fullName,
             copyright       = m_copyright,
             glyphCount      = m_glyphCount,
+            glyphs          = m_glyphs,
             codeTable       = m_codeTable,
             fontDescriptor  = m_fontDescriptor,
             bold            = m_bold,

@@ -28,17 +28,21 @@
 
 #import "SwiftRenderer.h"
 
+#import "SwiftDynamicTextAttributes.h"
+#import "SwiftDynamicTextDefinition.h"
+#import "SwiftFontDefinition.h"
 #import "SwiftFrame.h"
 #import "SwiftMovie.h"
 #import "SwiftGradient.h"
 #import "SwiftLineStyle.h"
 #import "SwiftFillStyle.h"
+#import "SwiftPath.h"
 #import "SwiftPlacedObject.h"
 #import "SwiftPlacedStaticText.h"
-#import "SwiftPlacedText.h"
+#import "SwiftPlacedDynamicText.h"
 #import "SwiftShapeDefinition.h"
-#import "SwiftPath.h"
-
+#import "SwiftStaticTextRecord.h"
+#import "SwiftStaticTextDefinition.h"
 
 typedef struct _SwiftRendererState {
     SwiftMovie       *movie;
@@ -55,6 +59,24 @@ static void sCleanupState(SwiftRendererState *state)
         CFRelease(state->colorTransforms);
         state->colorTransforms = NULL;
     }
+}
+
+
+static void sPushColorTransform(SwiftRendererState *state, SwiftColorTransform *transform)
+{
+    if (!state->colorTransforms) {
+        state->colorTransforms = CFArrayCreateMutable(NULL, 0, NULL);
+    }
+
+    CFMutableArrayRef array = state->colorTransforms;
+    CFArraySetValueAtIndex(array, CFArrayGetCount(array), transform);
+}
+
+
+static void sPopColorTransform(SwiftRendererState *state)
+{
+    CFMutableArrayRef array = state->colorTransforms;
+    CFArrayRemoveValueAtIndex(array, CFArrayGetCount(array) - 1);
 }
 
 
@@ -105,6 +127,11 @@ static void sApplyFillStyle(SwiftRendererState *state, SwiftFillStyle *style)
         CGGradientDrawingOptions options = (kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
 
         if (type == SwiftFillStyleTypeLinearGradient) {
+            // "All gradients are defined in a standard space called the gradient square. The gradient square is
+            //  centered at (0,0), and extends from (-16384,-16384) to (16384,16384)." (Page 144)
+            // 
+            // 16384 twips = 819.2 points
+            //
             CGPoint point1 = CGPointMake(-819.2,  819.2);
             CGPoint point2 = CGPointMake( 819.2,  819.2);
             
@@ -115,15 +142,14 @@ static void sApplyFillStyle(SwiftRendererState *state, SwiftFillStyle *style)
             point1 = CGPointApplyAffineTransform(point1, t);
             point2 = CGPointApplyAffineTransform(point2, t);
         
-        
             CGContextDrawLinearGradient(context, gradient, point1, point2, options);
 
         } else {
             CGAffineTransform t = [style gradientTransform];
 
-            double radius = 819.2 * t.a;
-            double x = state->affineTransform.tx + (t.tx * state->affineTransform.a);
-            double y = state->affineTransform.ty + (t.ty * state->affineTransform.d);
+            CGFloat radius = 819.2 * t.a * state->affineTransform.a;
+            CGFloat x = state->affineTransform.tx + (t.tx * state->affineTransform.a);
+            CGFloat y = state->affineTransform.ty + (t.ty * state->affineTransform.d);
 
             CGPoint centerPoint = CGPointMake(x, y);
 
@@ -150,9 +176,9 @@ static void sSetupContext(CGContextRef context)
 }
 
 
-static void sDrawSprite(SwiftRendererState *state, SwiftSpriteDefinition *sprite)
+static void sDrawSpriteDefinition(SwiftRendererState *state, SwiftSpriteDefinition *spriteDefinition)
 {
-    NSArray    *frames = [sprite frames];
+    NSArray    *frames = [spriteDefinition frames];
     SwiftFrame *frame  = [frames count] ? [frames objectAtIndex:0] : nil;
     
     for (SwiftPlacedObject *po in [frame placedObjects]) {
@@ -161,11 +187,11 @@ static void sDrawSprite(SwiftRendererState *state, SwiftSpriteDefinition *sprite
 }
 
 
-static void sDrawShape(SwiftRendererState *state, SwiftShapeDefinition *shape)
+static void sDrawShapeDefinition(SwiftRendererState *state, SwiftShapeDefinition *shapeDefinition)
 {
     CGContextRef context = state->context;
 
-    for (SwiftPath *path in [shape paths]) {
+    for (SwiftPath *path in [shapeDefinition paths]) {
         SwiftLineStyle *lineStyle = [path lineStyle];
         SwiftFillStyle *fillStyle = [path fillStyle];
 
@@ -249,7 +275,8 @@ static void sDrawShape(SwiftRendererState *state, SwiftShapeDefinition *shape)
         
         if (fillStyle) {
             sApplyFillStyle(state, fillStyle);
-            hasFill = ([fillStyle type] == SwiftFillStyleTypeColor);
+            SwiftFillStyleType fillStyleType = [fillStyle type];
+            hasFill = (fillStyleType == SwiftFillStyleTypeColor) || (fillStyleType == SwiftFillStyleTypeFontShape);
         }
         
         if (hasStroke || hasFill) {
@@ -265,45 +292,117 @@ static void sDrawShape(SwiftRendererState *state, SwiftShapeDefinition *shape)
 }
 
 
-static void sDrawAttributedString(SwiftRendererState *state, CFAttributedStringRef as, CGPoint offset)
-{ 
+static void sDrawStaticTextDefinition(SwiftRendererState *state, SwiftStaticTextDefinition *staticTextDefinition)
+{
+    SwiftFontDefinition   *font   = nil;
+    SwiftShapeDefinition **glyphs = NULL;
+
     CGContextRef context = state->context;
+    CGPoint offset = CGPointZero;
+    CGFloat aWithMultiplier, dWithMultiplier;
 
-    CTLineRef line = CTLineCreateWithAttributedString(as);
-    if (line) {
-        CGPoint p = CGPointMake(offset.x, offset.y);
-        p = CGPointApplyAffineTransform(p, state->affineTransform);
+    CGContextSaveGState(context);
 
-        CGAffineTransform transform = CGAffineTransformConcat(CGAffineTransformMakeScale(1.0, -1.0), state->affineTransform);
+    for (SwiftStaticTextRecord *record in [staticTextDefinition textRecords]) {
+        NSInteger glyphEntriesCount = [record glyphEntriesCount];
+        SwiftStaticTextRecordGlyphEntry *glyphEntries = [record glyphEntries];
+        CGFloat advance = 0; 
 
-        CGContextSaveGState(context);
+        if ([record hasFont]) {
+            font       = [state->movie fontDefinitionWithLibraryID:[record fontID]];
+            glyphs     = [font glyphs];
 
-        CGContextSetTextMatrix(context, transform);
-        CGContextSetTextPosition(context, p.x, p.y);
+            CGFloat multiplier = [font multiplierForPointSize:[record textHeight]];
+            aWithMultiplier = state->affineTransform.a * multiplier;
+            dWithMultiplier = state->affineTransform.d * multiplier;
+        }
+        
+        if ([record hasColor]) {
+            CGContextSetFillColor(context, (CGFloat *)[record colorPointer]);
+        }
+        
+        if ([record hasXOffset]) {
+            offset.x = [record xOffset];
+        }
 
-        CTLineDraw(line, context);
-        CGContextFlush(context);
+        if ([record hasYOffset]) {
+            offset.y = [record yOffset];
+        }
 
-        CGContextRestoreGState(context);
+        for (NSInteger i = 0; i < glyphEntriesCount; i++) {
+            CGAffineTransform savedTransform = state->affineTransform;
 
-        CFRelease(line);
+            state->affineTransform = CGAffineTransformTranslate(state->affineTransform, offset.x + advance, offset.y);
+            state->affineTransform.a = aWithMultiplier;
+            state->affineTransform.d = dWithMultiplier;
+
+            SwiftStaticTextRecordGlyphEntry entry = glyphEntries[i];
+            sDrawShapeDefinition(state, glyphs[entry.index]); 
+            advance += entry.advance;
+
+            state->affineTransform = savedTransform;
+        }
+        
+        offset.x += advance;
     }
+
+    CGContextRestoreGState(context);
 }
 
 
-static void sDrawPlacedStaticText(SwiftRendererState *state, SwiftPlacedStaticText *placedStaticText)
+static void sDrawPlacedDynamicText(SwiftRendererState *state, SwiftPlacedDynamicText *placedDynamicText)
 {
-    CFAttributedStringRef as = [placedStaticText attributedText];
-    CGPoint offset = [placedStaticText attributedTextOffset];
-    if (as) sDrawAttributedString(state, as, offset);
-}
+    CFAttributedStringRef as = [placedDynamicText attributedText];
+    SwiftDynamicTextDefinition *definition = [placedDynamicText definition];
+    CGRect rect = [definition bounds];
 
+    CGContextRef context = state->context;
+    CTFramesetterRef framesetter = as ? CTFramesetterCreateWithAttributedString(as) : NULL;
+    
+    if (framesetter) {
+        CGPathRef  path  = CGPathCreateWithRect(CGRectMake(0, 0, rect.size.width, rect.size.height), NULL);
+        CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
 
-static void sDrawPlacedText(SwiftRendererState *state, SwiftPlacedText *placedText)
-{
-    CFAttributedStringRef as = [placedText attributedText];
-    CGPoint offset = [placedText attributedTextOffset];
-    if (as) sDrawAttributedString(state, as, offset);
+        if (frame) {
+            CGContextSaveGState(context);
+
+            CGContextTranslateCTM(context, rect.origin.x, rect.origin.y);
+
+            CGContextConcatCTM(context, state->affineTransform);
+            CGContextTranslateCTM(context, 0, rect.size.height);
+            CGContextScaleCTM(context, 1, -1);
+            
+            NSInteger i;
+            CFArrayRef lines = CTFrameGetLines(frame);
+            CFIndex linesCount = CFArrayGetCount(lines);
+            CGPoint *origins = malloc(sizeof(CGPoint) * linesCount);
+
+            CTFrameGetLineOrigins(frame, CFRangeMake(0, 0), origins);
+
+            for (i = 0; i < linesCount; i++) {
+                CTLineRef line = CFArrayGetValueAtIndex(lines, i);
+                CGPoint origin = origins[i];
+
+                CFRange rangeOfLine = CTLineGetStringRange(line);
+
+                origin.y -= SwiftTextGetMaximumVerticalOffset(as, rangeOfLine);
+
+                CGContextSetTextPosition(context, origin.x, origin.y);
+                
+                CTLineDraw(line, context);
+            }
+            
+            free(origins);
+            
+            CGContextFlush(context);
+            CGContextRestoreGState(context);
+
+            CFRelease(frame);
+        }
+        
+        if (path) CFRelease(path);
+        CFRelease(framesetter);
+    }
 }
 
 
@@ -317,18 +416,14 @@ static void sDrawPlacedObject(SwiftRendererState *state, SwiftPlacedObject *plac
         state->affineTransform = CGAffineTransformConcat(newTransform, savedTransform);
     }
 
-    CFIndex colorTransformLastIndex = -1;
+    BOOL needsColorTransformPop = NO;
 
     if (applyColorTransform) {
         BOOL hasColorTransform = [placedObject hasColorTransform];
 
         if (hasColorTransform) {
-            if (!state->colorTransforms) {
-                state->colorTransforms = CFArrayCreateMutable(NULL, 0, NULL);
-            }
-            
-            colorTransformLastIndex = CFArrayGetCount(state->colorTransforms);
-            CFArraySetValueAtIndex(state->colorTransforms, colorTransformLastIndex, [placedObject colorTransformPointer]);
+            sPushColorTransform(state, [placedObject colorTransformPointer]);
+            needsColorTransformPop = YES;
         }
     }
 
@@ -336,30 +431,28 @@ static void sDrawPlacedObject(SwiftRendererState *state, SwiftPlacedObject *plac
 
     UInt16 libraryID = [placedObject libraryID];
 
-    SwiftSpriteDefinition     *sprite     = nil;
-    SwiftShapeDefinition      *shape      = nil;
-    SwiftStaticTextDefinition *staticText = nil;
-    SwiftTextDefinition       *text       = nil;
+    SwiftSpriteDefinition      *spriteDefinition      = nil;
+    SwiftShapeDefinition       *shapeDefinition       = nil;
+    SwiftStaticTextDefinition  *staticTextDefinition  = nil;
+    SwiftDynamicTextDefinition *dynamicTextDefinition = nil;
     
-    if ((sprite = [state->movie spriteDefinitionWithLibraryID:libraryID])) {
-        sDrawSprite(state, sprite);
+    if ((spriteDefinition = [state->movie spriteDefinitionWithLibraryID:libraryID])) {
+        sDrawSpriteDefinition(state, spriteDefinition);
 
-    } else if ((shape = [state->movie shapeDefinitionWithLibraryID:libraryID])) {
-        sDrawShape(state, shape);
+    } else if ((shapeDefinition = [state->movie shapeDefinitionWithLibraryID:libraryID])) {
+        sDrawShapeDefinition(state, shapeDefinition);
 
-    } else if ((staticText = [state->movie staticTextDefinitionWithLibraryID:libraryID])) {
-        if ([placedObject isKindOfClass:[SwiftPlacedStaticText class]]) {
-            sDrawPlacedStaticText(state, (SwiftPlacedStaticText *)placedObject);
-        }
+    } else if ((staticTextDefinition = [state->movie staticTextDefinitionWithLibraryID:libraryID])) {
+        sDrawStaticTextDefinition(state, staticTextDefinition);
 
-    } else if ((text = [state->movie textDefinitionWithLibraryID:libraryID])) {
-        if ([placedObject isKindOfClass:[SwiftPlacedText class]]) {
-            sDrawPlacedText(state, (SwiftPlacedText *)placedObject);
+    } else if ((dynamicTextDefinition = [state->movie dynamicTextDefinitionWithLibraryID:libraryID])) {
+        if ([placedObject isKindOfClass:[SwiftPlacedDynamicText class]]) {
+            sDrawPlacedDynamicText(state, (SwiftPlacedDynamicText *)placedObject);
         }
     }
 
-    if (colorTransformLastIndex >= 0) {
-        CFArrayRemoveValueAtIndex(state->colorTransforms, colorTransformLastIndex);
+    if (needsColorTransformPop) {
+        sPopColorTransform(state);
     }
 
     if (applyAffineTransform) {
@@ -385,27 +478,54 @@ static void sDrawPlacedObject(SwiftRendererState *state, SwiftPlacedObject *plac
 }
 
 
-- (void) renderFrame:(SwiftFrame *)frame movie:(SwiftMovie *)movie context:(CGContextRef)context
+- (void)   renderFrame: (SwiftFrame *) frame
+                 movie: (SwiftMovie *) movie
+               context: (CGContextRef) context
+   baseAffineTransform: (CGAffineTransform) baseAffineTransform
+    baseColorTransform: (SwiftColorTransform) baseColorTransform
 {
-    SwiftRendererState state = { movie, context, CGAffineTransformIdentity, NULL };
+    SwiftRendererState state = { movie, context, baseAffineTransform, NULL };
+    BOOL hasColorTransform = !SwiftColorTransformIsIdentity(baseColorTransform);
 
     sSetupContext(context);
 
+    if (hasColorTransform) {
+        sPushColorTransform(&state, &baseColorTransform);
+    }
+
     for (SwiftPlacedObject *object in [frame placedObjects]) {
         sDrawPlacedObject(&state, object, YES, YES);
+    }
+    
+    if (hasColorTransform) {
+        sPopColorTransform(&state);
     }
     
     sCleanupState(&state);
 }
 
 
-- (void) renderPlacedObject:(SwiftPlacedObject *)placedObject movie:(SwiftMovie *)movie context:(CGContextRef)context
+- (void) renderPlacedObject: (SwiftPlacedObject *) placedObject
+                      movie: (SwiftMovie *) movie
+                    context: (CGContextRef) context
+        baseAffineTransform: (CGAffineTransform) baseAffineTransform
+         baseColorTransform: (SwiftColorTransform) baseColorTransform
 {
-    SwiftRendererState state = { movie, context, CGAffineTransformIdentity, NULL };
+    SwiftRendererState state = { movie, context, baseAffineTransform, NULL };
+
+    BOOL hasColorTransform = !SwiftColorTransformIsIdentity(baseColorTransform);
 
     sSetupContext(context);
 
+    if (hasColorTransform) {
+        sPushColorTransform(&state, &baseColorTransform);
+    }
+
     sDrawPlacedObject(&state, placedObject, YES, NO);
+
+    if (hasColorTransform) {
+        sPopColorTransform(&state);
+    }
 
     sCleanupState(&state);
 }

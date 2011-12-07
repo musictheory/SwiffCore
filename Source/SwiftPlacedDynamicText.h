@@ -1,5 +1,5 @@
 /*
-    SwiftFontGlyph.m
+    SwiftPlacedText.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,31 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#import <SwiftImport.h>
+#import <SwiftPlacedObject.h>
+#import <SwiftDynamicTextDefinition.h>
 
-#import "SwiftFontGlyph.h"
+@class SwiftMovie;
 
-@implementation SwiftFontGlyph
+
+@interface SwiftPlacedDynamicText : SwiftPlacedObject {
+@private
+    NSString              *m_text;
+    CTFramesetterRef       m_framesetter;
+    CFAttributedStringRef  m_attributedText;
+    CGPoint                m_attributedTextOffset;
+    BOOL                   m_HTML;
+}
+
+@property (nonatomic, retain) SwiftDynamicTextDefinition *definition;
+
+- (void) setText:(NSString *)text HTML:(BOOL)isHTML;
+
+@property (nonatomic, copy) NSString *text;
+
+@property (nonatomic, readonly /*strong*/) CTFramesetterRef framesetter;
+@property (nonatomic, readonly /*strong*/) CFAttributedStringRef attributedText;
+@property (nonatomic, readonly) CGPoint attributedTextOffset;
+@property (nonatomic, assign, readonly, getter=isHTML) BOOL HTML;
 
 @end

@@ -42,7 +42,9 @@ enum {
     SwiftFillStyleTypeRepeatingBitmap            = 0x40,
     SwiftFillStyleTypeClippedBitmap              = 0x41,
     SwiftFillStyleTypeNonSmoothedRepeatingBitmap = 0x42,
-    SwiftFillStyleTypeNonSmoothedClippedBitmap   = 0x43
+    SwiftFillStyleTypeNonSmoothedClippedBitmap   = 0x43,
+    
+    SwiftFillStyleTypeFontShape                  = 0x100
 };
 typedef NSInteger SwiftFillStyleType;
 
@@ -57,6 +59,8 @@ typedef NSInteger SwiftFillStyleType;
 
 // Reads a FILLSTYLEARRAY from the parser
 + (NSArray *) fillStyleArrayWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)tagVersion;
+
++ (SwiftFillStyle *) fontFillStyle;
 
 // Reads a FILLSTYLE from the parser
 - (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)tagVersion;

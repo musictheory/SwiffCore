@@ -35,7 +35,7 @@
 #import "SwiftFontDefinition.h"
 #import "SwiftStaticTextDefinition.h"
 #import "SwiftSoundDefinition.h"
-#import "SwiftTextDefinition.h"
+#import "SwiftDynamicTextDefinition.h"
 
 #import "SwiftSceneAndFrameLabelData.h"
 #import "SwiftScene.h"
@@ -165,7 +165,7 @@
         [text release];
     
     } else if (tag == SwiftTagDefineEditText) {
-        SwiftTextDefinition *text = [[SwiftTextDefinition alloc] initWithParser:parser movie:self];
+        SwiftDynamicTextDefinition *text = [[SwiftDynamicTextDefinition alloc] initWithParser:parser movie:self];
         
         if (text) {
             NSNumber *key = [[NSNumber alloc] initWithInteger:[text libraryID]];
@@ -279,8 +279,8 @@
 - (SwiftStaticTextDefinition *) staticTextDefinitionWithLibraryID:(UInt16)libraryID
     { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftStaticTextDefinition class]]; }
 
-- (SwiftTextDefinition *) textDefinitionWithLibraryID:(UInt16)libraryID
-    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftTextDefinition class]]; }
+- (SwiftDynamicTextDefinition *) dynamicTextDefinitionWithLibraryID:(UInt16)libraryID
+    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftDynamicTextDefinition class]]; }
 
 
 - (SwiftScene *) sceneWithName:(NSString *)name

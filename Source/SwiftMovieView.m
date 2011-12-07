@@ -26,19 +26,38 @@
 */
 
 #import "SwiftMovieView.h"
+#import "SwiftMovie.h"
 
-#define LAYER ((SwiftMovieLayer *)[self layer])
+
+@interface SwiftMovieView ()
+- (void) _setupMovieLayer;
+- (void) _layoutMovieLayer;
+@end
+
 
 @implementation SwiftMovieView
+
+- (void) dealloc
+{
+    [m_movieLayer setMovieLayerDelegate:nil];
+    [m_movieLayer release];
+    m_movieLayer = nil;
+
+    [super dealloc];
+}
 
 
 #pragma mark -
 #pragma mark UIKit Implementation
 #ifdef SwiftMovieViewUsesUIKit
 
-+ (Class) layerClass
+- (id) initWithFrame:(CGRect)frame
 {
-    return [SwiftMovieLayer class];
+    if ((self = [super initWithFrame:frame])) {
+        [self _setupMovieLayer];
+    }
+    
+    return self;
 }
 
 
@@ -46,6 +65,13 @@
 {
     [super setContentMode:contentMode];
     [self setNeedsLayout];
+}
+
+
+- (void) setFrame:(CGRect)frame
+{
+    [super setFrame:frame];
+    [self _layoutMovieLayer];
 }
 
 
@@ -66,11 +92,65 @@
 #pragma mark AppKit Implementation
 #ifndef SwiftMovieViewUsesUIKit
 
+- (id) initWithFrame:(NSRect)frame
+{
+    if ((self = [super initWithFrame:frame])) {
+        CALayer *layer = [CALayer layer];
+
+        [layer setGeometryFlipped:YES];
+        [self setLayer:layer];
+
+        [self setWantsLayer:YES];
+        
+        [self _setupMovieLayer];
+        [self _layoutMovieLayer];
+    }
+    
+    return self;
+}
+
+
+- (void) setFrame:(NSRect)frame
+{
+    [super setFrame:frame];
+    [self _layoutMovieLayer];
+}
+
+
 #endif
 
 
-#pragma mark
-#pragma mark
+#pragma mark -
+#pragma mark Private Methods
+
+- (void) _setupMovieLayer
+{
+    m_movieLayer = [[SwiftMovieLayer alloc] init];
+    [[self layer] addSublayer:m_movieLayer];
+}
+
+
+- (void) _layoutMovieLayer
+{
+    if (![self movie]) return;
+
+    CGFloat w = [self bounds].size.width;
+    CGFloat h = [self bounds].size.height;
+    CGSize  stageSize   = [[self movie] stageRect].size;
+    CGFloat aspectRatio = stageSize.width / stageSize.height;
+    
+    CGSize size = CGSizeMake(w, floor(w  / aspectRatio));
+    if (size.height > h) {
+        size = CGSizeMake(floor(h * aspectRatio), h);
+    }
+
+    CGRect movieFrame = CGRectMake(floor((w - size.width) / 2.0), floor((h - size.height) / 2.0), size.width, size.height);
+    [m_movieLayer setFrame:movieFrame];
+}
+
+
+#pragma mark -
+#pragma mark Movie Layer Delegate
 
 - (void) movieLayer:(SwiftMovieLayer *)movieLayer willDisplayFrame:(SwiftFrame *)frame
 {
@@ -104,7 +184,7 @@
 - (void) setDelegate:(id<SwiftMovieViewDelegate>)delegate
 {
     if (m_delegate != delegate) {
-        [LAYER setMovieLayerDelegate:(delegate ? self : nil)];
+        [m_movieLayer setMovieLayerDelegate:(delegate ? self : nil)];
 
         m_delegate = delegate;
         
@@ -114,14 +194,56 @@
     }
 }
 
-- (void) setMovie:(SwiftMovie *)movie             { [LAYER setMovie:movie]; }
-- (void) setDrawsBackground:(BOOL)drawsBackground { [LAYER setDrawsBackground:drawsBackground]; }
-- (void) setUsesSublayers:(BOOL)usesSublayers     { [LAYER setUsesSublayers:usesSublayers]; }
 
-- (SwiftMovie    *) movie    { return [LAYER movie];           }
-- (SwiftPlayhead *) playhead { return [LAYER playhead];        }
-- (BOOL) drawsBackground     { return [LAYER drawsBackground]; }
-- (BOOL) usesSublayers       { return [LAYER usesSublayers];   }
+- (void) setDrawsBackground:(BOOL)drawsBackground
+{
+    [m_movieLayer setDrawsBackground:drawsBackground];
+
+    if (drawsBackground) {
+        [[self layer] setBackgroundColor:[m_movieLayer backgroundColor]];
+    } else {
+        [[self layer] setBackgroundColor:NULL];
+    }
+}
+
+
+- (void) setMovie:(SwiftMovie *)movie
+{
+    [m_movieLayer setMovie:movie];
+    
+    if ([self drawsBackground]) {
+        [[self layer] setBackgroundColor:[m_movieLayer backgroundColor]];
+    }
+    
+    [self _layoutMovieLayer];
+}
+
+
+- (void) setBaseAffineTransform:(CGAffineTransform)transform
+{
+    [m_movieLayer setBaseAffineTransform:transform];
+}
+
+
+- (void) setBaseColorTransform:(SwiftColorTransform)transform
+{
+    [m_movieLayer setBaseColorTransform:transform];
+}
+
+
+- (void) setUsesSublayers:(BOOL)usesSublayers
+{
+    [m_movieLayer setUsesSublayers:usesSublayers];
+}
+
+
+- (SwiftMovie    *)     movie               { return [m_movieLayer movie];               }
+- (SwiftPlayhead *)     playhead            { return [m_movieLayer playhead];            }
+- (BOOL)                drawsBackground     { return [m_movieLayer drawsBackground];     }
+- (BOOL)                usesSublayers       { return [m_movieLayer usesSublayers];       }
+- (CGAffineTransform)   baseAffineTransform { return [m_movieLayer baseAffineTransform]; }
+- (SwiftColorTransform) baseColorTransform  { return [m_movieLayer baseColorTransform];  }
+
 
 @synthesize delegate = m_delegate;
 @dynamic layer;

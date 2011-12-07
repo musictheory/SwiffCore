@@ -26,6 +26,7 @@
 */
 
 #import <SwiftImport.h>
+#import <SwiftBase.h>
 #import <SwiftMovieLayer.h>
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR || TARGET_HAS_UIKIT
@@ -49,7 +50,7 @@
 @interface SwiftMovieView : SwiftMovieViewSuperclass <SwiftMovieLayerDelegate> {
 @private
     id<SwiftMovieViewDelegate> m_delegate;
-    SwiftMovie *m_movie;
+    SwiftMovieLayer *m_movieLayer;
     
     BOOL m_delegate_movieView_willDisplayFrame;
     BOOL m_delegate_movieView_didDisplayFrame;
@@ -61,9 +62,12 @@
 @property (nonatomic, assign) id<SwiftMovieViewDelegate> delegate;
 @property (nonatomic, assign) BOOL drawsBackground;
 @property (nonatomic, assign) BOOL usesSublayers;
+@property (nonatomic, assign) CGAffineTransform baseAffineTransform;
+@property (nonatomic, assign) SwiftColorTransform baseColorTransform;
 
 @property (nonatomic, retain, readonly) SwiftMovieLayer *layer;
 @property (nonatomic, retain, readonly) SwiftPlayhead *playhead;
+
 
 @end
 

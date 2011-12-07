@@ -148,7 +148,7 @@ enum _SwiftTag {
 };
 typedef NSInteger SwiftTag;
 
-typedef NSInteger SwiftVersion;
+typedef NSInteger SwiftTwips;
 
 
 
@@ -162,9 +162,24 @@ extern void SwiftEnableLogging(void);
 
 #define SwiftFloatFromTwips(TWIPS) ((TWIPS) / 20.0)
 
+#if CGFLOAT_IS_DOUBLE
+#define SwiftGetTwipsFromCGFloat(FLOAT) (NSInteger)lround((FLOAT) * 20.0)
+#define SwiftGetCGFloatFromTwips(TWIPS) ((TWIPS) / 20.0)
+#else
+#define SwiftGetTwipsFromCGFloat(FLOAT) (NSInteger)lroundf((FLOAT) * 20.0f)
+#define SwiftGetCGFloatFromTwips(TWIPS) ((TWIPS) / 20.0f)
+#endif
+
+
+extern SwiftColor SwiftColorFromCGColor(CGColorRef cgColor);
+
 extern CGColorRef SwiftColorCopyCGColor(SwiftColor color) CF_RETURNS_RETAINED;
 
 extern SwiftColor SwiftColorApplyColorTransform(SwiftColor color, SwiftColorTransform transform);
+
+extern BOOL SwiftColorTransformIsIdentity(SwiftColorTransform transform);
+
+extern BOOL SwiftColorTransformEqualToTransform(SwiftColorTransform a, SwiftColorTransform b);
 
 extern NSString *SwiftStringFromColor(SwiftColor color);
 

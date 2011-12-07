@@ -25,6 +25,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#if 0
 #import <SwiftImport.h>
 #import <SwiftBase.h>
 #import <SwiftPlacedObject.h>
@@ -45,3 +46,5 @@
 @property (nonatomic, assign,    readonly) CGPoint attributedTextOffset;
 
 @end
+
+#endif

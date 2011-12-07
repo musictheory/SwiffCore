@@ -25,11 +25,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftTextDefinition.h"
+#import "SwiftDynamicTextDefinition.h"
 
 #import "SwiftParser.h"
 
-@implementation SwiftTextDefinition
+@implementation SwiftDynamicTextDefinition
 
 - (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie
 {
@@ -68,23 +68,24 @@
         if (hasFont) {
             UInt16 fontID;
             SwiftParserReadUInt16(parser, &fontID);
-            m_fontID = fontID;
+            m_fontID  = fontID;
+            m_hasFont = YES;
         }
 
         if (hasFontClass) {
             NSString *fontClass = nil;
             SwiftParserReadString( parser, &fontClass);
             m_fontClass = [fontClass retain];
+            m_hasFontClass = YES;
         }
     
         if (hasFont) {
-            UInt16 fontHeight;
-            SwiftParserReadUInt16(parser, &fontHeight);
-            m_fontHeight = SwiftFloatFromTwips(fontHeight);
+            SwiftParserReadUInt16(parser, &m_fontHeightInTwips);
         }
         
         if (hasColor) {
             SwiftParserReadColorRGBA(parser, &m_color);
+            m_hasColor = YES;
         }
 
         if (hasMaxLength) {
@@ -108,6 +109,8 @@
             SwiftParserReadUInt16(parser, &m_rightMarginInTwips);
             SwiftParserReadUInt16(parser, &m_indentInTwips);
             SwiftParserReadSInt16(parser, &m_leadingInTwips);
+            
+            m_hasLayout = YES;
         }
 
         NSString *variableName;
@@ -150,14 +153,21 @@
 
 - (SwiftColor *) colorPointer
 {
-    return &m_color;
+    return m_hasColor ? &m_color : NULL;
 }
 
 
-- (CGFloat) leftMargin  { return SwiftFloatFromTwips(m_leftMarginInTwips);  }
-- (CGFloat) rightMargin { return SwiftFloatFromTwips(m_rightMarginInTwips); }
-- (CGFloat) indent      { return SwiftFloatFromTwips(m_indentInTwips);      }
-- (CGFloat) leading     { return SwiftFloatFromTwips(m_leadingInTwips);     }
+- (CGFloat) fontHeight  { return SwiftGetCGFloatFromTwips(m_fontHeightInTwips);  }
+- (CGFloat) leftMargin  { return SwiftGetCGFloatFromTwips(m_leftMarginInTwips);  }
+- (CGFloat) rightMargin { return SwiftGetCGFloatFromTwips(m_rightMarginInTwips); }
+- (CGFloat) indent      { return SwiftGetCGFloatFromTwips(m_indentInTwips);      }
+- (CGFloat) leading     { return SwiftGetCGFloatFromTwips(m_leadingInTwips);     }
+
+- (SwiftTwips) fontHeightInTwips  { return m_fontHeightInTwips;  }
+- (SwiftTwips) leftMarginInTwips  { return m_leftMarginInTwips;  }
+- (SwiftTwips) rightMarginInTwips { return m_rightMarginInTwips; }
+- (SwiftTwips) indentInTwips      { return m_indentInTwips;      }
+- (SwiftTwips) leadingInTwips     { return m_leadingInTwips;     }
 
 @synthesize movie         = m_movie,
             libraryID     = m_libraryID,
@@ -173,7 +183,6 @@
             hasFont       = m_hasFont,
             hasFontClass  = m_hasFontClass,
             fontClass     = m_fontClass,
-            fontHeight    = m_fontHeight,
             fontID        = m_fontID,
             hasColor      = m_hasColor,
             color         = m_color;

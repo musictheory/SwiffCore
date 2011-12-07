@@ -151,7 +151,7 @@
 #pragma mark -
 #pragma mark Accessors
 
-- (void) setRawFrameIndex:(NSUInteger)rawFrameIndex
+- (void) setRawFrameIndex:(NSInteger)rawFrameIndex
 {
     if (rawFrameIndex != m_rawFrameIndex) {
         m_rawFrameIndex = rawFrameIndex;
@@ -162,11 +162,16 @@
 
 - (void) setFrame:(SwiftFrame *)frame
 {
-    NSArray   *frames = [m_movie frames];
-    NSUInteger index  = [frames indexOfObject:frame];
-    
-    if (index != NSNotFound) {
-        [self setRawFrameIndex:index];
+    if (!frame) {
+        [self setRawFrameIndex:0];
+
+    } else {
+        NSArray   *frames = [m_movie frames];
+        NSUInteger index  = [frames indexOfObject:frame];
+        
+        if (index != NSNotFound) {
+            [self setRawFrameIndex:index];
+        }
     }
 }
 

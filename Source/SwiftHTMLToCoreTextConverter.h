@@ -26,20 +26,22 @@
 */
 
 #import <SwiftImport.h>
+#import <SwiftBase.h>
 
+@class SwiftDynamicTextAttributes;
 
 @interface SwiftHTMLToCoreTextConverter : NSObject {
-    NSInteger         m_boldCount;
-    NSInteger         m_italicCount;
-    NSInteger         m_underlineCount;
-    NSMutableString  *m_characters;
-    CTFontRef         m_baseFont;
+    SwiftDynamicTextAttributes *m_attributes;
+    NSMutableString *m_characters;
+    NSInteger        m_boldCount;
+    NSInteger        m_italicCount;
+    NSInteger        m_underlineCount;
 
     CFMutableAttributedStringRef m_output;
 }
 
 + (id) sharedInstance;
 
-- (CFAttributedStringRef) copyAttributedStringForHTML:(NSString *)string baseFont:(CTFontRef)font CF_RETURNS_RETAINED;
+- (CFAttributedStringRef) copyAttributedStringForHTML:(NSString *)string baseAttributes:(SwiftDynamicTextAttributes *)baseAttributes CF_RETURNS_RETAINED;
 
 @end

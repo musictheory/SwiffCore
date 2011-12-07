@@ -64,9 +64,17 @@
 }
 
 
++ (SwiftFillStyle *) fontFillStyle
+{
+    SwiftFillStyle *fillStyle = [[[SwiftFillStyle alloc] init] autorelease];
+    fillStyle->m_type = SwiftFillStyleTypeFontShape;
+    return fillStyle;
+}
+
+
 - (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version
 {
-    if ((self = [super init])) {
+    if ((self = [self init])) {
         UInt8 type;
         SwiftParserReadUInt8(parser, &type);
         m_type = type;
