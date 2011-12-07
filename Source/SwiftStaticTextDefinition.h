@@ -38,11 +38,11 @@
     NSArray          *m_textRecords;
     UInt16            m_libraryID;
     CGRect            m_bounds;
-    CGAffineTransform m_affineTransform;
+    CGAffineTransform m_textTransform;
 }
 
 - (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie;
 
 @property (nonatomic, retain, readonly) NSArray *textRecords;
-
+@property (nonatomic, assign, readonly) CGAffineTransform textTransform;
 @end

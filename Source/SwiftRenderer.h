@@ -26,6 +26,7 @@
 */
 
 #import <SwiftImport.h>
+#import <SwiftBase.h>
 
 @class SwiftFrame, SwiftMovie, SwiftPlacedObject;
 
@@ -34,7 +35,16 @@
 
 + (id) sharedInstance;
 
-- (void) renderFrame:(SwiftFrame *)frame movie:(SwiftMovie *)movie context:(CGContextRef)context;
-- (void) renderPlacedObject:(SwiftPlacedObject *)placedObject movie:(SwiftMovie *)movie context:(CGContextRef)context;
+- (void) renderFrame: (SwiftFrame *) frame
+               movie: (SwiftMovie *) movie
+             context: (CGContextRef) context
+ baseAffineTransform: (CGAffineTransform) baseAffineTransform
+  baseColorTransform: (SwiftColorTransform) baseColorTransform;
+
+- (void) renderPlacedObject: (SwiftPlacedObject *) placedObject
+                      movie: (SwiftMovie *) movie
+                    context: (CGContextRef) context
+        baseAffineTransform: (CGAffineTransform) baseAffineTransform
+         baseColorTransform: (SwiftColorTransform) baseColorTransform;
 
 @end

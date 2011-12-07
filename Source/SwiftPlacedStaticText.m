@@ -27,17 +27,18 @@
 
 #import "SwiftPlacedStaticText.h"
 
+#if 0
 #import "SwiftFontDefinition.h"
 #import "SwiftMovie.h"
-#import "SwiftTextRecord.h"
+#import "SwiftStaticTextRecord.h"
 
 
-static CFStringRef sCreateGlyphs(SwiftFontDefinition *fontDefinition, SwiftTextRecord *textRecord) CF_RETURNS_RETAINED;
+static CFStringRef sCreateGlyphs(SwiftFontDefinition *fontDefinition, SwiftStaticTextRecord *textRecord) CF_RETURNS_RETAINED;
 
-static CFStringRef sCreateGlyphs(SwiftFontDefinition *fontDefinition, SwiftTextRecord *textRecord)
+static CFStringRef sCreateGlyphs(SwiftFontDefinition *fontDefinition, SwiftStaticTextRecord *textRecord)
 {
-    NSUInteger       glyphEntriesCount = [textRecord glyphEntriesCount];
-    SwiftGlyphEntry *glyphEntries      = [textRecord glyphEntries];
+    NSUInteger                  glyphEntriesCount = [textRecord glyphEntriesCount];
+    SwiftTextRecordGlyphEntry *glyphEntries      = [textRecord glyphEntries];
     NSUInteger       codeTableCount    = [fontDefinition glyphCount];
     UInt16          *codeTable         = [fontDefinition codeTable];
 
@@ -95,7 +96,7 @@ static CFStringRef sCreateGlyphs(SwiftFontDefinition *fontDefinition, SwiftTextR
     CGFloat   currentTextHeight = 0.0;
     BOOL      needsFontUpdate   = NO;
 
-    for (SwiftTextRecord *textRecord in textRecords) {
+    for (SwiftStaticTextRecord *textRecord in textRecords) {
         if ([textRecord hasFont]) {
             NSInteger recordFontID = [textRecord fontID];
             if (currentFontID != recordFontID) {
@@ -150,10 +151,10 @@ static CFStringRef sCreateGlyphs(SwiftFontDefinition *fontDefinition, SwiftTextR
     if (attributes) CFRelease(attributes);
 
     if ([textRecords count] > 0) {
-        SwiftTextRecord *firstTextRecord = [textRecords objectAtIndex:0];
+        SwiftStaticTextRecord *firstTextRecord = [textRecords objectAtIndex:0];
         m_attributedTextOffset = [firstTextRecord offset];
     }
-}
+}    
 
 
 - (CFAttributedStringRef) attributedText
@@ -182,3 +183,5 @@ static CFStringRef sCreateGlyphs(SwiftFontDefinition *fontDefinition, SwiftTextR
 @dynamic definition;
 
 @end
+
+#endif

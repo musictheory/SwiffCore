@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<style>
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#movie {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+}
+
+</style>
+<script type="text/javascript" src="swfobject.js"></script>
+<script>
+var gCurrentFrame = 1;
+var gMovie = nil;
+
+function DoLoad(url) {
+    var id         = "movie",
+        width      = "100%",
+        height     = "100%",
+        version    = "0",
+        flashvars  = { },
+        params     = { "AllowScriptAccess": true },
+        attributes = { };
+
+    swfobject.embedSWF(url, id, width, height, version, null, flashvars, params, attributes, function(e) {
+        gMovie = e.ref;
+        gMovie.GotoFrame(gCurrentFrame - 1);
+    });
+}
+
+
+function GotoFrame(n) {
+    gCurrentFrame = n;
+    if (gMovie) gMovie.GotoFrame(gCurrentFrame - 1);
+}
+
+</script>
+</head>
+<body>
+<div id="movie"></div>
+</body>
+</html>

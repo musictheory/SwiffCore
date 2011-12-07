@@ -42,6 +42,8 @@
 
 - (SwiftFrame *) frameWithLabel:(NSString *)label;
 
+
+- (SwiftFrame *) firstFrame;
 - (SwiftFrame *) frameAtIndex1:(NSUInteger)index1;
 - (NSUInteger) index1OfFrame:(SwiftFrame *)frame;
 

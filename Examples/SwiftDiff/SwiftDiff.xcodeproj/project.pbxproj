@@ -1,0 +1,403 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5529CA821489B32000A78C2F /* Document.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5529CA801489B32000A78C2F /* Document.xib */; };
+		5580A9051488470400F55ED0 /* SwiftDiffDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 5580A9021488470400F55ED0 /* SwiftDiffDocument.m */; };
+		5580A9061488470400F55ED0 /* SwiftDiffMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 5580A9031488470400F55ED0 /* SwiftDiffMain.m */; };
+		5580A9161488472400F55ED0 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5580A9141488472400F55ED0 /* MainMenu.xib */; };
+		5580A91B1488473100F55ED0 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5580A9191488473100F55ED0 /* InfoPlist.strings */; };
+		55AEB9B91488457B00C17C1C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55AEB9B81488457B00C17C1C /* Cocoa.framework */; };
+		55B079C114884C32006769C8 /* libSwiftCoreMac.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079BD14884C25006769C8 /* libSwiftCoreMac.a */; };
+		55B079C814884D79006769C8 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079C614884D79006769C8 /* libxml2.dylib */; };
+		55B079C914884D79006769C8 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079C714884D79006769C8 /* libz.dylib */; };
+		55B079CC14884E25006769C8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079CA14884E25006769C8 /* AudioToolbox.framework */; };
+		55B079CD14884E25006769C8 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079CB14884E25006769C8 /* QuartzCore.framework */; };
+		55B079CF148859CC006769C8 /* template.html in Resources */ = {isa = PBXBuildFile; fileRef = 55B079CE148859CC006769C8 /* template.html */; };
+		55B079D1148859E7006769C8 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079D0148859E7006769C8 /* WebKit.framework */; };
+		55B079D4148862FE006769C8 /* swfobject.js in Resources */ = {isa = PBXBuildFile; fileRef = 55B079D214885D92006769C8 /* swfobject.js */; };
+		55F3158B1489E85700E6E625 /* SwiftDiffAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F3158A1489E85600E6E625 /* SwiftDiffAppDelegate.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		55B079BA14884C25006769C8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5580A8F4148846E200F55ED0 /* SwiftCore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5595A5E91442BFFA00DECD41;
+			remoteInfo = SwiftCore;
+		};
+		55B079BC14884C25006769C8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5580A8F4148846E200F55ED0 /* SwiftCore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5516B4C41446D0EA00231D67;
+			remoteInfo = SwiftCoreMac;
+		};
+		55B079BF14884C2D006769C8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5580A8F4148846E200F55ED0 /* SwiftCore.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 5516B4C31446D0EA00231D67;
+			remoteInfo = SwiftCoreMac;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		5529CA811489B32000A78C2F /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = Resources/en.lproj/Document.xib; sourceTree = SOURCE_ROOT; };
+		5580A8F4148846E200F55ED0 /* SwiftCore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftCore.xcodeproj; path = ../../SwiftCore.xcodeproj; sourceTree = SOURCE_ROOT; };
+		5580A9011488470400F55ED0 /* SwiftDiffDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftDiffDocument.h; path = Source/SwiftDiffDocument.h; sourceTree = SOURCE_ROOT; };
+		5580A9021488470400F55ED0 /* SwiftDiffDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftDiffDocument.m; path = Source/SwiftDiffDocument.m; sourceTree = SOURCE_ROOT; };
+		5580A9031488470400F55ED0 /* SwiftDiffMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftDiffMain.m; path = Source/SwiftDiffMain.m; sourceTree = SOURCE_ROOT; };
+		5580A9041488470400F55ED0 /* SwiftDiffPrefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftDiffPrefix.pch; path = Source/SwiftDiffPrefix.pch; sourceTree = SOURCE_ROOT; };
+		5580A90F1488471B00F55ED0 /* SwiftDiffInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = SwiftDiffInfo.plist; path = Resources/SwiftDiffInfo.plist; sourceTree = SOURCE_ROOT; };
+		5580A9151488472400F55ED0 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = Resources/en.lproj/MainMenu.xib; sourceTree = SOURCE_ROOT; };
+		5580A91A1488473100F55ED0 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = Resources/en.lproj/InfoPlist.strings; sourceTree = SOURCE_ROOT; };
+		55AEB9B41488457B00C17C1C /* SwiftDiff.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftDiff.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		55AEB9B81488457B00C17C1C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		55AEB9BB1488457B00C17C1C /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		55AEB9BD1488457B00C17C1C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		55B079C614884D79006769C8 /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
+		55B079C714884D79006769C8 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		55B079CA14884E25006769C8 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		55B079CB14884E25006769C8 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		55B079CE148859CC006769C8 /* template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = template.html; path = Resources/template.html; sourceTree = SOURCE_ROOT; };
+		55B079D0148859E7006769C8 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		55B079D214885D92006769C8 /* swfobject.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = swfobject.js; path = Resources/swfobject.js; sourceTree = SOURCE_ROOT; };
+		55F315891489E85600E6E625 /* SwiftDiffAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftDiffAppDelegate.h; path = Source/SwiftDiffAppDelegate.h; sourceTree = SOURCE_ROOT; };
+		55F3158A1489E85600E6E625 /* SwiftDiffAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftDiffAppDelegate.m; path = Source/SwiftDiffAppDelegate.m; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		55AEB9B11488457B00C17C1C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55B079C814884D79006769C8 /* libxml2.dylib in Frameworks */,
+				55B079C914884D79006769C8 /* libz.dylib in Frameworks */,
+				55B079C114884C32006769C8 /* libSwiftCoreMac.a in Frameworks */,
+				55B079CC14884E25006769C8 /* AudioToolbox.framework in Frameworks */,
+				55AEB9B91488457B00C17C1C /* Cocoa.framework in Frameworks */,
+				55B079CD14884E25006769C8 /* QuartzCore.framework in Frameworks */,
+				55B079D1148859E7006769C8 /* WebKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5580A9071488470800F55ED0 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				5580A9041488470400F55ED0 /* SwiftDiffPrefix.pch */,
+				5580A9011488470400F55ED0 /* SwiftDiffDocument.h */,
+				5580A9021488470400F55ED0 /* SwiftDiffDocument.m */,
+				55F315891489E85600E6E625 /* SwiftDiffAppDelegate.h */,
+				55F3158A1489E85600E6E625 /* SwiftDiffAppDelegate.m */,
+				5580A9031488470400F55ED0 /* SwiftDiffMain.m */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		55AEB9A91488457B00C17C1C = {
+			isa = PBXGroup;
+			children = (
+				5580A8F4148846E200F55ED0 /* SwiftCore.xcodeproj */,
+				55AEB9BE1488457B00C17C1C /* SwiftDiff */,
+				55AEB9B71488457B00C17C1C /* Frameworks */,
+				55AEB9B51488457B00C17C1C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		55AEB9B51488457B00C17C1C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				55AEB9B41488457B00C17C1C /* SwiftDiff.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		55AEB9B71488457B00C17C1C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				55B079CA14884E25006769C8 /* AudioToolbox.framework */,
+				55AEB9BB1488457B00C17C1C /* AppKit.framework */,
+				55AEB9B81488457B00C17C1C /* Cocoa.framework */,
+				55AEB9BD1488457B00C17C1C /* Foundation.framework */,
+				55B079CB14884E25006769C8 /* QuartzCore.framework */,
+				55B079D0148859E7006769C8 /* WebKit.framework */,
+				55B079C614884D79006769C8 /* libxml2.dylib */,
+				55B079C714884D79006769C8 /* libz.dylib */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		55AEB9BE1488457B00C17C1C /* SwiftDiff */ = {
+			isa = PBXGroup;
+			children = (
+				5580A9071488470800F55ED0 /* Source */,
+				55AEB9BF1488457B00C17C1C /* Resources */,
+			);
+			path = SwiftDiff;
+			sourceTree = "<group>";
+		};
+		55AEB9BF1488457B00C17C1C /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				55B079CE148859CC006769C8 /* template.html */,
+				55B079D214885D92006769C8 /* swfobject.js */,
+				5529CA801489B32000A78C2F /* Document.xib */,
+				5580A9191488473100F55ED0 /* InfoPlist.strings */,
+				5580A9141488472400F55ED0 /* MainMenu.xib */,
+				5580A90F1488471B00F55ED0 /* SwiftDiffInfo.plist */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		55B079B614884C25006769C8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				55B079BB14884C25006769C8 /* libSwiftCore.a */,
+				55B079BD14884C25006769C8 /* libSwiftCoreMac.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		55AEB9B31488457B00C17C1C /* SwiftDiff */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 55AEB9D21488457B00C17C1C /* Build configuration list for PBXNativeTarget "SwiftDiff" */;
+			buildPhases = (
+				55AEB9B01488457B00C17C1C /* Sources */,
+				55AEB9B11488457B00C17C1C /* Frameworks */,
+				55AEB9B21488457B00C17C1C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				55B079C014884C2D006769C8 /* PBXTargetDependency */,
+			);
+			name = SwiftDiff;
+			productName = SwiftDiff;
+			productReference = 55AEB9B41488457B00C17C1C /* SwiftDiff.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		55AEB9AB1488457B00C17C1C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
+			buildConfigurationList = 55AEB9AE1488457B00C17C1C /* Build configuration list for PBXProject "SwiftDiff" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 55AEB9A91488457B00C17C1C;
+			productRefGroup = 55AEB9B51488457B00C17C1C /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 55B079B614884C25006769C8 /* Products */;
+					ProjectRef = 5580A8F4148846E200F55ED0 /* SwiftCore.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				55AEB9B31488457B00C17C1C /* SwiftDiff */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		55B079BB14884C25006769C8 /* libSwiftCore.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSwiftCore.a;
+			remoteRef = 55B079BA14884C25006769C8 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		55B079BD14884C25006769C8 /* libSwiftCoreMac.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSwiftCoreMac.a;
+			remoteRef = 55B079BC14884C25006769C8 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		55AEB9B21488457B00C17C1C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55B079D4148862FE006769C8 /* swfobject.js in Resources */,
+				5580A9161488472400F55ED0 /* MainMenu.xib in Resources */,
+				5580A91B1488473100F55ED0 /* InfoPlist.strings in Resources */,
+				55B079CF148859CC006769C8 /* template.html in Resources */,
+				5529CA821489B32000A78C2F /* Document.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		55AEB9B01488457B00C17C1C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5580A9051488470400F55ED0 /* SwiftDiffDocument.m in Sources */,
+				5580A9061488470400F55ED0 /* SwiftDiffMain.m in Sources */,
+				55F3158B1489E85700E6E625 /* SwiftDiffAppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		55B079C014884C2D006769C8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SwiftCoreMac;
+			targetProxy = 55B079BF14884C2D006769C8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		5529CA801489B32000A78C2F /* Document.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5529CA811489B32000A78C2F /* en */,
+			);
+			name = Document.xib;
+			sourceTree = "<group>";
+		};
+		5580A9141488472400F55ED0 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5580A9151488472400F55ED0 /* en */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		5580A9191488473100F55ED0 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5580A91A1488473100F55ED0 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		55AEB9D01488457B00C17C1C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		55AEB9D11488457B00C17C1C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		55AEB9D31488457B00C17C1C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Source/SwiftDiffPrefix.pch;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../../Source",
+				);
+				INFOPLIST_FILE = Resources/SwiftDiffInfo.plist;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		55AEB9D41488457B00C17C1C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Source/SwiftDiffPrefix.pch;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../../Source",
+				);
+				INFOPLIST_FILE = Resources/SwiftDiffInfo.plist;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		55AEB9AE1488457B00C17C1C /* Build configuration list for PBXProject "SwiftDiff" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				55AEB9D01488457B00C17C1C /* Debug */,
+				55AEB9D11488457B00C17C1C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		55AEB9D21488457B00C17C1C /* Build configuration list for PBXNativeTarget "SwiftDiff" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				55AEB9D31488457B00C17C1C /* Debug */,
+				55AEB9D41488457B00C17C1C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 55AEB9AB1488457B00C17C1C /* Project object */;
+}

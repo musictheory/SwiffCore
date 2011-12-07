@@ -36,7 +36,7 @@
 static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 
 @interface SwiftSpriteLayer ()
-- (void) _clearContent;
+- (void) _clearContentAndRemove:(BOOL)removeLayer;
 - (void) _setupContent;
 @end
 
@@ -65,7 +65,7 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 
 - (void) dealloc
 {
-    [self _clearContent];
+    [self _clearContentAndRemove:NO];
     
     [m_currentFrame release];
     m_currentFrame = nil;
@@ -78,12 +78,12 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 #pragma mark -
 #pragma mark Private Methods
 
-- (void) _clearContent
+- (void) _clearContentAndRemove:(BOOL)removeLayer
 {
     if (m_usesSublayers) {
         for (CALayer *layer in [m_content.depthToLayerMap allValues]) {
             [layer setDelegate:nil];
-            [layer removeFromSuperlayer];
+            if (removeLayer) [layer removeFromSuperlayer];
         }
 
         [m_content.depthToLayerMap release];
@@ -91,7 +91,7 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 
     } else {
         [m_content.layer setDelegate:nil];
-        [m_content.layer removeFromSuperlayer];
+        if (removeLayer) [m_content.layer removeFromSuperlayer];
         [m_content.layer release];
         m_content.layer = nil;
     }
@@ -115,6 +115,32 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 }
 
 
+- (void) _setNeedsDisplayOnAll
+{
+    if (m_usesSublayers) {
+        for (CALayer *layer in [m_content.depthToLayerMap allValues]) {
+            [layer setNeedsDisplay];
+        }
+    } else {
+        [m_content.layer setNeedsDisplay];
+    }
+}
+
+
+- (void) _setNeedsLayoutOnAll
+{
+    if (m_usesSublayers) {
+        for (CALayer *layer in [m_content.depthToLayerMap allValues]) {
+            //!i: We need to recalculate the frame for all sublayers
+        }
+
+    } else {
+        [m_content.layer setFrame:[self bounds]];
+        [m_content.layer setNeedsDisplay];
+    }
+}
+
+
 - (BOOL) _spriteLayer:(SwiftSpriteLayer *)layer shouldInterpolateFromFrame:(SwiftFrame *)fromFrame toFrame:(SwiftFrame *)toFrame
 {
     CALayer *superlayer = [self superlayer];
@@ -128,12 +154,18 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 }
 
 
-- (CGAffineTransform) _baseTransform
+- (CGAffineTransform) _baseAffineTransform
 {
     CGSize movieSize = [m_movie stageRect].size;
     CGRect bounds    = [self bounds];
 
     return CGAffineTransformMakeScale(bounds.size.width /  movieSize.width, bounds.size.height / movieSize.height);
+}
+
+
+- (SwiftColorTransform) _baseColorTransform
+{
+    return SwiftColorTransformIdentity;
 }
 
 
@@ -153,7 +185,7 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
     NSInteger oldDepth = oldPlacedObject ? [oldPlacedObject depth] : NSIntegerMax;
     NSInteger newDepth = newPlacedObject ? [newPlacedObject depth] : NSIntegerMax;
 
-    CGAffineTransform baseTransform = [self _baseTransform];
+    CGAffineTransform baseTransform = [self _baseAffineTransform];
 
     void (^updateLayer)(CALayer *layer, SwiftPlacedObject *) = ^(CALayer *layer, SwiftPlacedObject *placedObject) {
         UInt16 libraryID = [placedObject libraryID];
@@ -249,17 +281,19 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
         CGPoint position = [layer position];
 
         CGContextTranslateCTM(context, -position.x, -position.y);
-        CGContextConcatCTM(context, [self _baseTransform]);
 
-        [[SwiftRenderer sharedInstance] renderPlacedObject:placedObject movie:m_movie context:context];
+        CGAffineTransform baseTransform = [self _baseAffineTransform];
+        SwiftColorTransform baseColorTransform = [self _baseColorTransform];
+
+        [[SwiftRenderer sharedInstance] renderPlacedObject:placedObject movie:m_movie context:context baseAffineTransform:baseTransform baseColorTransform:baseColorTransform];
 
     } else if (m_spriteDefinition) {
 
-    } else {
+    } else if (m_currentFrame) {
+        CGAffineTransform baseTransform = [self _baseAffineTransform];
+        SwiftColorTransform baseColorTransform = [self _baseColorTransform];
 
-        CGContextConcatCTM(context, [self _baseTransform]);
-
-        [[SwiftRenderer sharedInstance] renderFrame:m_currentFrame movie:m_movie context:context];
+        [[SwiftRenderer sharedInstance] renderFrame:m_currentFrame movie:m_movie context:context baseAffineTransform:baseTransform baseColorTransform:baseColorTransform];
     }
 
     CGContextRestoreGState(context);
@@ -307,7 +341,7 @@ static NSString * const PlacedObjectKey = @"SwiftPlacedObject";
 - (void) setUsesSublayers:(BOOL)usesSublayers
 {
     if (m_usesSublayers != usesSublayers) {
-        [self _clearContent];
+        [self _clearContentAndRemove:YES];
         m_usesSublayers = usesSublayers;
         [self _setupContent];
     }

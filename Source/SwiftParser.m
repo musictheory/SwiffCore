@@ -678,9 +678,9 @@ void SwiftParserReadString(SwiftParser *parser, NSString **outValue)
 }
 
 
-void SwiftParserReadPascalString(SwiftParser *parser, NSString **outValue)
+void SwiftParserReadLengthPrefixedString(SwiftParser *parser, NSString **outValue)
 {
-    SwiftParserReadPascalStringWithEncoding(parser, NSUTF8StringEncoding, outValue);
+    SwiftParserReadLengthPrefixedStringWithEncoding(parser, NSUTF8StringEncoding, outValue);
 }
 
 
@@ -695,17 +695,23 @@ void SwiftParserReadStringWithEncoding(SwiftParser *parser, NSStringEncoding enc
     
     UInt32 length = (parser->b - start);
     if (outValue) {
-        *outValue = [[[NSString alloc] initWithBytes:start length:length encoding:encoding] autorelease];
+        if (length) {
+            length--;
 
-        // Fallback for legacy .swf files where encoding wasn't specified
-        if (*outValue == nil && (encoding == NSUTF8StringEncoding)) {
-            *outValue = [[[NSString alloc] initWithBytes:start length:length encoding:NSWindowsCP1252StringEncoding] autorelease];
+            *outValue = [[[NSString alloc] initWithBytes:start length:length encoding:encoding] autorelease];
+
+            // Fallback for legacy .swf files where encoding wasn't specified
+            if (*outValue == nil && (encoding == NSUTF8StringEncoding)) {
+                *outValue = [[[NSString alloc] initWithBytes:start length:length encoding:NSWindowsCP1252StringEncoding] autorelease];
+            }
+        } else {
+            *outValue = nil;
         }
     }
 }
 
 
-void SwiftParserReadPascalStringWithEncoding(SwiftParser *parser, NSStringEncoding encoding, NSString **outValue)
+void SwiftParserReadLengthPrefixedStringWithEncoding(SwiftParser *parser, NSStringEncoding encoding, NSString **outValue)
 {
     UInt8 length;
     SwiftParserReadUInt8(parser, &length);
@@ -715,11 +721,21 @@ void SwiftParserReadPascalStringWithEncoding(SwiftParser *parser, NSStringEncodi
     }
 
     if (outValue) {
-        *outValue = [[[NSString alloc] initWithBytes:parser->b length:length encoding:encoding] autorelease];
+        //!spec: "Note that font name strings in the DefineFontInfo tag are not null-terminated;
+        //        instead their length is specified by the FontNameLen field." (page 179)
+        //
+        // In practice, they are both length-prefixed and null terminated.
+        //
+        UInt8 lengthToUse = length;
+        if (length > 0 && (parser->b[length - 1] == 0)) {
+            lengthToUse--;
+        }
+
+        *outValue = [[[NSString alloc] initWithBytes:parser->b length:lengthToUse encoding:encoding] autorelease];
 
         // Fallback for legacy .swf files where encoding wasn't specified
         if (*outValue == nil && (encoding == NSUTF8StringEncoding)) {
-            *outValue = [[[NSString alloc] initWithBytes:parser->b length:length encoding:NSWindowsCP1252StringEncoding] autorelease];
+            *outValue = [[[NSString alloc] initWithBytes:parser->b length:lengthToUse encoding:NSWindowsCP1252StringEncoding] autorelease];
         }
     }
 

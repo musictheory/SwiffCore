@@ -25,18 +25,22 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftPlacedText.h"
+#import "SwiftPlacedDynamicText.h"
 
+#import "SwiftDynamicTextAttributes.h"
 #import "SwiftHTMLToCoreTextConverter.h"
+#import "SwiftMovie.h"
+#import "SwiftFontDefinition.h"
 
-@implementation SwiftPlacedText
+
+@implementation SwiftPlacedDynamicText
 
 - (id) initWithPlacedObject:(SwiftPlacedObject *)placedObject
 {
     if ((self = [super initWithPlacedObject:placedObject])) {
 
-        if ([placedObject isKindOfClass:[SwiftPlacedText class]]) {
-            SwiftPlacedText *placedText = (SwiftPlacedText *)placedObject;
+        if ([placedObject isKindOfClass:[SwiftPlacedDynamicText class]]) {
+            SwiftPlacedDynamicText *placedText = (SwiftPlacedDynamicText *)placedObject;
 
             m_text = [placedText->m_text copy];
             m_HTML =  placedText->m_HTML;
@@ -44,6 +48,7 @@
 
             if (placedText->m_attributedText) {
                 m_attributedText = CFAttributedStringCreateCopy(NULL, placedText->m_attributedText);
+                m_framesetter = CTFramesetterCreateWithAttributedString(m_attributedText);
             }
         }
     }
@@ -64,70 +69,30 @@
     [super dealloc];
 }
 
-#if 0
-    SWFDefineEditTextTag *tag = _dynamicTag;
 
-    if (!string) {
-        const char *initialText = (const char *)_dynamicTag->initialText;
-        string = _dynamicTag->initialText ? [NSString stringWithCString:initialText encoding:NSUTF8StringEncoding] : nil;
-    }
+- (SwiftDynamicTextAttributes *) _newBaseAttributes
+{
+    SwiftDynamicTextDefinition *definition = [self definition];
+    SwiftDynamicTextAttributes *attributes = [[SwiftDynamicTextAttributes alloc] init];
 
-    if (tag->html) {
-        NSDictionary *documentAttributes = nil;
-        NSAttributedString *escaped = [[NSAttributedString alloc] initWithHTML:[string dataUsingEncoding:NSUTF8StringEncoding] documentAttributes:&documentAttributes];
-        string = [[[escaped string] retain] autorelease];
-        [escaped release];
+    if ([definition hasFont]) {
+        SwiftFontDefinition *fontDefinition = [[definition movie] fontDefinitionWithLibraryID:[definition fontID]];
+
+        [attributes setFontName: [fontDefinition name]];
+        [attributes setBold:     [fontDefinition isBold]];
+        [attributes setItalic:   [fontDefinition isItalic]];
     }
     
-    NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
+    [attributes setFontSizeInTwips:    [definition fontHeightInTwips]  ];
+    [attributes setFontColor:          [definition colorPointer]       ];
+    [attributes setTextAlignment:      [definition textAlignment]      ];
+    [attributes setLeftMarginInTwips:  [definition leftMarginInTwips]  ];
+    [attributes setRightMarginInTwips: [definition rightMarginInTwips] ];
+    [attributes setIndentInTwips:      [definition indentInTwips]      ];
+    [attributes setLeadingInTwips:     [definition leadingInTwips]     ];
 
-    NSFont *font = [_movie fontForID:tag->fontID size:tag->fontHeight];
-    if (font) {
-        [attributes setObject:font forKey:NSFontAttributeName];
-    }
-
-    if (tag->hasColor) {
-        NSColor *color = [NSColor colorWithDeviceRed: (tag->color.red   / 255.0) 
-                                               green: (tag->color.green / 255.0)
-                                                blue: (tag->color.blue  / 255.0)
-                                               alpha: (tag->color.alpha / 255.0)];
-        
-        [attributes setObject:color forKey:NSForegroundColorAttributeName];
-    }
-
-    NSMutableAttributedString *as = [[NSMutableAttributedString alloc] initWithString:string attributes:attributes];
-
-    NSRect bounds       = sNSRectFromSWFRect(&tag->bounds, tag->leftMargin, tag->rightMargin);
-    NSRect boundingRect = [as boundingRectWithSize:NSMakeSize(INFINITY, INFINITY) options:NSStringDrawingOneShot];
-
-    bounds.origin.y += (boundingRect.size.height + boundingRect.origin.y);
-
-    // Flash seems to calculate lbearing and rbearing differently from all
-    // other font rendering engines.  Tweak it by adding an additional 1 pixel
-    // for font sizes 10-19, 2 pixels for 20-29, etc.
-    //
-    int fakePadding = ((int)floor(tag->fontHeight / 200));
-
-    if (tag->align == SWFTextAlignRight) {
-        bounds.origin.x  += bounds.size.width - boundingRect.size.width;
-        bounds.origin.x  -= fakePadding;
-        bounds.size.width = boundingRect.size.width;
-    
-    } else if (tag->align == SWFTextAlignCenter) {
-        bounds.origin.x  += ((bounds.size.width - boundingRect.size.width) / 2.0);
-        bounds.size.width = boundingRect.size.width;
-    } else {
-        bounds.origin.x += fakePadding;
-    }
-
-    [attributes release];
-
-    *boundsPtr = bounds;
-    *asPtr     = [as autorelease];
-    
-    return (as != nil);
-
-#endif
+    return attributes;
+}
 
 
 - (void) setText:(NSString *)text HTML:(BOOL)isHTML
@@ -135,6 +100,9 @@
     if ((m_text != text) || (isHTML != m_HTML)) {
         m_text = [text copy];
         m_HTML = isHTML;
+
+        if (m_framesetter) CFRelease(m_framesetter);
+        m_framesetter = NULL;
         
         if (m_attributedText) CFRelease(m_attributedText);
         m_attributedText = NULL;
@@ -142,19 +110,32 @@
         if (m_text) {
             if (isHTML) {
                 SwiftHTMLToCoreTextConverter *converter = [SwiftHTMLToCoreTextConverter sharedInstance];
-                m_attributedText = [converter copyAttributedStringForHTML:m_text baseFont:NULL];
+                
+                SwiftDynamicTextAttributes *baseAttributes = [self _newBaseAttributes];
+                m_attributedText = [converter copyAttributedStringForHTML:m_text baseAttributes:baseAttributes];
+                [baseAttributes release];
+
                 CFRetain(m_attributedText);
 
             } else {
-                NSDictionary *attributes = [NSDictionary dictionary];
-                m_attributedText = CFAttributedStringCreate(NULL, (__bridge CFStringRef)m_text, (__bridge CFDictionaryRef)attributes);
+                SwiftDynamicTextAttributes *attributes = [self _newBaseAttributes];
+                NSDictionary *dictionary = [attributes copyCoreTextAttributes];
+
+                m_attributedText = CFAttributedStringCreate(NULL, (__bridge CFStringRef)m_text, (__bridge CFDictionaryRef)dictionary);
+
+                [dictionary release];
+                [attributes release];
             }
+        }
+
+        if (m_attributedText) {
+            m_framesetter = CTFramesetterCreateWithAttributedString(m_attributedText);
         }
     }
 }
 
 
-- (void) setDefinition:(SwiftTextDefinition *)definition
+- (void) setDefinition:(SwiftDynamicTextDefinition *)definition
 {
     if (m_definition != definition) {
         [m_definition release];
@@ -172,6 +153,7 @@
 
 
 @synthesize text                 = m_text,
+            framesetter          = m_framesetter,
             attributedText       = m_attributedText,
             attributedTextOffset = m_attributedTextOffset,
             HTML                 = m_HTML;

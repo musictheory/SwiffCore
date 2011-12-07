@@ -30,8 +30,7 @@
 #import <SwiftDefinition.h>
 #import <SwiftParser.h>
 
-@class SwiftMovie;
-
+@class SwiftMovie, SwiftShapeDefinition;
 
 @interface SwiftFontDefinition : NSObject <SwiftDefinition> {
 @private
@@ -45,10 +44,12 @@
     CTFontDescriptorRef m_fontDescriptor;
 
     NSUInteger  m_glyphCount;
+    SwiftShapeDefinition **m_glyphs;
 
     UInt16      m_libraryID;
     BOOL        m_bold;
     BOOL        m_italic;
+    BOOL        m_largerEmSquare;
 }
 
 
@@ -65,6 +66,8 @@
 - (void) readDefineFontInfoTagFromParser:(SwiftParser *)parser;
 - (void) readDefineFontAlignZonesFromParser:(SwiftParser *)parser;
 
+- (CGFloat) multiplierForPointSize:(CGFloat)pointSize;
+
 @property (nonatomic, assign, readonly) UInt16 libraryID;
 
 @property (nonatomic, /*strong*/ readonly) CTFontDescriptorRef fontDescriptor;
@@ -74,6 +77,8 @@
 @property (nonatomic, retain, readonly) NSString *copyright;
 
 @property (nonatomic, assign, readonly) NSUInteger glyphCount;
+@property (nonatomic, readonly /*strong*/) SwiftShapeDefinition **glyphs;
+
 @property (nonatomic, assign, readonly) UInt16 *codeTable;
 
 @property (nonatomic, assign, readonly, getter=isBold)   BOOL bold;

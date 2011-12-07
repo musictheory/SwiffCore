@@ -29,8 +29,9 @@
 #import <SwiftBase.h>
 #import <SwiftSpriteDefinition.h>
 
-@class SwiftFontDefinition,  SwiftShapeDefinition, SwiftStaticTextDefinition;
-@class SwiftSoundDefinition, SwiftTextDefinition,  SwiftScene;
+@class SwiftDynamicTextDefinition, SwiftFontDefinition,  SwiftShapeDefinition, 
+       SwiftStaticTextDefinition,  SwiftSoundDefinition, SwiftScene;
+
 @protocol SwiftMovieDecoder;
 
 
@@ -56,12 +57,12 @@
 
 - (void) decode:(id<SwiftMovieDecoder>)decoder;
 
-- (SwiftFontDefinition       *) fontDefinitionWithLibraryID:(UInt16)libraryID;
-- (SwiftShapeDefinition      *) shapeDefinitionWithLibraryID:(UInt16)libraryID;
-- (SwiftSoundDefinition      *) soundDefinitionWithLibraryID:(UInt16)libraryID;
-- (SwiftSpriteDefinition     *) spriteDefinitionWithLibraryID:(UInt16)libraryID;
-- (SwiftStaticTextDefinition *) staticTextDefinitionWithLibraryID:(UInt16)libraryID;
-- (SwiftTextDefinition       *) textDefinitionWithLibraryID:(UInt16)libraryID;
+- (SwiftFontDefinition        *) fontDefinitionWithLibraryID:(UInt16)libraryID;
+- (SwiftShapeDefinition       *) shapeDefinitionWithLibraryID:(UInt16)libraryID;
+- (SwiftSoundDefinition       *) soundDefinitionWithLibraryID:(UInt16)libraryID;
+- (SwiftSpriteDefinition      *) spriteDefinitionWithLibraryID:(UInt16)libraryID;
+- (SwiftStaticTextDefinition  *) staticTextDefinitionWithLibraryID:(UInt16)libraryID;
+- (SwiftDynamicTextDefinition *) dynamicTextDefinitionWithLibraryID:(UInt16)libraryID;
 
 - (SwiftScene *) sceneWithName:(NSString *)name;
 

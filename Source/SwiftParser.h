@@ -93,8 +93,8 @@ extern void SwiftParserReadColorTransformWithAlpha(SwiftParser *parser, SwiftCol
 extern void SwiftParserReadData(SwiftParser *parser, UInt32 length, NSData **outValue);
 
 extern void SwiftParserReadString(SwiftParser *parser, NSString **outValue);
-extern void SwiftParserReadPascalString(SwiftParser *parser, NSString **outValue);
+extern void SwiftParserReadLengthPrefixedString(SwiftParser *parser, NSString **outValue);
 
 extern void SwiftParserReadStringWithEncoding(SwiftParser *parser, NSStringEncoding encoding, NSString **outValue);
-extern void SwiftParserReadPascalStringWithEncoding(SwiftParser *parser, NSStringEncoding encoding, NSString **outValue);
+extern void SwiftParserReadLengthPrefixedStringWithEncoding(SwiftParser *parser, NSStringEncoding encoding, NSString **outValue);
 

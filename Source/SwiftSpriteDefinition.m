@@ -32,7 +32,7 @@
 #import "SwiftParser.h"
 #import "SwiftPlacedObject.h"
 #import "SwiftPlacedStaticText.h"
-#import "SwiftPlacedText.h"
+#import "SwiftPlacedDynamicText.h"
 #import "SwiftSceneAndFrameLabelData.h"
 #import "SwiftSoundDefinition.h"
 #import "SwiftSoundEvent.h"
@@ -221,10 +221,8 @@
     if (hasLibraryID) {
         definition = [m_movie definitionWithLibraryID:libraryID];
 
-        if ([definition isKindOfClass:[SwiftStaticTextDefinition class]]) {
-            cls = [SwiftPlacedStaticText class];
-        } else if ([definition isKindOfClass:[SwiftTextDefinition class]]) {
-            cls = [SwiftPlacedText class];
+        if ([definition isKindOfClass:[SwiftDynamicTextDefinition class]]) {
+            cls = [SwiftPlacedDynamicText class];
         }
     }
 

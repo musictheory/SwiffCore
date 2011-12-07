@@ -105,6 +105,32 @@ static void sSwiftColorApplyColorTransformPointer(SwiftColor *color, SwiftColorT
 }
 
 
+SwiftColor SwiftColorFromCGColor(CGColorRef cgColor)
+{
+    SwiftColor result = { 0, 0, 0, 0 };
+
+    CGColorSpaceRef   space       = cgColor ? CGColorGetColorSpace(cgColor) : NULL;
+    const CGFloat    *components  = cgColor ? CGColorGetComponents(cgColor) : NULL;
+    size_t            n           = cgColor ? CGColorGetNumberOfComponents(cgColor) : 0;
+    CGColorSpaceModel model       = space   ? CGColorSpaceGetModel(space)   : kCGColorSpaceModelUnknown;
+
+    if (model == kCGColorSpaceModelMonochrome) {
+        result.red   = 
+        result.green = 
+        result.blue  = (n > 0) ? components[0] : 0.0;
+        result.alpha = (n > 1) ? components[1] : 1.0;
+
+    } else if (model == kCGColorSpaceModelRGB) {
+        result.red   = (n > 0) ? components[0] : 0.0;
+        result.green = (n > 1) ? components[1] : 0.0;
+        result.blue  = (n > 2) ? components[2] : 0.0;
+        result.alpha = (n > 3) ? components[3] : 1.0;
+    }
+    
+    return result;
+}
+
+
 CGColorRef SwiftColorCopyCGColor(SwiftColor color)
 {
     CGColorSpaceRef space = CGColorSpaceCreateDeviceRGB();
@@ -147,6 +173,18 @@ SwiftColor SwiftColorApplyColorTransformStack(SwiftColor color, CFArrayRef stack
     }
     
     return color;
+}
+
+
+BOOL SwiftColorTransformEqualToTransform(SwiftColorTransform a, SwiftColorTransform b)
+{
+    return (0 == memcmp(&a, &b, sizeof(SwiftColorTransform)));
+}
+
+
+BOOL SwiftColorTransformIsIdentity(SwiftColorTransform transform)
+{
+    return (0 == memcmp(&transform, &SwiftColorTransformIdentity, sizeof(SwiftColorTransform)));
 }
 
 

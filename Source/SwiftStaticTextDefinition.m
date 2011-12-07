@@ -28,7 +28,7 @@
 #import "SwiftStaticTextDefinition.h"
 
 #import "SwiftParser.h"
-#import "SwiftTextRecord.h"
+#import "SwiftStaticTextRecord.h"
 
 @implementation SwiftStaticTextDefinition
 
@@ -39,13 +39,13 @@
     
         SwiftParserReadUInt16(parser, &m_libraryID);
         SwiftParserReadRect(parser,   &m_bounds);
-        SwiftParserReadMatrix(parser, &m_affineTransform);
+        SwiftParserReadMatrix(parser, &m_textTransform);
 
         UInt8 glyphBits, advanceBits;
         SwiftParserReadUInt8(parser, &glyphBits);
         SwiftParserReadUInt8(parser, &advanceBits);
     
-        m_textRecords = [[SwiftTextRecord textRecordArrayWithParser:parser glyphBits:glyphBits advanceBits:advanceBits] retain];
+        m_textRecords = [[SwiftStaticTextRecord textRecordArrayWithParser:parser glyphBits:glyphBits advanceBits:advanceBits] retain];
     }
     
     return self;
@@ -71,9 +71,10 @@
 - (CGRect) edgeBounds { return CGRectZero; }
 
 
-@synthesize movie       = m_movie,
-            libraryID   = m_libraryID,
-            bounds      = m_bounds,
-            textRecords = m_textRecords;
+@synthesize movie         = m_movie,
+            libraryID     = m_libraryID,
+            bounds        = m_bounds,
+            textRecords   = m_textRecords,
+            textTransform = m_textTransform;
 
 @end

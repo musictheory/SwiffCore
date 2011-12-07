@@ -29,7 +29,7 @@
 #import "SwiftParser.h"
 #import "SwiftFillStyle.h"
 
-const CGFloat SwiftLineStyleHairlineWidth = 0.05;
+const CGFloat SwiftLineStyleHairlineWidth = CGFLOAT_MIN;
 
 @implementation SwiftLineStyle
 

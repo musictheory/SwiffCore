@@ -36,7 +36,7 @@
     id<SwiftPlayheadDelegate> m_delegate;
 
     SwiftMovie    *m_movie;
-    NSUInteger     m_rawFrameIndex;
+    NSInteger      m_rawFrameIndex;
 
     NSTimer       *m_timer;
     CFTimeInterval m_timerPlayStart;
@@ -44,7 +44,6 @@
 
     BOOL           m_loopsMovie;
     BOOL           m_loopsScene;
-    BOOL           m_playing;
     BOOL           m_delegate_playheadDidUpdate;
 }
 
@@ -71,7 +70,7 @@
 @property (nonatomic, assign) BOOL loopsScene;
 @property (nonatomic, assign, getter=isPlaying) BOOL playing;
 
-@property (nonatomic, assign) NSUInteger rawFrameIndex; // 0-based, relative to movie
+@property (nonatomic, assign) NSInteger rawFrameIndex; // 0-based, relative to movie
 
 @end
 

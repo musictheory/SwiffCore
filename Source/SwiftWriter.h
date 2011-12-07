@@ -41,7 +41,7 @@ extern NSData *SwiftWriterGetDataWithHeader(SwiftWriter *writer, SwiftHeader hea
 
 // Tags
 //
-extern void SwiftWriterStartTag(SwiftWriter *writer, SwiftTag tag, SwiftVersion version);
+extern void SwiftWriterStartTag(SwiftWriter *writer, SwiftTag tag, NSInteger version);
 extern void SwiftWriterEndTag(SwiftWriter *writer);
 
 

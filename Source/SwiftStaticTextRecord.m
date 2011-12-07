@@ -1,5 +1,5 @@
 /*
-    SwiftTextRecord.m
+    SwiftStaticTextRecord.m
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,19 +25,19 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiftTextRecord.h"
+#import "SwiftStaticTextRecord.h"
 
 #import "SwiftParser.h"
 
-@implementation SwiftTextRecord
+@implementation SwiftStaticTextRecord
 
 + (NSArray *) textRecordArrayWithParser:(SwiftParser *)parser glyphBits:(UInt8)glyphBits advanceBits:(UInt8)advanceBits
 {
     NSMutableArray  *result = [NSMutableArray array];
-    SwiftTextRecord *record = nil;
+    SwiftStaticTextRecord *record = nil;
 
     do {
-        record = [[SwiftTextRecord alloc] initWithParser:parser glyphBits:glyphBits advanceBits:advanceBits];
+        record = [[SwiftStaticTextRecord alloc] initWithParser:parser glyphBits:glyphBits advanceBits:advanceBits];
         if (record) [result addObject:record];
         [record release];
     } while (record);
@@ -80,13 +80,15 @@
             if (hasXOffset) {
                 SInt16 x = 0;
                 SwiftParserReadSInt16(parser, &x);
-                m_offset.x = SwiftFloatFromTwips(x);
+                m_xOffset = SwiftFloatFromTwips(x);
+                m_hasXOffset = YES;
             }
 
             if (hasYOffset) {
                 SInt16 y = 0;
                 SwiftParserReadSInt16(parser, &y);
-                m_offset.y = SwiftFloatFromTwips(y);
+                m_yOffset = SwiftFloatFromTwips(y);
+                m_hasYOffset = YES;
             }
             
             if (hasFont) {
@@ -98,7 +100,7 @@
             UInt8 glyphCount;
             SwiftParserReadUInt8(parser, &glyphCount);
             m_glyphEntriesCount = glyphCount;
-            m_glyphEntries = calloc(glyphCount, sizeof(SwiftGlyphEntry));
+            m_glyphEntries = calloc(glyphCount, sizeof(SwiftStaticTextRecordGlyphEntry));
 
             for (UInt8 i = 0; i < m_glyphEntriesCount; i++) {
                 UInt32 glyphIndex   = 0;
@@ -144,13 +146,16 @@
 }
 
 
-@synthesize offset            = m_offset,
-            textHeight        = m_textHeight,
+@synthesize hasFont           = m_hasFont,
             fontID            = m_fontID,
+            textHeight        = m_textHeight,
+            hasColor          = m_hasColor,
             color             = m_color,
+            hasXOffset        = m_hasXOffset,
+            xOffset           = m_xOffset,
+            hasYOffset        = m_hasYOffset,
+            yOffset           = m_yOffset,
             glyphEntriesCount = m_glyphEntriesCount,
-            glyphEntries      = m_glyphEntries,
-            hasFont           = m_hasFont,
-            hasColor          = m_hasColor;
+            glyphEntries      = m_glyphEntries;
 
 @end

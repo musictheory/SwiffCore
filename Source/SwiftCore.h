@@ -29,14 +29,13 @@
 
 #import <SwiftDefinition.h>
 
-#import <SwiftTextDefinition.h>
+#import <SwiftDynamicTextDefinition.h>
 #import <SwiftFontDefinition.h>
 #import <SwiftShapeDefinition.h>
 #import <SwiftSpriteDefinition.h>
 #import <SwiftStaticTextDefinition.h>
 
 #import <SwiftFillStyle.h>
-#import <SwiftFontGlyph.h>
 #import <SwiftFrame.h>
 #import <SwiftGradient.h>
 #import <SwiftHTMLToCoreTextConverter.h>
@@ -46,11 +45,8 @@
 #import <SwiftPlacedObject.h>
 #import <SwiftPlayhead.h>
 #import <SwiftRenderer.h>
-#import <SwiftTextRecord.h>
+#import <SwiftStaticTextRecord.h>
 #import <SwiftWriter.h>
-
-#import <SwiftPNGExporter.h>
-#import <SwiftSVGExporter.h>
 
 #import <SwiftMovie.h>
 

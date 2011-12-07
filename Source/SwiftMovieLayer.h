@@ -25,6 +25,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#import <SwiftBase.h>
 #import <SwiftSpriteLayer.h>
 #import <SwiftPlayhead.h>
 
@@ -37,7 +38,11 @@
 @private
     id<SwiftMovieLayerDelegate> m_movieLayerDelegate;
     SwiftPlayhead *m_playhead;
-   
+
+    CGAffineTransform m_baseAffineTransform;
+    SwiftColorTransform m_baseColorTransform;
+
+    BOOL        m_drawsBackground;
     BOOL        m_movieLayerDelegate_movieLayer_willDisplayFrame;
     BOOL        m_movieLayerDelegate_movieLayer_didDisplayFrame;
     BOOL        m_movieLayerDelegate_movieLayer_spriteLayer_shouldInterpolateFromFrame_toFrame;
@@ -47,6 +52,9 @@
 
 @property (nonatomic, retain, readonly) SwiftPlayhead *playhead;
 @property (nonatomic, assign) BOOL drawsBackground;
+
+@property (nonatomic, assign) CGAffineTransform baseAffineTransform;
+@property (nonatomic, assign) SwiftColorTransform baseColorTransform;
 
 @end
 

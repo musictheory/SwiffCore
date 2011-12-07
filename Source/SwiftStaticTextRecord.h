@@ -1,5 +1,5 @@
 /*
-    SwiftDynamicText.h
+    SwiftStaticTextRecord.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,76 +27,51 @@
 
 #import <SwiftImport.h>
 #import <SwiftBase.h>
-#import <SwiftDefinition.h>
 #import <SwiftParser.h>
 
-@class SwiftMovie;
+
+typedef struct _SwiftTextRecordGlyphEntry {
+    UInt16  index;
+    CGFloat advance;
+} SwiftStaticTextRecordGlyphEntry;
 
 
-@interface SwiftTextDefinition : NSObject <SwiftPlacableDefinition> {
+@interface SwiftStaticTextRecord : NSObject {
 @private
-    SwiftMovie *m_movie;
-    UInt16      m_libraryID;
-    CGRect      m_bounds;
-    
+    SwiftStaticTextRecordGlyphEntry *m_glyphEntries;
+    NSUInteger  m_glyphEntriesCount;
+
+    CGFloat     m_xOffset;
+    CGFloat     m_yOffset;
+    CGFloat     m_textHeight;
     SwiftColor  m_color;
-    NSUInteger  m_maxLength;
-    
-    NSString   *m_variableName;
-    NSString   *m_initialText;
-    NSString   *m_fontClass;
-    CGFloat     m_fontHeight;
 
     UInt16      m_fontID;
-    UInt16      m_leftMarginInTwips;
-    UInt16      m_rightMarginInTwips;
-    UInt16      m_indentInTwips;
-    SInt16      m_leadingInTwips;
-    CTTextAlignment m_textAlignment;
-
-    BOOL        m_wordWrap;
-    BOOL        m_password;
-    BOOL        m_multiline;
-    BOOL        m_editable;
-    BOOL        m_selectable;
     BOOL        m_hasFont;
-    BOOL        m_hasFontClass;
     BOOL        m_hasColor;
-    BOOL        m_autosize;
-    BOOL        m_hasLayout;
-    
-    BOOL        m_border;
-    BOOL        m_wasStatic;
-    BOOL        m_HTML;
-    BOOL        m_useOutlines;
+    BOOL        m_hasXOffset;
+    BOOL        m_hasYOffset;
 }
 
-- (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie;
++ (NSArray *) textRecordArrayWithParser:(SwiftParser *)parser glyphBits:(UInt8)glyphBits advanceBits:(UInt8)advanceBits;
 
-@property (nonatomic, retain, readonly) NSString *variableName;
-@property (nonatomic, retain, readonly) NSString *initialText;
-
-@property (nonatomic, assign, readonly) NSUInteger maxLength;
-
-@property (nonatomic, assign, readonly, getter=isEditable) BOOL editable;
-@property (nonatomic, assign, readonly, getter=isSelectable) BOOL selectable;
-@property (nonatomic, assign, readonly, getter=isHTML) BOOL HTML;
-
-@property (nonatomic, assign, readonly) BOOL hasLayout;
-@property (nonatomic, assign, readonly) CTTextAlignment textAlignment;
-@property (nonatomic, assign, readonly) CGFloat leftMargin;
-@property (nonatomic, assign, readonly) CGFloat rightMargin;
-@property (nonatomic, assign, readonly) CGFloat indent;
-@property (nonatomic, assign, readonly) CGFloat leading;
+- (id) initWithParser:(SwiftParser *)parser glyphBits:(UInt8)glyphBits advanceBits:(UInt8)advanceBits;
 
 @property (nonatomic, assign, readonly) BOOL hasFont;
-@property (nonatomic, assign, readonly) BOOL hasFontClass;
 @property (nonatomic, assign, readonly) UInt16 fontID;
-@property (nonatomic, assign, readonly) NSString *fontClass;
-@property (nonatomic, assign, readonly) CGFloat fontHeight;
+@property (nonatomic, assign, readonly) CGFloat textHeight;
 
 @property (nonatomic, assign, readonly) BOOL hasColor;
 @property (nonatomic, assign, readonly) SwiftColor color;
 @property (nonatomic, assign, readonly) SwiftColor *colorPointer;
+
+@property (nonatomic, assign, readonly) BOOL hasXOffset;
+@property (nonatomic, assign, readonly) CGFloat xOffset;
+
+@property (nonatomic, assign, readonly) BOOL hasYOffset;
+@property (nonatomic, assign, readonly) CGFloat yOffset;
+
+@property (nonatomic, assign, readonly) NSUInteger glyphEntriesCount;
+@property (nonatomic, assign, readonly) SwiftStaticTextRecordGlyphEntry *glyphEntries;
 
 @end

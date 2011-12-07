@@ -88,6 +88,12 @@
 }
 
 
+- (SwiftFrame *) firstFrame
+{
+    return [self frameAtIndex1:1];
+}
+
+
 - (SwiftFrame *) frameAtIndex1:(NSUInteger)index1
 {
     if (index1 > 0 && index1 <= [m_frames count]) {

@@ -192,6 +192,9 @@ static void sPathAddShapeOperation(SwiftPath *path, _SwiftShapeOperation *op, Sw
 
         if (tag == SwiftTagDefineShape) {
             readStyles();
+
+        } else if (tag == SwiftTagDefineFont) {
+            [fillStyles addObject:[SwiftFillStyle fontFillStyle]];
         }
 
         UInt32 fillBits, lineBits;
@@ -315,13 +318,10 @@ static void sPathAddShapeOperation(SwiftPath *path, _SwiftShapeOperation *op, Sw
                 }
             }
             
-            // According to the specification:
+            //!spec: "Each individual shape record is byte-aligned within
+            //        an array of shape records" (page 134)
             //
-            // "Each individual shape record is byte-aligned within
-            //  an array of shape records"
-            //
-            // In practice, this is not the case.
-            //
+            // In practice, this is not the case.  Hence, leave the next line commented:
             // SwiftParserByteAlign(parser);
         }
 
