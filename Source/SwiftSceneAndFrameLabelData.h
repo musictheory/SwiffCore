@@ -28,14 +28,18 @@
 #import <SwiftImport.h>
 #import <SwiftParser.h>
 
+@class SwiftMovie;
 
 @interface SwiftSceneAndFrameLabelData : NSObject {
 @private
+    SwiftMovie   *m_movie;
     NSDictionary *m_offsetToSceneNameMap;
     NSDictionary *m_numberToFrameLabelMap;
 }
 
-- (id) initWithParser:(SwiftParser *)parser;
+- (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie;
+
+- (void) clearWeakReferences;
 
 - (void) applyLabelsToFrames:(NSArray *)frames;
 - (NSArray *) scenesForFrames:(NSArray *)frames;

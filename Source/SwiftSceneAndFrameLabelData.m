@@ -38,9 +38,11 @@
 
 @implementation SwiftSceneAndFrameLabelData
 
-- (id) initWithParser:(SwiftParser *)parser
+- (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie
 {
     if ((self = [super init])) {
+        m_movie = movie;
+    
         @autoreleasepool {
             UInt32 sceneCount;
             SwiftParserReadEncodedU32(parser, &sceneCount);
@@ -99,6 +101,12 @@
 }
 
 
+- (void) clearWeakReferences
+{
+    m_movie = nil;
+}
+
+
 - (NSArray *) scenesForFrames:(NSArray *)frames
 {
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:[m_offsetToSceneNameMap count]];
@@ -111,7 +119,7 @@
         NSRange     range       = NSMakeRange(startOffset, endOffset - startOffset);
         NSArray    *sceneFrames = [frames subarrayWithRange:range];
 
-        SwiftScene *scene = [[SwiftScene alloc] initWithName:name indexInMovie:startOffset frames:sceneFrames];
+        SwiftScene *scene = [[SwiftScene alloc] initWithMovie:m_movie name:name indexInMovie:startOffset frames:sceneFrames];
         [result addObject:scene];
         [scene release];
     };

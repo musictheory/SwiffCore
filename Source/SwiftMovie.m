@@ -28,20 +28,19 @@
 
 #import "SwiftMovie.h"
 
-#import "SwiftParser.h"
-
-#import "SwiftShapeDefinition.h"
-#import "SwiftSpriteDefinition.h"
-#import "SwiftFontDefinition.h"
-#import "SwiftStaticTextDefinition.h"
-#import "SwiftSoundDefinition.h"
 #import "SwiftDynamicTextDefinition.h"
-
-#import "SwiftSceneAndFrameLabelData.h"
+#import "SwiftFontDefinition.h"
+#import "SwiftParser.h"
 #import "SwiftScene.h"
+#import "SwiftSceneAndFrameLabelData.h"
+#import "SwiftShapeDefinition.h"
+#import "SwiftSoundDefinition.h"
+#import "SwiftSpriteDefinition.h"
+#import "SwiftStaticTextDefinition.h"
 
 
 @interface SwiftSpriteDefinition (Protected)
+- (void) _decodeData:(NSData *)data;
 - (void) _parser:(SwiftParser *)parser didFindTag:(SwiftTag)tag version:(NSInteger)version;
 @end
 
@@ -51,11 +50,12 @@
 - (id) initWithData:(NSData *)data
 {
     if ((self = [self init])) {
-        m_data = [data retain];
         m_definitionMap = [[NSMutableDictionary alloc] init];
 
         SwiftColor white = { 1.0, 1.0, 1.0, 1.0 };
         m_backgroundColor = white;
+        
+        [self _decodeData:data];
     }
 
     return self;
@@ -77,6 +77,59 @@
 #pragma mark -
 #pragma mark Private Methods
 
+- (void) _decodeData:(NSData *)data
+{
+    if (!data) return;
+    
+    SwiftParser *parser = SwiftParserCreate([data bytes], [data length]);
+    
+    SwiftHeader header;
+    SwiftParserReadHeader(parser, &header);
+    
+    m_version   = header.version;
+    m_stageRect = header.stageRect;
+    m_frameRate = header.frameRate;
+
+    if (m_version < 6) {
+        SwiftParserSetStringEncoding(parser, SwiftGetLegacyStringEncoding());
+    }
+
+    // Parse tags
+    {
+        m_movie = self;
+
+        while (SwiftParserIsValid(parser)) {
+            SwiftParserAdvanceToNextTag(parser);
+            
+            SwiftTag  tag     = SwiftParserGetCurrentTag(parser);
+            NSInteger version = SwiftParserGetCurrentTagVersion(parser);
+
+            if (tag == SwiftTagEnd) break;
+
+            [self _parser:parser didFindTag:tag version:version];
+        }
+        
+        m_movie = nil;
+    }
+
+    if (m_sceneAndFrameLabelData) {
+        [m_sceneAndFrameLabelData applyLabelsToFrames:m_frames];
+        m_scenes = [[m_sceneAndFrameLabelData scenesForFrames:m_frames] retain];
+        
+        [m_sceneAndFrameLabelData clearWeakReferences];
+        [m_sceneAndFrameLabelData release];
+        m_sceneAndFrameLabelData = nil;
+
+    } else {
+        SwiftScene *scene = [[SwiftScene alloc] initWithMovie:self name:nil indexInMovie:0 frames:m_frames];
+        m_scenes = [[NSArray alloc] initWithObjects:scene, nil];
+        [scene release];
+    }
+    
+    SwiftParserFree(parser);
+}
+
+
 - (void) _parser:(SwiftParser *)parser didFindTag:(SwiftTag)tag version:(NSInteger)version
 {
     if (tag == SwiftTagDefineShape) {
@@ -91,13 +144,16 @@
         [shape release];
 
     } else if (tag == SwiftTagDefineButton) {
-        // Not yet implemented: Button Support.
+        //!nyi: Button Support.
     
     } else if (tag == SwiftTagDefineMorphShape) {
-        // Not yet implemented: MorphShape Support
+        //!nyi: MorphShape Support
 
     } else if (tag == SwiftTagDefineBits || tag == SwiftTagDefineBitsLossless) {
-        // Not yet implemented: Bitmap Image Support
+        //!nyi: Bitmap Image Support
+
+    } else if (tag == SwiftTagDefineVideoStream) {
+        //!nyi: Video Support
 
     } else if (tag == SwiftTagDefineSound) {
         SwiftSoundDefinition *sound = [[SwiftSoundDefinition alloc] initWithParser:parser movie:self];
@@ -109,9 +165,6 @@
         }
 
         [sound release];
-
-    } else if (tag == SwiftTagDefineVideoStream) {
-        // Not yet implemented: Video Support
 
     } else if (tag == SwiftTagDefineSprite) {
         SwiftSpriteDefinition *sprite = [[SwiftSpriteDefinition alloc] initWithParser:parser movie:self];
@@ -186,66 +239,6 @@
 
 #pragma mark -
 #pragma mark Public Methods
-
-- (void) decode:(id<SwiftMovieDecoder>)decoder
-{
-    if (!m_data) return;
-    
-    m_decoder = decoder;
-    m_decoder_movie_didDecodeFrame = [m_decoder respondsToSelector:@selector(movie:didDecodeFrame:)];
-
-    char bytes[4];
-    [m_data getBytes:bytes length:4];
-    
-    SwiftParser *parser = SwiftParserCreate([m_data bytes], [m_data length]);
-    
-    SwiftHeader header;
-    SwiftParserReadHeader(parser, &header);
-    
-    m_version   = header.version;
-    m_stageRect = header.stageRect;
-    m_frameRate = header.frameRate;
-
-    // Parse tags
-    {
-        m_movie = self;
-
-        while (SwiftParserIsValid(parser)) {
-            SwiftParserAdvanceToNextTag(parser);
-            
-            SwiftTag  tag     = SwiftParserGetCurrentTag(parser);
-            NSInteger version = SwiftParserGetCurrentTagVersion(parser);
-
-            if (tag == SwiftTagEnd) break;
-
-            [self _parser:parser didFindTag:tag version:version];
-        }
-        
-        m_movie = nil;
-    }
-
-    if (m_sceneAndFrameLabelData) {
-        [m_sceneAndFrameLabelData applyLabelsToFrames:m_frames];
-        m_scenes = [[m_sceneAndFrameLabelData scenesForFrames:m_frames] retain];
-        
-        [m_sceneAndFrameLabelData release];
-        m_sceneAndFrameLabelData = nil;
-
-    } else {
-        SwiftScene *scene = [[SwiftScene alloc] initWithName:nil indexInMovie:0 frames:m_frames];
-        m_scenes = [[NSArray alloc] initWithObjects:scene, nil];
-        [scene release];
-    }
-    
-    [m_data release];
-    m_data = nil;
-
-    SwiftParserFree(parser);
-    
-    m_decoder = nil;
-    m_decoder_movie_didDecodeFrame = NO;
-}
-
 
 - (id) definitionWithLibraryID:(UInt16)libraryID
 {

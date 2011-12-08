@@ -28,6 +28,9 @@
 #import "SwiftBase.h"
 #import <asl.h>
 
+static NSStringEncoding sANSIStringEncoding   = NSWindowsCP1252StringEncoding;
+static NSStringEncoding sLegacyStringEncoding = NSWindowsCP1252StringEncoding;
+
 
 const SwiftColorTransform SwiftColorTransformIdentity = {
     1.0, 1.0, 1.0, 1.0,
@@ -102,6 +105,30 @@ static void sSwiftColorApplyColorTransformPointer(SwiftColor *color, SwiftColorT
     color->alpha = (color->alpha * transform->alphaMultiply) + transform->alphaAdd;
     if      (color->alpha < 0.0) color->alpha = 0.0;
     else if (color->alpha > 1.0) color->alpha = 1.0;
+}
+
+
+NSStringEncoding SwiftGetANSIStringEncoding(void)
+{
+    return sANSIStringEncoding;
+}
+
+
+void SwiftSetANSIStringEncoding(NSStringEncoding encoding)
+{
+    sANSIStringEncoding = encoding;
+}
+
+
+extern NSStringEncoding SwiftGetLegacyStringEncoding(void)
+{
+    return sLegacyStringEncoding;
+}
+
+
+void SwiftSetLegacyStringEncoding(NSStringEncoding encoding)
+{
+    sLegacyStringEncoding = encoding;
 }
 
 

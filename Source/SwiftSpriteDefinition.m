@@ -31,7 +31,6 @@
 #import "SwiftMovie.h"
 #import "SwiftParser.h"
 #import "SwiftPlacedObject.h"
-#import "SwiftPlacedStaticText.h"
 #import "SwiftPlacedDynamicText.h"
 #import "SwiftSceneAndFrameLabelData.h"
 #import "SwiftSoundDefinition.h"
@@ -83,6 +82,7 @@
         m_movie = movie;
 
         SwiftParser *subparser = SwiftParserCreate(SwiftParserGetCurrentBytePointer(parser), SwiftParserGetBytesRemainingInCurrentTag(parser));
+        SwiftParserSetStringEncoding(subparser, SwiftParserGetStringEncoding(parser));
 
         SwiftLog(@"DEFINESPRITE defines id %ld", (long)m_libraryID);
 
@@ -99,6 +99,7 @@
 
         if (m_sceneAndFrameLabelData) {
             [m_sceneAndFrameLabelData applyLabelsToFrames:m_frames];
+            [m_sceneAndFrameLabelData clearWeakReferences];
             [m_sceneAndFrameLabelData release];
             m_sceneAndFrameLabelData = nil;
         }
@@ -132,7 +133,8 @@
     [m_frames          release];  m_frames          = nil;
     [m_labelToFrameMap release];  m_labelToFrameMap = nil;
                                   m_lastFrame       = nil;
-    
+
+    [m_sceneAndFrameLabelData clearWeakReferences];
     [m_sceneAndFrameLabelData release];
     m_sceneAndFrameLabelData = nil;
 
@@ -229,7 +231,7 @@
     if (move) {
         SwiftPlacedObject *existing = (SwiftPlacedObject *)CFDictionaryGetValue(m_depthToPlacedObjectMap, (const void *)depth);
         if (!hasLibraryID) cls = [existing class];
-        placedObject = [[cls alloc] initWithPlacedObject:existing];
+        placedObject = existing ? [[cls alloc] initWithPlacedObject:existing] : nil;
     }
 
     if (!placedObject) {
@@ -347,8 +349,9 @@
 - (void) _parser:(SwiftParser *)parser didFindTag:(SwiftTag)tag version:(NSInteger)version
 {
     if (tag == SwiftTagDefineSceneAndFrameLabelData) {
+        [m_sceneAndFrameLabelData clearWeakReferences];
         [m_sceneAndFrameLabelData release];
-        m_sceneAndFrameLabelData = [[SwiftSceneAndFrameLabelData alloc] initWithParser:parser];
+        m_sceneAndFrameLabelData = [[SwiftSceneAndFrameLabelData alloc] initWithParser:parser movie:m_movie];
 
     } else if (tag == SwiftTagPlaceObject) {
         [self _parser:parser didFindPlaceObjectTag:tag version:version];
@@ -415,12 +418,23 @@
 - (NSUInteger) index1OfFrame:(SwiftFrame *)frame
 {
     NSUInteger index = [m_frames indexOfObject:frame];
+    return (index == NSNotFound) ? NSNotFound : (index + 1);
+}
 
-    if (index == NSNotFound) {
-        return NSNotFound;
-    } else {
-        return index + 1;
+
+- (SwiftFrame *) frameAtIndex:(NSUInteger)index
+{
+    if (index < [m_frames count]) {
+        return [m_frames objectAtIndex:index];
     }
+    
+    return nil;
+}
+
+
+- (NSUInteger) indexOfFrame:(SwiftFrame *)frame
+{
+    return [m_frames indexOfObject:frame];
 }
 
 

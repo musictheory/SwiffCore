@@ -38,7 +38,6 @@
 #import "SwiftFillStyle.h"
 #import "SwiftPath.h"
 #import "SwiftPlacedObject.h"
-#import "SwiftPlacedStaticText.h"
 #import "SwiftPlacedDynamicText.h"
 #import "SwiftShapeDefinition.h"
 #import "SwiftStaticTextRecord.h"
@@ -294,25 +293,27 @@ static void sDrawShapeDefinition(SwiftRendererState *state, SwiftShapeDefinition
 
 static void sDrawStaticTextDefinition(SwiftRendererState *state, SwiftStaticTextDefinition *staticTextDefinition)
 {
-    SwiftFontDefinition   *font   = nil;
-    SwiftShapeDefinition **glyphs = NULL;
+    SwiftFontDefinition *font = nil;
+    CGPathRef *glyphPaths = NULL;
 
     CGContextRef context = state->context;
     CGPoint offset = CGPointZero;
-    CGFloat aWithMultiplier, dWithMultiplier;
+    CGFloat aWithMultiplier = state->affineTransform.a;
+    CGFloat dWithMultiplier = state->affineTransform.d;
 
     CGContextSaveGState(context);
 
     for (SwiftStaticTextRecord *record in [staticTextDefinition textRecords]) {
         NSInteger glyphEntriesCount = [record glyphEntriesCount];
         SwiftStaticTextRecordGlyphEntry *glyphEntries = [record glyphEntries];
+        
         CGFloat advance = 0; 
 
         if ([record hasFont]) {
-            font       = [state->movie fontDefinitionWithLibraryID:[record fontID]];
-            glyphs     = [font glyphs];
+            font = [state->movie fontDefinitionWithLibraryID:[record fontID]];
+            glyphPaths = [font glyphPaths];
 
-            CGFloat multiplier = [font multiplierForPointSize:[record textHeight]];
+            CGFloat multiplier = (1.0 / SwiftFontEmSquareHeight) * [record textHeight];
             aWithMultiplier = state->affineTransform.a * multiplier;
             dWithMultiplier = state->affineTransform.d * multiplier;
         }
@@ -329,20 +330,29 @@ static void sDrawStaticTextDefinition(SwiftRendererState *state, SwiftStaticText
             offset.y = [record yOffset];
         }
 
-        for (NSInteger i = 0; i < glyphEntriesCount; i++) {
-            CGAffineTransform savedTransform = state->affineTransform;
+        if (glyphPaths && glyphEntries) {
+            for (NSInteger i = 0; i < glyphEntriesCount; i++) {
+                SwiftStaticTextRecordGlyphEntry entry = glyphEntries[i];
 
-            state->affineTransform = CGAffineTransformTranslate(state->affineTransform, offset.x + advance, offset.y);
-            state->affineTransform.a = aWithMultiplier;
-            state->affineTransform.d = dWithMultiplier;
+                CGAffineTransform savedTransform = state->affineTransform;
 
-            SwiftStaticTextRecordGlyphEntry entry = glyphEntries[i];
-            sDrawShapeDefinition(state, glyphs[entry.index]); 
-            advance += entry.advance;
+                state->affineTransform = CGAffineTransformTranslate(state->affineTransform, offset.x + advance, offset.y);
+                state->affineTransform.a = aWithMultiplier;
+                state->affineTransform.d = dWithMultiplier;
 
-            state->affineTransform = savedTransform;
+                CGContextSaveGState(context);
+                CGContextConcatCTM(context, state->affineTransform);
+                CGContextAddPath(context, glyphPaths[entry.index]);
+                CGContextRestoreGState(context);
+
+                advance += entry.advance;
+
+                state->affineTransform = savedTransform;
+            }
         }
         
+        CGContextDrawPath(context, kCGPathFill);
+
         offset.x += advance;
     }
 

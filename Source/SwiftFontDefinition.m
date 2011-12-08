@@ -30,6 +30,133 @@
 #import "SwiftParser.h"
 #import "SwiftShapeDefinition.h"
 
+const CGFloat SwiftFontEmSquareHeight = 1024;
+
+
+static CGPathRef sCreatePathFromShapeRecord(SwiftParser *parser)
+{
+    CGMutablePathRef path = CGPathCreateMutable();
+    CGPathMoveToPoint(path, NULL, 0, 0);
+
+    CGAffineTransform transform = CGAffineTransformMakeScale(1 / 20.0, 1 / 20.0);
+    const CGAffineTransform *m = NULL;
+    
+    if ((SwiftParserGetCurrentTag(parser) == SwiftTagDefineFont) && (SwiftParserGetCurrentTagVersion(parser) == 3)) {
+        m = &transform;
+    }
+
+    SwiftPoint position = { 0, 0 };
+
+    UInt32 fillBits, lineBits;
+    SwiftParserReadUBits(parser, 4, &fillBits);
+    SwiftParserReadUBits(parser, 4, &lineBits);
+
+    BOOL foundEndRecord = NO;
+    while (!foundEndRecord) {
+        UInt32 typeFlag;
+        SwiftParserReadUBits(parser, 1, &typeFlag);
+
+        if (typeFlag == 0) {
+            UInt32 newStyles, changeLineStyle, changeFillStyle0, changeFillStyle1, moveTo, unused;
+            SwiftParserReadUBits(parser, 1, &newStyles);
+            SwiftParserReadUBits(parser, 1, &changeLineStyle);
+            SwiftParserReadUBits(parser, 1, &changeFillStyle1);
+            SwiftParserReadUBits(parser, 1, &changeFillStyle0);
+            SwiftParserReadUBits(parser, 1, &moveTo);
+            
+            // ENDSHAPERECORD
+            if ((newStyles + changeLineStyle + changeFillStyle1 + changeFillStyle0 + moveTo) == 0) {
+                foundEndRecord = YES;
+
+            // STYLECHANGERECORD
+            } else {
+                if (moveTo) {
+                    UInt32 moveBits;
+                    SwiftParserReadUBits(parser, 5, &moveBits);
+                    
+                    SInt32 x, y;
+                    SwiftParserReadSBits(parser, moveBits, &x);
+                    SwiftParserReadSBits(parser, moveBits, &y);
+
+                    position.x = x;
+                    position.y = y;
+                    
+                    CGPathMoveToPoint(path, m, position.x, position.y);
+                }
+                
+                if (changeFillStyle0) SwiftParserReadUBits(parser, fillBits, &unused);
+                if (changeFillStyle1) SwiftParserReadUBits(parser, fillBits, &unused);
+                if (changeLineStyle)  SwiftParserReadUBits(parser, lineBits, &unused);
+
+                if (newStyles) {
+                    SwiftWarn(@"STYLECHANGERECORD.newStyles = YES for a DefineFont tag");
+                }
+            }
+            
+        } else {
+            UInt32 straightFlag, numBits;
+            SwiftParserReadUBits(parser, 1, &straightFlag);
+            SwiftParserReadUBits(parser, 4, &numBits);
+            
+            // STRAIGHTEDGERECORD
+            if (straightFlag) {
+                UInt32 generalLineFlag;
+                SInt32 vertLineFlag = 0, deltaX = 0, deltaY = 0;
+
+                SwiftParserReadUBits(parser, 1, &generalLineFlag);
+
+                if (generalLineFlag == 0) {
+                    SwiftParserReadSBits(parser, 1, &vertLineFlag);
+                }
+
+                if (generalLineFlag || !vertLineFlag) {
+                    SwiftParserReadSBits(parser, numBits + 2, &deltaX);
+                }
+
+                if (generalLineFlag || vertLineFlag) {
+                    SwiftParserReadSBits(parser, numBits + 2, &deltaY);
+                }
+
+                position.x += deltaX;
+                position.y += deltaY;
+
+                CGPathAddLineToPoint(path, m, position.x, position.y);
+            
+            // CURVEDEDGERECORD
+            } else {
+                SInt32 controlDeltaX = 0, controlDeltaY = 0, anchorDeltaX = 0, anchorDeltaY = 0;
+                       
+                SwiftParserReadSBits(parser, numBits + 2, &controlDeltaX);
+                SwiftParserReadSBits(parser, numBits + 2, &controlDeltaY);
+                SwiftParserReadSBits(parser, numBits + 2, &anchorDeltaX);
+                SwiftParserReadSBits(parser, numBits + 2, &anchorDeltaY);
+
+                SwiftPoint control = {
+                    position.x + controlDeltaX,
+                    position.y + controlDeltaY,
+                };
+
+                position.x = control.x + anchorDeltaX;
+                position.y = control.y + anchorDeltaY;
+
+                CGPathAddQuadCurveToPoint(path, m, control.x, control.y, position.x, position.y);
+            }
+        }
+        
+        //!spec: "Each individual shape record is byte-aligned within
+        //        an array of shape records" (page 134)
+        //
+        // In practice, this is not the case.  Hence, leave the next line commented:
+        // SwiftParserByteAlign(parser);
+    }
+
+    SwiftParserByteAlign(parser);
+    CGPathCloseSubpath(path);
+
+    return path;
+}
+
+
 @implementation SwiftFontDefinition
 
 - (id) initWithLibraryID:(UInt16)libraryID movie:(SwiftMovie *)movie
@@ -49,21 +176,18 @@
     [m_fullName  release];  m_fullName  = nil;
     [m_copyright release];  m_copyright = nil;
     
-    if (m_glyphs) {
+    if (m_glyphPaths) {
         for (NSInteger i = 0; i < m_glyphCount; i++) {
-            [m_glyphs[i] release];
-            m_glyphs[i] = NULL;
+            CGPathRelease(m_glyphPaths[i]);
+            m_glyphPaths[i] = NULL;
         }
-        
-        free(m_glyphs);
     }
-    
-    if (m_fontDescriptor) {
-        CFRelease(m_fontDescriptor);
-        m_fontDescriptor = NULL;
-    }
-    
-    free(m_codeTable);
+
+    free(m_glyphPaths);       m_glyphPaths     = NULL;
+    free(m_codeTable);        m_codeTable      = NULL;
+    free(m_glyphAdvances);    m_glyphAdvances  = NULL;
+    free(m_glyphBounds);      m_glyphBounds    = NULL;
+    free(m_kerningRecords);   m_kerningRecords = NULL;
     
     [super dealloc];
 }
@@ -77,6 +201,17 @@
 
 #pragma mark -
 #pragma mark Called by Movie
+
+
+- (void) _readGlyphPathsFromParser:(SwiftParser *)parser
+{
+    m_glyphPaths = calloc(sizeof(CGPathRef), m_glyphCount);
+
+    for (NSInteger i = 0; i < m_glyphCount; i++) {
+        m_glyphPaths[i] = sCreatePathFromShapeRecord(parser);
+    }
+}
+
 
 - (void) _readCodeTableFromParser:(SwiftParser *)parser wide:(BOOL)wide
 {
@@ -112,14 +247,11 @@
         UInt16 offset;
         SwiftParserReadUInt16(parser, &offset);
         m_glyphCount = (offset / 2);
-        m_glyphs     = calloc(sizeof(void *), m_glyphCount);
 
         // Skip through OffsetTable
         SwiftParserAdvance(parser, sizeof(UInt16) * m_glyphCount);
 
-        for (NSInteger i = 0; i < m_glyphCount; i++) {
-            m_glyphs[i] = [[SwiftShapeDefinition alloc] initWithParser:parser movie:m_movie];
-        }
+        [self _readGlyphPathsFromParser:parser];
 
     } else if (version == 2 || version == 3) {
         UInt32 hasLayout, isShiftJIS, isSmallText, isANSIEncoding,
@@ -134,17 +266,21 @@
         SwiftParserReadUBits(parser, 1, &isItalic);
         SwiftParserReadUBits(parser, 1, &isBold);
 
-        m_italic    = isItalic;
-        m_bold      = isBold;
-        m_largerEmSquare = (version == 3);
+        m_italic = isItalic;
+        m_bold   = isBold;
+        m_smallText = isSmallText;
 
-        // Not yet implemented: Glyph Text Support.
-        // Save isANSIEncoding, isShiftJIS, isSmallText for later use
+        if (isANSIEncoding) {
+            m_encoding = SwiftGetANSIStringEncoding();
+        } else if (isShiftJIS) {
+            m_encoding = NSShiftJISStringEncoding;
+        } else {
+            m_encoding = NSUnicodeStringEncoding;
+        }
 
         UInt8 languageCode;
         SwiftParserReadUInt8(parser, &languageCode);
-        // Not yet implemented: Glyph Text Support.
-        // Save languageCode for later use
+        m_languageCode = languageCode;
     
         NSString *name = nil;
         SwiftParserReadLengthPrefixedString(parser, &name);
@@ -153,30 +289,70 @@
         UInt16 glyphCount;
         SwiftParserReadUInt16(parser, &glyphCount);
         m_glyphCount = glyphCount;
-        m_glyphs     = calloc(sizeof(void *), m_glyphCount);
     
         // Skip OffsetTable and CodeTableOffset
         SwiftParserAdvance(parser, (usesWideOffsets ? sizeof(UInt32) : sizeof(UInt16)) * (glyphCount + 1));
 
-        for (NSInteger i = 0; i < m_glyphCount; i++) {
-            m_glyphs[i] = [[SwiftShapeDefinition alloc] initWithParser:parser movie:m_movie];
-        }
-
+        [self _readGlyphPathsFromParser:parser];
         [self _readCodeTableFromParser:parser wide:usesWideCodes];
-        
+
         if (hasLayout) {
-            // Not yet implemented: Glyph Text Support.
-            // Read FontAscent,  SI16
-            // Read FontDescent, SI16
-            // Read FontLeading, SI16
-            // Read FontAdvanceTable, SI16[nGlyphs]
-            // Read FontBoundsTable,  RECT[nGlyphs]
-            // Read KerningCount, UI16
-            // Read FontKerningTable KERNINGRECORD[KerningCount]
+            m_hasLayout = YES;
+
+            SInt16 ascent, descent, leading;
+            SwiftParserReadSInt16(parser, &ascent);
+            SwiftParserReadSInt16(parser, &descent);
+            SwiftParserReadSInt16(parser, &leading);
+
+            m_ascent  = SwiftGetCGFloatFromTwips(ascent);
+            m_descent = SwiftGetCGFloatFromTwips(descent);
+            m_leading = SwiftGetCGFloatFromTwips(leading);
+
+            m_glyphAdvances = m_glyphCount ? malloc(sizeof(CGFloat) * m_glyphCount) : NULL;
+            for (NSInteger i = 0; i < m_glyphCount; i++) {
+                SInt16 advance;
+                SwiftParserReadSInt16(parser, &advance);
+                m_glyphAdvances[i] = SwiftGetCGFloatFromTwips(advance);
+            }
+
+            m_glyphBounds = m_glyphCount ? malloc(sizeof(CGRect) * m_glyphCount) : NULL;
+            for (NSInteger i = 0; i < m_glyphCount; i++) {
+                CGRect rect;
+                SwiftParserReadRect(parser, &rect);
+                m_glyphBounds[i] = rect;
+            }
+
+            UInt16 kerningCount;
+            SwiftParserReadUInt16(parser, &kerningCount);
+            m_kerningCount = kerningCount;
+            m_kerningRecords = kerningCount ? malloc(sizeof(SwiftFontKerningRecord) * m_kerningCount) : NULL;
+
+            for (NSInteger i = 0; i < m_kerningCount; i++) {
+                if (usesWideCodes) {
+                    UInt16 tmp;
+                    SwiftParserReadUInt16(parser, &tmp);
+                    m_kerningRecords[i].leftCharacterCode = tmp;
+
+                    SwiftParserReadUInt16(parser, &tmp);
+                    m_kerningRecords[i].rightCharacterCode = tmp;
+    
+                } else {
+                    UInt8 tmp;
+                    SwiftParserReadUInt8(parser, &tmp);
+                    m_kerningRecords[i].leftCharacterCode = tmp;
+
+                    SwiftParserReadUInt8(parser, &tmp);
+                    m_kerningRecords[i].rightCharacterCode = tmp;
+                }
+                
+                SInt16 adjustment;
+                SwiftParserReadSInt16(parser, &adjustment);
+                m_kerningRecords[i].adjustment = SwiftGetCGFloatFromTwips(adjustment);
+            }
         }
 
     } else if (version == 4) {
-        // Not yet implemented: DefineFont4 support
+        //!nyi: DefineFont4 tag
     }
 }
 
@@ -184,13 +360,11 @@
 - (void) readDefineFontNameTagFromParser:(SwiftParser *)parser
 {
     NSString *name      = nil;
-    NSString *copyright = nil;
+    SwiftParserReadString(parser, &name);
+    m_fullName = [name retain];
 
-    // DefineFontName tags were introduced in 9.0, hence, they must be UTF-8
-    SwiftParserReadStringWithEncoding(parser, NSUTF8StringEncoding, &name);
-    SwiftParserReadStringWithEncoding(parser, NSUTF8StringEncoding, &copyright);
-    
-    m_fullName  = [name retain];
+    NSString *copyright = nil;
+    SwiftParserReadString(parser, &copyright);
     m_copyright = [copyright retain];
 }
 
@@ -213,15 +387,21 @@
     
     m_italic = isItalic;
     m_bold   = isBold;
-    // Not yet implemented: Glyph Text Support.
-    // Save isANSIEncoding, isShiftJIS, isSmallText for later use
+    m_smallText = isSmallText;
+
+    if (isANSIEncoding) {
+        m_encoding = SwiftGetANSIStringEncoding();
+    } else if (isShiftJIS) {
+        m_encoding = NSShiftJISStringEncoding;
+    } else {
+        m_encoding = NSUnicodeStringEncoding;
+    }
 
     NSInteger version = SwiftParserGetCurrentTagVersion(parser);
     if (version == 2) {
         UInt8 languageCode;
         SwiftParserReadUInt8(parser, &languageCode);
-        // Not yet implemented: Glyph Text Support.
-        // Save languageCode for later use
+        m_languageCode = languageCode;
     }
 
     m_glyphCount = SwiftParserGetBytesRemainingInCurrentTag(parser);
@@ -233,82 +413,35 @@
 
 - (void) readDefineFontAlignZonesFromParser:(SwiftParser *)parser
 {
-    // Not yet implemented: Font Align Zones
-}
-
-
-#pragma mark -
-#pragma mark Public Methods
-
-- (CGFloat) multiplierForPointSize:(CGFloat)pointSize
-{
-    CGFloat emHeightInUnits = SwiftGetCGFloatFromTwips(1024);
-    
-    if (m_largerEmSquare) {
-        emHeightInUnits *= 20;
-    }
-
-    return (1.0 / emHeightInUnits) * pointSize;
+    //!nyi: DefineFontAlignZones tag
 }
 
 
 #pragma mark -
 #pragma mark Accessors
 
-- (CTFontDescriptorRef) fontDescriptor
-{
-    if (!m_fontDescriptor) {
-        for (NSString *name in [m_name componentsSeparatedByString:@","]) {
-            name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+@synthesize movie         = m_movie,
+            libraryID     = m_libraryID,
+            name          = m_name,
+            fullName      = m_fullName,
+            copyright     = m_copyright,
+            glyphCount    = m_glyphCount,
+            glyphPaths    = m_glyphPaths,
+            codeTable     = m_codeTable,
+            encoding      = m_encoding,
+            languageCode  = m_languageCode,
+            bold          = m_bold,
+            italic        = m_italic,
+            smallText     = m_smallText;
 
-            if      ([name isEqualToString:@"_sans"])       name = @"Helvetica";
-            else if ([name isEqualToString:@"_serif"])      name = @"Times";
-            else if ([name isEqualToString:@"_typewriter"]) name = @"Courier";
+@synthesize hasLayout     = m_hasLayout,
+            ascent        = m_ascent,
+            descent       = m_descent,
+            leading       = m_leading,
+            glyphAdvances = m_glyphAdvances,
+            glyphBounds   = m_glyphBounds,
+            kerningCount  = m_kerningCount,
+            kerningRecords = m_kerningRecords;
 
-            CTFontRef font = CTFontCreateWithName((CFStringRef)name, 12.0, &CGAffineTransformIdentity);
-            if (!font) continue;
-
-            CTFontSymbolicTraits desiredTraits = 0;
-            if (m_bold)   desiredTraits |= kCTFontBoldTrait;
-            if (m_italic) desiredTraits |= kCTFontItalicTrait;
-
-            CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(font);
-            CTFontSymbolicTraits mask   = (kCTFontBoldTrait | kCTFontItalicTrait);
-
-            if ((traits & mask) != desiredTraits) {
-                CTFontRef fontWithTraits = CTFontCreateCopyWithSymbolicTraits(font, 0, NULL, desiredTraits, mask);
-                
-                if (fontWithTraits) {
-                    CFRelease(font);
-                    font = fontWithTraits;
-                }
-            }
-
-            if (font) {
-                m_fontDescriptor = CTFontCopyFontDescriptor(font);
-                CFRelease(font);
-            }
-
-            if (m_fontDescriptor) {
-                break;
-            }
-        }
-    }
-
-    return m_fontDescriptor;
-}
-
-
-@synthesize movie           = m_movie,
-            libraryID       = m_libraryID,
-            name            = m_name,
-            fullName        = m_fullName,
-            copyright       = m_copyright,
-            glyphCount      = m_glyphCount,
-            glyphs          = m_glyphs,
-            codeTable       = m_codeTable,
-            fontDescriptor  = m_fontDescriptor,
-            bold            = m_bold,
-            italic          = m_italic;
 
 @end

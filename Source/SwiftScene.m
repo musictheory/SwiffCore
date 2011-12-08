@@ -28,23 +28,26 @@
 
 #import "SwiftScene.h"
 #import "SwiftFrame.h"
+#import "SwiftMovie.h"
+
 
 @interface SwiftFrame (FriendMethods)
-- (void) _updateScene:(SwiftScene *)scene index1InScene:(NSUInteger)index1InScene;
+- (void) _updateScene:(SwiftScene *)scene indexInScene:(NSUInteger)index1InScene;
 @end
 
 @implementation SwiftScene
 
-- (id) initWithName:(NSString *)name indexInMovie:(NSUInteger)indexInMovie frames:(NSArray *)frames
+- (id) initWithMovie:(SwiftMovie *)movie name:(NSString *)name indexInMovie:(NSUInteger)indexInMovie frames:(NSArray *)frames
 {
     if ((self = [super init])) {
+        m_movie        = movie;
         m_name         = [name   retain];
         m_frames       = [frames retain];
         m_indexInMovie = indexInMovie;
         
-        NSInteger i = 1;
+        NSInteger i = 0;
         for (SwiftFrame *frame in frames) {
-            [frame _updateScene:self index1InScene:i++];
+            [frame _updateScene:self indexInScene:i++];
         }
     }
     
@@ -63,6 +66,11 @@
     [super dealloc];
 }
 
+
+- (void) clearWeakReferences
+{
+    m_movie = nil;
+}
 
 - (NSString *) description
 {
@@ -90,7 +98,7 @@
 
 - (SwiftFrame *) firstFrame
 {
-    return [self frameAtIndex1:1];
+    return [self frameAtIndex:0];
 }
 
 
@@ -107,16 +115,34 @@
 - (NSUInteger) index1OfFrame:(SwiftFrame *)frame
 {
     NSUInteger index = [m_frames indexOfObject:frame];
-
-    if (index == NSNotFound) {
-        return NSNotFound;
-    } else {
-        return index + 1;
-    }
+    return index == NSNotFound ? NSNotFound : (index + 1);
 }
 
 
-@synthesize name         = m_name,
+- (SwiftFrame *) frameAtIndex:(NSUInteger)index
+{
+    if (index < [m_frames count]) {
+        return [m_frames objectAtIndex:index];
+    }
+    
+    return nil;
+}
+
+
+- (NSUInteger) indexOfFrame:(SwiftFrame *)frame
+{
+    return [m_frames indexOfObject:frame];
+}
+
+
+- (NSUInteger) index1InMovie
+{
+    return m_indexInMovie + 1;
+}
+
+
+@synthesize movie        = m_movie,
+            name         = m_name,
             frames       = m_frames,
             indexInMovie = m_indexInMovie;
 

@@ -64,9 +64,7 @@
 		55DBFABE1444EAAE003AA0DA /* SwiftMovieView.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFABD1444EAAE003AA0DA /* SwiftMovieView.m */; };
 		55DBFAC11444EE22003AA0DA /* SwiftScene.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFAC01444EE20003AA0DA /* SwiftScene.m */; };
 		55ED37D9145409280085EEC3 /* SwiftHTMLToCoreTextConverter.m in Sources */ = {isa = PBXBuildFile; fileRef = 55038DE6144E489E00EA5841 /* SwiftHTMLToCoreTextConverter.m */; };
-		55ED37DA145409280085EEC3 /* SwiftPlacedStaticText.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F01685144F8BAE0068002B /* SwiftPlacedStaticText.m */; };
 		55ED37DC145409280085EEC3 /* SwiftPlayhead.m in Sources */ = {isa = PBXBuildFile; fileRef = 55038DDF144CDA4900EA5841 /* SwiftPlayhead.m */; };
-		55F01686144F8BAE0068002B /* SwiftPlacedStaticText.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F01685144F8BAE0068002B /* SwiftPlacedStaticText.m */; };
 		55F3158E148A072100E6E625 /* SwiftPlacedDynamicText.h in Headers */ = {isa = PBXBuildFile; fileRef = 55F3158C148A072100E6E625 /* SwiftPlacedDynamicText.h */; };
 		55F3158F148A072100E6E625 /* SwiftPlacedDynamicText.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F3158D148A072100E6E625 /* SwiftPlacedDynamicText.m */; };
 		55F31590148A072100E6E625 /* SwiftPlacedDynamicText.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F3158D148A072100E6E625 /* SwiftPlacedDynamicText.m */; };
@@ -119,8 +117,6 @@
 		55DBFABD1444EAAE003AA0DA /* SwiftMovieView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftMovieView.m; path = Source/SwiftMovieView.m; sourceTree = "<group>"; };
 		55DBFABF1444EE1F003AA0DA /* SwiftScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftScene.h; path = Source/SwiftScene.h; sourceTree = "<group>"; };
 		55DBFAC01444EE20003AA0DA /* SwiftScene.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftScene.m; path = Source/SwiftScene.m; sourceTree = "<group>"; };
-		55F01684144F8BAE0068002B /* SwiftPlacedStaticText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftPlacedStaticText.h; path = Source/SwiftPlacedStaticText.h; sourceTree = "<group>"; };
-		55F01685144F8BAE0068002B /* SwiftPlacedStaticText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftPlacedStaticText.m; path = Source/SwiftPlacedStaticText.m; sourceTree = "<group>"; };
 		55F3158C148A072100E6E625 /* SwiftPlacedDynamicText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftPlacedDynamicText.h; path = Source/SwiftPlacedDynamicText.h; sourceTree = "<group>"; };
 		55F3158D148A072100E6E625 /* SwiftPlacedDynamicText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftPlacedDynamicText.m; path = Source/SwiftPlacedDynamicText.m; sourceTree = "<group>"; };
 		55F65A5D14429C9E00E12C27 /* SwiftBase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SwiftBase.h; path = Source/SwiftBase.h; sourceTree = "<group>"; };
@@ -256,8 +252,6 @@
 				55F65A7814429C9E00E12C27 /* SwiftPlacedObject.m */,
 				55F3158C148A072100E6E625 /* SwiftPlacedDynamicText.h */,
 				55F3158D148A072100E6E625 /* SwiftPlacedDynamicText.m */,
-				55F01684144F8BAE0068002B /* SwiftPlacedStaticText.h */,
-				55F01685144F8BAE0068002B /* SwiftPlacedStaticText.m */,
 				55038DDE144CDA4900EA5841 /* SwiftPlayhead.h */,
 				55038DDF144CDA4900EA5841 /* SwiftPlayhead.m */,
 				55DBFABF1444EE1F003AA0DA /* SwiftScene.h */,
@@ -445,7 +439,6 @@
 				5546809A145F558C00BB74EB /* SwiftSoundEvent.m in Sources */,
 				5546809B145F558C00BB74EB /* SwiftSoundPlayer.m in Sources */,
 				55ED37D9145409280085EEC3 /* SwiftHTMLToCoreTextConverter.m in Sources */,
-				55ED37DA145409280085EEC3 /* SwiftPlacedStaticText.m in Sources */,
 				55ED37DC145409280085EEC3 /* SwiftPlayhead.m in Sources */,
 				5516B4DD1446D75900231D67 /* SwiftParser.m in Sources */,
 				5516B4DE1446D75900231D67 /* SwiftBase.m in Sources */,
@@ -494,7 +487,6 @@
 				55F9C75814464B1300FE8E4F /* SwiftSceneAndFrameLabelData.m in Sources */,
 				55038DE0144CDA4900EA5841 /* SwiftPlayhead.m in Sources */,
 				55038DE7144E489F00EA5841 /* SwiftHTMLToCoreTextConverter.m in Sources */,
-				55F01686144F8BAE0068002B /* SwiftPlacedStaticText.m in Sources */,
 				5545A6B11458B70A001428F6 /* SwiftSoundDefinition.m in Sources */,
 				550C99B6145A03F200836C62 /* SwiftSoundPlayer.m in Sources */,
 				550C99BA145A04FD00836C62 /* SwiftSoundEvent.m in Sources */,

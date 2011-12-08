@@ -56,6 +56,9 @@
 - (SwiftFrame *) frameAtIndex1:(NSUInteger)index1;
 - (NSUInteger) index1OfFrame:(SwiftFrame *)frame;
 
+- (SwiftFrame *) frameAtIndex:(NSUInteger)index1;
+- (NSUInteger) indexOfFrame:(SwiftFrame *)frame;
+
 @property (nonatomic, retain, readonly) NSArray *frames;
 
 @end

@@ -73,7 +73,7 @@ typedef NSInteger SwiftHTMLToCoreTextConverterTag;
         [m_attributes setBold:      (m_boldCount      > 0)];
         [m_attributes setItalic:    (m_italicCount    > 0)];
         [m_attributes setUnderline: (m_underlineCount > 0)];
-        
+
         NSDictionary *coreTextAttributes = [m_attributes copyCoreTextAttributes];
        
         CFAttributedStringRef replacement = CFAttributedStringCreate(NULL, (__bridge CFStringRef)m_characters, (__bridge CFDictionaryRef)coreTextAttributes); 
@@ -139,17 +139,22 @@ static void sStartFontElement(SwiftHTMLToCoreTextConverter *self, xmlElementPtr 
         if (sizeCString) {
             char c0 = sizeCString[0];
             
-            SwiftTwips fontSizeInTwips = [attributes fontSizeInTwips];
+            //!spec: "size, which is specified in twips, and may include a leading
+            //        '+' or '-' for relative sizes" (page 196)
+            //
+            // In reality, the font size is specified in points
+            //
+            SwiftTwips fontSize = [attributes fontSize];
             
             if (c0 == '+') {
-                fontSizeInTwips += atoi(&sizeCString[1]);
+                fontSize += atoi(&sizeCString[1]);
             } else if (c0 == '-') {
-                fontSizeInTwips -= atoi(&sizeCString[1]);
+                fontSize -= atoi(&sizeCString[1]);
             } else {
-                fontSizeInTwips  = atoi(sizeCString);
+                fontSize  = atoi(sizeCString);
             }
             
-            [attributes setFontSizeInTwips:fontSizeInTwips];
+            [attributes setFontSize:fontSize];
             
             free(sizeCString);
         }
@@ -161,8 +166,15 @@ static void sStartFontElement(SwiftHTMLToCoreTextConverter *self, xmlElementPtr 
 
         if (colorCString) {
             if (colorCString[0] == '#') {
-            
-//!i:                self->m_fontColor = strtoul(&colorCString[1], NULL, 16);
+                unsigned long hex = strtoul(&colorCString[1], NULL, 16);
+
+                SwiftColor color;
+                color.red   = ((hex & 0xFF0000) >> 16) / 255.0;
+                color.green = ((hex & 0x00FF00) >>  8) / 255.0;
+                color.blue  =  (hex & 0x0000FF)        / 255.0;
+                color.alpha = 1.0;
+                
+                [attributes setFontColor:&color];
             }
 
             free(colorCString);
@@ -195,6 +207,8 @@ static void sStartParagraphElement(SwiftHTMLToCoreTextConverter *self, xmlElemen
         } else if (0 == strcasecmp(alignCString, "right")) {
             [attributes setTextAlignment:kCTRightTextAlignment];
         }
+        
+        free(alignCString);
     }
 }
 
@@ -251,7 +265,7 @@ static void sStartTextFormatElement(SwiftHTMLToCoreTextConverter *self, xmlEleme
 static void sStartElement(SwiftHTMLToCoreTextConverter *self, xmlElementPtr element, SwiftHTMLToCoreTextConverterTag tag)
 {
     if (tag == SwiftHTMLToCoreTextConverterTag_A) {
-        // Not yet implemented: Dynamic Text HTML <a> support
+        //!nyi: Dynamic Text HTML <a> support
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_B) {
         [self _flush];  self->m_boldCount++;
@@ -271,6 +285,11 @@ static void sStartElement(SwiftHTMLToCoreTextConverter *self, xmlElementPtr elem
         [self->m_characters appendFormat:@"%C ", 0x2022];
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_P) {
+        if (self->m_needsParagraphBreak) {
+            [self->m_characters appendString:@"\n"];
+            self->m_needsParagraphBreak = NO;
+        }
+
         [self _flush];
         [self _cloneAttributes];
         sStartParagraphElement(self, element);
@@ -292,7 +311,7 @@ static void sStartElement(SwiftHTMLToCoreTextConverter *self, xmlElementPtr elem
 static void sEndElement(SwiftHTMLToCoreTextConverter *self, xmlElementPtr element, SwiftHTMLToCoreTextConverterTag tag)
 {
     if (tag == SwiftHTMLToCoreTextConverterTag_A) {
-        // Not yet implemented: Dynamic Text HTML <a> support
+        //!nyi: Dynamic Text HTML <a> support
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_B) {
         self->m_boldCount--;  [self _flush];
@@ -307,7 +326,8 @@ static void sEndElement(SwiftHTMLToCoreTextConverter *self, xmlElementPtr elemen
         [self->m_characters appendString:@"\n"];
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_P) {
-        // Not yet implemented: Dynamic Text HTML <p> support
+        self->m_needsParagraphBreak = YES;
+        [self _flush];
 
     } else if (tag == SwiftHTMLToCoreTextConverterTag_TEXTFORMAT) {
         [self _flush];
@@ -330,15 +350,13 @@ static void sParseNode(SwiftHTMLToCoreTextConverter *self, xmlNodePtr node)
         sStartElement(self, element, tag);
     }
 
-    if (element || (type == XML_DOCUMENT_NODE) || (type == XML_HTML_DOCUMENT_NODE)) {
-        xmlNodePtr childNode = xmlFirstElementChild(node);
-        while (childNode) {
-            sParseNode(self, childNode);
-            childNode = xmlNextElementSibling(childNode);
-        }
-    } 
+    xmlNodePtr childNode = node->children;
+    while (childNode) {
+        sParseNode(self, childNode);
+        childNode = childNode->next;
+    }
     
-    if (node->content) {
+    if (type == XML_TEXT_NODE) {
         xmlChar *content = xmlNodeGetContent(node);
 
         if (content) {
@@ -381,6 +399,7 @@ static void sParseNode(SwiftHTMLToCoreTextConverter *self, xmlNodePtr node)
     m_boldCount      = [baseAttributes isBold]      ? 1 : 0;
     m_italicCount    = [baseAttributes isItalic]    ? 1 : 0;
     m_underlineCount = [baseAttributes isUnderline] ? 1 : 0;
+    m_needsParagraphBreak = NO;
 
     if (!m_attributes) {
         m_attributes = [[SwiftDynamicTextAttributes alloc] init];
