@@ -36,7 +36,7 @@
     id<SwiftPlayheadDelegate> m_delegate;
 
     SwiftMovie    *m_movie;
-    NSInteger      m_rawFrameIndex;
+    NSInteger      m_frameIndex;
 
     NSTimer       *m_timer;
     CFTimeInterval m_timerPlayStart;
@@ -49,28 +49,30 @@
 
 - (id) initWithMovie:(SwiftMovie *)movie delegate:(id<SwiftPlayheadDelegate>)delegate;
 
-- (void) gotoSceneName:(NSString *)sceneName frame:(NSUInteger)frameIndex1 play:(BOOL)play;
-- (void) gotoAndPlay:(NSUInteger)frameIndex1;
-- (void) gotoAndStop:(NSUInteger)frameIndex1;
-- (void) stop;
+- (void) gotoScene:(SwiftScene *)scene frameLabel: (NSString *)frameLabel  play:(BOOL)play;
+- (void) gotoScene:(SwiftScene *)scene frameIndex1:(NSUInteger)frameIndex1 play:(BOOL)play;
+- (void) gotoScene:(SwiftScene *)scene frameIndex: (NSUInteger)frameIndex  play:(BOOL)play;
 
+- (void) gotoSceneWithName:(NSString *)sceneName frameLabel: (NSString *)frameLabel  play:(BOOL)play;
+- (void) gotoSceneWithName:(NSString *)sceneName frameIndex1:(NSUInteger)frameIndex1 play:(BOOL)play;
+- (void) gotoSceneWithName:(NSString *)sceneName frameIndex: (NSUInteger)frameIndex  play:(BOOL)play;
+
+- (void) gotoFrameWithIndex1:(NSUInteger)frameIndex1 play:(BOOL)play;
+- (void) gotoFrameWithIndex: (NSUInteger)frameIndex  play:(BOOL)play;
+
+- (void) gotoFrame:(SwiftFrame *)frame play:(BOOL)play;
+
+- (void) stop;
 - (void) step;
 
 @property (nonatomic, assign) id<SwiftPlayheadDelegate> delegate;
-@property (nonatomic, retain, readonly) SwiftMovie *movie;
-
-@property (nonatomic, assign) SwiftScene *scene;
-@property (nonatomic, retain) NSString   *sceneName;
-
-@property (nonatomic, assign) SwiftFrame *frame;
-@property (nonatomic, retain) NSString   *frameLabel;
-@property (nonatomic, assign) NSUInteger  frameIndex1;  // 1-based, relative to scene
-
 @property (nonatomic, assign) BOOL loopsMovie;
 @property (nonatomic, assign) BOOL loopsScene;
-@property (nonatomic, assign, getter=isPlaying) BOOL playing;
 
-@property (nonatomic, assign) NSInteger rawFrameIndex; // 0-based, relative to movie
+@property (nonatomic, readonly, retain) SwiftMovie *movie;
+@property (nonatomic, readonly, assign) SwiftScene *scene;
+@property (nonatomic, readonly, assign) SwiftFrame *frame;
+@property (nonatomic, readonly, getter=isPlaying) BOOL playing;
 
 @end
 

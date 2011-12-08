@@ -39,6 +39,8 @@ struct _SwiftParser {
     const UInt8  *b;
     const UInt8  *nextTagB;
     
+    NSStringEncoding encoding;
+
     UInt32        length;
 
     UInt8         bitPosition;
@@ -63,6 +65,7 @@ SwiftParser *SwiftParserCreate(const UInt8 *buffer, UInt32 length)
     parser->bitPosition   = 0;
     parser->bitByte       = 0;
     parser->isValid       = YES;
+    parser->encoding      = NSUTF8StringEncoding;
     
     return parser;
 }
@@ -205,11 +208,16 @@ const UInt8 *SwiftParserGetCurrentBytePointer(SwiftParser *parser)
 }
 
 
-UInt32 SwiftParserGetBytesRemainingInCurrentTag(SwiftParser *parser)
+void SwiftParserSetStringEncoding(SwiftParser *parser, NSStringEncoding encoding)
 {
-    return (parser->nextTagB - parser->b);
+    parser->encoding = encoding;
 }
 
+
+NSStringEncoding SwiftParserGetStringEncoding(SwiftParser *parser)
+{
+    return parser->encoding;
+}
 
 
 #pragma mark -
@@ -245,6 +253,7 @@ void SwiftParserAdvanceToNextTag(SwiftParser *parser)
     case SwiftTagDefineButton2:         tag = SwiftTagDefineButton;         version = 2;    break;
     case SwiftTagDefineBitsLossless2:   tag = SwiftTagDefineBitsLossless;   version = 2;    break;
     case SwiftTagSoundStreamHead2:      tag = SwiftTagSoundStreamHead;      version = 2;    break;
+    case SwiftTagDefineFont2:           tag = SwiftTagDefineFont;           version = 2;    break;
     case SwiftTagDefineFontInfo2:       tag = SwiftTagDefineFontInfo;       version = 2;    break;
     case SwiftTagEnableDebugger2:       tag = SwiftTagEnableDebugger;       version = 2;    break;
     case SwiftTagImportAssets2:         tag = SwiftTagImportAssets;         version = 2;    break;
@@ -265,6 +274,12 @@ void SwiftParserAdvanceToNextTag(SwiftParser *parser)
     parser->currentTagVersion = version;
 
     parser->nextTagB = parser->b + length;
+}
+
+
+UInt32 SwiftParserGetBytesRemainingInCurrentTag(SwiftParser *parser)
+{
+    return (parser->nextTagB - parser->b);
 }
 
 
@@ -674,18 +689,6 @@ void SwiftParserReadData(SwiftParser *parser, UInt32 length, NSData **outValue)
 
 void SwiftParserReadString(SwiftParser *parser, NSString **outValue)
 {
-    SwiftParserReadStringWithEncoding(parser, NSUTF8StringEncoding, outValue);
-}
-
-
-void SwiftParserReadLengthPrefixedString(SwiftParser *parser, NSString **outValue)
-{
-    SwiftParserReadLengthPrefixedStringWithEncoding(parser, NSUTF8StringEncoding, outValue);
-}
-
-
-void SwiftParserReadStringWithEncoding(SwiftParser *parser, NSStringEncoding encoding, NSString **outValue)
-{
     UInt8 i;
     const UInt8 *start = parser->b;
     
@@ -697,13 +700,7 @@ void SwiftParserReadStringWithEncoding(SwiftParser *parser, NSStringEncoding enc
     if (outValue) {
         if (length) {
             length--;
-
-            *outValue = [[[NSString alloc] initWithBytes:start length:length encoding:encoding] autorelease];
-
-            // Fallback for legacy .swf files where encoding wasn't specified
-            if (*outValue == nil && (encoding == NSUTF8StringEncoding)) {
-                *outValue = [[[NSString alloc] initWithBytes:start length:length encoding:NSWindowsCP1252StringEncoding] autorelease];
-            }
+            *outValue = [[[NSString alloc] initWithBytes:start length:length encoding:parser->encoding] autorelease];
         } else {
             *outValue = nil;
         }
@@ -711,7 +708,7 @@ void SwiftParserReadStringWithEncoding(SwiftParser *parser, NSStringEncoding enc
 }
 
 
-void SwiftParserReadLengthPrefixedStringWithEncoding(SwiftParser *parser, NSStringEncoding encoding, NSString **outValue)
+void SwiftParserReadLengthPrefixedString(SwiftParser *parser, NSString **outValue)
 {
     UInt8 length;
     SwiftParserReadUInt8(parser, &length);
@@ -731,14 +728,9 @@ void SwiftParserReadLengthPrefixedStringWithEncoding(SwiftParser *parser, NSStri
             lengthToUse--;
         }
 
-        *outValue = [[[NSString alloc] initWithBytes:parser->b length:lengthToUse encoding:encoding] autorelease];
-
-        // Fallback for legacy .swf files where encoding wasn't specified
-        if (*outValue == nil && (encoding == NSUTF8StringEncoding)) {
-            *outValue = [[[NSString alloc] initWithBytes:parser->b length:lengthToUse encoding:NSWindowsCP1252StringEncoding] autorelease];
-        }
+        *outValue = [[[NSString alloc] initWithBytes:parser->b length:lengthToUse encoding:parser->encoding] autorelease];
     }
 
     SwiftParserAdvance(parser, length);
-}    
-    
+}
+

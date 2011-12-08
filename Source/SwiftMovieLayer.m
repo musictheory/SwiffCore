@@ -138,8 +138,8 @@
         [m_playhead setDelegate:nil];
         [m_playhead release];
         m_playhead = [[SwiftPlayhead alloc] initWithMovie:m_movie delegate:self];
-        [m_playhead setFrame:[movie frameAtIndex1:1]];
-
+        [m_playhead gotoFrameWithIndex:0 play:NO];
+        
         [self _updateBackgroundColor];
 
         [self playheadDidUpdate:m_playhead];

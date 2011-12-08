@@ -157,6 +157,7 @@ void SwiftWriterStartTag(SwiftWriter *writer, SwiftTag tag, NSInteger version)
             case SwiftTagDefineButton:       tag = SwiftTagDefineButton2;           break;
             case SwiftTagDefineBitsLossless: tag = SwiftTagDefineBitsLossless2;     break;
             case SwiftTagSoundStreamHead:    tag = SwiftTagSoundStreamHead2;        break;
+            case SwiftTagDefineFont:         tag = SwiftTagDefineFont2;             break;
             case SwiftTagDefineFontInfo:     tag = SwiftTagDefineFontInfo2;         break;
             case SwiftTagEnableDebugger:     tag = SwiftTagEnableDebugger2;         break;
             case SwiftTagImportAssets:       tag = SwiftTagImportAssets2;           break;

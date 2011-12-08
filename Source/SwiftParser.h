@@ -41,6 +41,10 @@ extern BOOL SwiftParserIsValid(SwiftParser *parser);
 
 extern const UInt8 *SwiftParserGetCurrentBytePointer(SwiftParser *parser);
 
+// The encoding to use for STRINGs, defaults to NSUTF8StringEncoding
+extern void SwiftParserSetStringEncoding(SwiftParser *parser, NSStringEncoding encoding);
+extern NSStringEncoding SwiftParserGetStringEncoding(SwiftParser *parser);
+
 
 // Tags
 //
@@ -94,7 +98,3 @@ extern void SwiftParserReadData(SwiftParser *parser, UInt32 length, NSData **out
 
 extern void SwiftParserReadString(SwiftParser *parser, NSString **outValue);
 extern void SwiftParserReadLengthPrefixedString(SwiftParser *parser, NSString **outValue);
-
-extern void SwiftParserReadStringWithEncoding(SwiftParser *parser, NSStringEncoding encoding, NSString **outValue);
-extern void SwiftParserReadLengthPrefixedStringWithEncoding(SwiftParser *parser, NSStringEncoding encoding, NSString **outValue);
-

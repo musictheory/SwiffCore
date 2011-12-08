@@ -146,9 +146,11 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, _SwiftFontM
     result->m_rightMarginInTwips = m_rightMarginInTwips;
     result->m_indentInTwips      = m_indentInTwips;
     result->m_leadingInTwips     = m_leadingInTwips;
+    result->m_mapType            = m_mapType;
     result->m_bold               = m_bold;
     result->m_italic             = m_italic;
     result->m_underline          = m_underline;
+    result->m_hasFontColor       = m_hasFontColor;
 
     return result;
 }
@@ -229,6 +231,7 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, _SwiftFontM
    
     if (m_hasFontColor) {
         CGColorRef cgColor = SwiftColorCopyCGColor(m_fontColor);
+        NSLog(@"%@", cgColor);
         if (cgColor) {
             [result setObject:(id)cgColor forKey:(id)kCTForegroundColorAttributeName];
             CFRelease(cgColor);

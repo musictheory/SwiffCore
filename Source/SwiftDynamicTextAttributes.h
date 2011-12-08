@@ -76,4 +76,3 @@ extern CGFloat SwiftTextGetMaximumVerticalOffset(CFAttributedStringRef as, CFRan
 
 @end
 
-extern CTFontRef SwiftCreateFont(NSString *name, CGFloat size, BOOL isBold, BOOL isItalic);

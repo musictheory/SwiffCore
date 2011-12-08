@@ -28,10 +28,12 @@
 
 #import "SwiftFrame.h"
 #import "SwiftPlacedObject.h"
+#import "SwiftScene.h"
+
 
 @interface SwiftFrame (FriendMethods)
 - (void) _updateLabel:(NSString *)label;
-- (void) _updateScene:(SwiftScene *)scene index1InScene:(NSUInteger)index1InScene;
+- (void) _updateScene:(SwiftScene *)scene indexInScene:(NSUInteger)index1InScene;
 @end
 
 @implementation SwiftFrame
@@ -45,6 +47,16 @@
         m_placedObjects = [placedObjects retain];
         m_soundEvents   = [soundEvents   retain];
         m_streamSound   = [streamSound   retain];
+
+        NSMutableDictionary *instanceNameToPlacedObjectMap = [[NSMutableDictionary alloc] initWithCapacity:[placedObjects count]];
+        for (SwiftPlacedObject *placedObject in placedObjects) {
+            NSString *instanceName = [placedObject instanceName];
+
+            if ([instanceName length]) {
+                [instanceNameToPlacedObjectMap setObject:placedObjects forKey:instanceName];
+            }
+        }
+        m_instanceNameToPlacedObjectMap = instanceNameToPlacedObjectMap;
 
         m_streamBlockIndex = streamBlockIndex;
     }
@@ -66,6 +78,9 @@
     [m_streamSound   release];  m_streamSound   = nil;
     [m_soundEvents   release];  m_soundEvents   = nil;
 
+    [m_instanceNameToPlacedObjectMap release];
+    m_instanceNameToPlacedObjectMap = nil;
+
     [super dealloc];
 }
 
@@ -73,11 +88,10 @@
 #pragma mark -
 #pragma mark Friend Methods
 
-
-- (void) _updateScene:(SwiftScene *)scene index1InScene:(NSUInteger)index1InScene
+- (void) _updateScene:(SwiftScene *)scene indexInScene:(NSUInteger)indexInScene
 {
     m_scene = scene;
-    m_index1InScene = index1InScene;
+    m_indexInScene = indexInScene;
 }
 
 
@@ -89,9 +103,42 @@
 
 
 #pragma mark -
+#pragma mark Public Methods
+
+- (NSArray *) instanceNames
+{
+    return [m_instanceNameToPlacedObjectMap allKeys];
+}
+
+
+- (SwiftPlacedObject *) placedObjectWithInstanceName:(NSString *)name
+{
+    return [m_instanceNameToPlacedObjectMap objectForKey:name];
+}
+
+
+#pragma mark -
 #pragma mark Accessors
 
-@synthesize index1InScene    = m_index1InScene,
+- (NSUInteger) index1InScene
+{
+    return m_indexInScene + 1;
+}
+
+
+- (NSUInteger) index1InMovie
+{
+    return [m_scene index1InMovie] + m_indexInScene;
+}
+
+
+- (NSUInteger) indexInMovie
+{
+    return [m_scene indexInMovie] + m_indexInScene;
+}
+
+
+@synthesize indexInScene     = m_indexInScene,
             placedObjects    = m_placedObjects,
             scene            = m_scene,
             label            = m_label,

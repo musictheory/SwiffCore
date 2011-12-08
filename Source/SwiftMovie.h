@@ -37,7 +37,6 @@
 
 @interface SwiftMovie : SwiftSpriteDefinition {
 @private
-    NSData              *m_data;
     NSArray             *m_scenes;
     NSDictionary        *m_sceneNameToSceneMap;
     NSMutableDictionary *m_definitionMap;
@@ -46,16 +45,11 @@
     CGRect               m_stageRect;
     CGFloat              m_frameRate;
     SwiftColor           m_backgroundColor;
-    
-    id<SwiftMovieDecoder> m_decoder;
-    BOOL m_decoder_movie_didDecodeFrame;
 }
 
 - (id) initWithData:(NSData *)data;
 
 - (id) definitionWithLibraryID:(UInt16)libraryID;
-
-- (void) decode:(id<SwiftMovieDecoder>)decoder;
 
 - (SwiftFontDefinition        *) fontDefinitionWithLibraryID:(UInt16)libraryID;
 - (SwiftShapeDefinition       *) shapeDefinitionWithLibraryID:(UInt16)libraryID;
@@ -74,7 +68,6 @@
 
 @property (nonatomic, assign, readonly) SwiftColor  backgroundColor;
 @property (nonatomic, assign, readonly) SwiftColor *backgroundColorPointer;
-
 
 @end
 

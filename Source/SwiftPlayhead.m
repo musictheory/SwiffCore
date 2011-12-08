@@ -39,6 +39,13 @@
 - (void) _tick;
 @end
 
+extern void SwiftPlayheadWarnForInvalidGotoArguments(void);
+
+void SwiftPlayheadWarnForInvalidGotoArguments()
+{
+    SwiftWarn(@"Invalid arguments sent to -[SwiftPlayhead goto...].  Break on SwiftPlayheadWarnForInvalidGotoArguments to debug");
+}
+
 
 @implementation SwiftPlayhead
 
@@ -89,162 +96,19 @@
 #pragma mark -
 #pragma mark Public Methods
 
-- (void) gotoSceneName:(NSString *)sceneName frame:(NSUInteger)frameIndex1 play:(BOOL)play
+- (void) _gotoFrameWithIndex:(NSUInteger)frameIndex play:(BOOL)play
 {
-    [self setSceneName:sceneName];
-    [self setFrameIndex1:frameIndex1];
-    [self setPlaying:play];
-}
-
-
-- (void) gotoAndPlay:(NSUInteger)frameIndex1
-{
-    [self setFrameIndex1:frameIndex1];
-    [self setPlaying:YES];
-}
-
-
-- (void) gotoAndStop:(NSUInteger)frameIndex1
-{
-    [self setFrameIndex1:frameIndex1];
-    [self setPlaying:NO];
-}
-
-
-- (void) stop
-{
-    [self setPlaying:NO];
-}
-
-
-- (void) step
-{
-    SwiftScene *lastScene = [self scene];
-    m_rawFrameIndex++;
-    SwiftScene *currentScene = [self scene];
-    BOOL atEnd = NO;
-
-    // If we switched scenes, see if we should loop
-    if (lastScene != currentScene) {
-        if (m_loopsScene) {
-            m_rawFrameIndex = [lastScene indexInMovie];
-        }
-
-    // If frame is now nil, we hit the end of the movie
-    } else if (![self frame]) {
-        if (m_loopsMovie) {
-            m_rawFrameIndex = 0;
-        } else {
-            atEnd = YES;
-            m_rawFrameIndex--;
-        }
-    }
+    BOOL needsUpdate = NO;
     
-    if (atEnd) {
-        [self setPlaying:NO];
+    if (m_frameIndex != frameIndex) {
+        m_frameIndex = frameIndex;
+        needsUpdate = YES;
     }
 
-    [m_delegate playheadDidUpdate:self];
-}
-
-
-#pragma mark -
-#pragma mark Accessors
-
-- (void) setRawFrameIndex:(NSInteger)rawFrameIndex
-{
-    if (rawFrameIndex != m_rawFrameIndex) {
-        m_rawFrameIndex = rawFrameIndex;
-        [m_delegate playheadDidUpdate:self];
-    }
-}
-
-
-- (void) setFrame:(SwiftFrame *)frame
-{
-    if (!frame) {
-        [self setRawFrameIndex:0];
-
-    } else {
-        NSArray   *frames = [m_movie frames];
-        NSUInteger index  = [frames indexOfObject:frame];
-        
-        if (index != NSNotFound) {
-            [self setRawFrameIndex:index];
-        }
-    }
-}
-
-
-- (void) setScene:(SwiftScene *)scene
-{
-    NSArray *scenes = [m_movie scenes];
-    if ([scenes containsObject:scene]) {
-        [self setRawFrameIndex:[scene indexInMovie]];
-    }
-}
-
-
-- (void) setSceneName:(NSString *)sceneName
-{
-    SwiftScene *scene = [m_movie sceneWithName:sceneName];
-    if (scene) [self setScene:scene];
-}
-
-
-- (void) setFrameLabel:(NSString *)frameLabel
-{
-    SwiftFrame *frame = [m_movie frameWithLabel:frameLabel];
-    if (frame) [self setFrame:frame];
-}
-
-
-- (void) setFrameIndex1:(NSUInteger)frameIndex1
-{
-    NSUInteger  index  = (frameIndex1 - 1);
-    NSArray    *frames = [[self scene] frames];
-    SwiftFrame *frame  = nil;
-
-    if (index < [frames count]) {
-        frame = [frames objectAtIndex:index];
-    }
-    
-    if (frame) [self setFrame:frame];
-}
-
-
-- (SwiftFrame *) frame
-{
-    NSArray *frames = [m_movie frames];
-
-    if (m_rawFrameIndex < [frames count]) {
-        return [frames objectAtIndex:m_rawFrameIndex];
-    }
-    
-    return nil;
-}
-
-- (NSString   *) frameLabel  { return [[self frame] label];         }
-- (SwiftScene *) scene       { return [[self frame] scene];         }
-- (NSString   *) sceneName   { return [[self scene] name];          }
-- (NSUInteger)   frameIndex1 { return [[self frame] index1InScene]; }
-
-
-- (void) setDelegate:(id<SwiftPlayheadDelegate>)delegate
-{
-    if (m_delegate != delegate) {
-        m_delegate = delegate;
-        m_delegate_playheadDidUpdate = [m_delegate respondsToSelector:@selector(playheadDidUpdate:)];
-    }
-}
-
-
-- (void) setPlaying:(BOOL)playing
-{
-    if ([self isPlaying] != playing) {
+    if ([self isPlaying] != play) {
         [self _cleanupTimer];
 
-        if (playing) {
+        if (play) {
             NSMethodSignature *signature = [self methodSignatureForSelector:@selector(_tick)];
             NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
             
@@ -255,6 +119,187 @@
             m_timerPlayStart = CACurrentMediaTime();
             m_timerPlayIndex = 0;
         }
+    }
+    
+    if (needsUpdate) {
+        [m_delegate playheadDidUpdate:self];
+    }
+}
+
+
+- (void) gotoScene:(SwiftScene *)inScene frameLabel:(NSString *)frameLabel play:(BOOL)play
+{
+    SwiftScene *scene = ([inScene movie] == m_movie) ? inScene : nil;
+    SwiftFrame *frame = [scene frameWithLabel:frameLabel];
+
+    if (frame) {
+        [self _gotoFrameWithIndex:[frame indexInMovie] play:play];
+    } else {
+        SwiftPlayheadWarnForInvalidGotoArguments();
+    }
+}
+
+
+- (void) gotoScene:(SwiftScene *)inScene frameIndex1:(NSUInteger)frameIndex1 play:(BOOL)play
+{
+    SwiftScene *scene = ([inScene movie] == m_movie) ? inScene : nil;
+    SwiftFrame *frame = [scene frameAtIndex1:frameIndex1];
+
+    if (frame) {
+        [self _gotoFrameWithIndex:[frame indexInMovie] play:play];
+    } else {
+        SwiftPlayheadWarnForInvalidGotoArguments();
+    }
+}
+
+
+- (void) gotoScene:(SwiftScene *)inScene frameIndex:(NSUInteger)frameIndex play:(BOOL)play
+{
+    SwiftScene *scene = [inScene movie] == m_movie ? inScene : nil;
+    SwiftFrame *frame = [scene frameAtIndex:frameIndex];
+
+    if (frame) {
+        [self _gotoFrameWithIndex:[frame indexInMovie] play:play];
+    } else {
+        SwiftPlayheadWarnForInvalidGotoArguments();
+    }
+}
+
+
+- (void) gotoSceneWithName:(NSString *)sceneName frameLabel:(NSString *)frameLabel play:(BOOL)play
+{
+    SwiftScene *scene = [m_movie sceneWithName:sceneName];
+    SwiftFrame *frame = [scene frameWithLabel:frameLabel];
+
+    if (frame) {
+        [self _gotoFrameWithIndex:[frame indexInMovie] play:play];
+    } else {
+        SwiftPlayheadWarnForInvalidGotoArguments();
+    }
+}
+
+
+- (void) gotoSceneWithName:(NSString *)sceneName frameIndex1:(NSUInteger)frameIndex1 play:(BOOL)play
+{
+    SwiftScene *scene = [m_movie sceneWithName:sceneName];
+    SwiftFrame *frame = [scene frameAtIndex1:frameIndex1];
+
+    if (frame) {
+        [self _gotoFrameWithIndex:[frame indexInMovie] play:play];
+    } else {
+        SwiftPlayheadWarnForInvalidGotoArguments();
+    }
+}
+
+
+- (void) gotoSceneWithName:(NSString *)sceneName frameIndex:(NSUInteger)frameIndex play:(BOOL)play
+{
+    SwiftScene *scene = [m_movie sceneWithName:sceneName];
+    SwiftFrame *frame = [scene frameAtIndex:frameIndex];
+
+    if (frame) {
+        [self _gotoFrameWithIndex:[frame indexInMovie] play:play];
+    } else {
+        SwiftPlayheadWarnForInvalidGotoArguments();
+    }
+}
+
+
+- (void) gotoFrameWithIndex1:(NSUInteger)frameIndex1 play:(BOOL)play
+{
+    if (frameIndex1 > 0 && frameIndex1 <= [[m_movie frames] count]) {
+        [self _gotoFrameWithIndex:(frameIndex1 - 1) play:play];
+    } else {
+        SwiftPlayheadWarnForInvalidGotoArguments();
+    }
+}
+
+
+- (void) gotoFrameWithIndex:(NSUInteger)frameIndex play:(BOOL)play
+{
+    if (frameIndex < [[m_movie frames] count]) {
+        [self _gotoFrameWithIndex:frameIndex play:play];
+    } else {
+        SwiftPlayheadWarnForInvalidGotoArguments();
+    }
+}
+
+
+- (void) gotoFrame:(SwiftFrame *)frame play:(BOOL)play
+{
+    NSUInteger frameIndex = [m_movie indexOfFrame:frame];
+    
+    if (frameIndex != NSNotFound) {
+        [self _gotoFrameWithIndex:frameIndex play:play];
+    } else {
+        SwiftPlayheadWarnForInvalidGotoArguments();
+    }
+}
+
+
+- (void) stop
+{
+    [self _gotoFrameWithIndex:m_frameIndex play:NO];
+}
+
+
+- (void) step
+{
+    SwiftScene *lastScene = [self scene];
+    m_frameIndex++;
+    SwiftScene *currentScene = [self scene];
+    BOOL atEnd = NO;
+
+    // If we switched scenes, see if we should loop
+    if (lastScene != currentScene) {
+        if (m_loopsScene) {
+            m_frameIndex = [lastScene indexInMovie];
+        }
+
+    // If frame is now nil, we hit the end of the movie
+    } else if (![self frame]) {
+        if (m_loopsMovie) {
+            m_frameIndex = 0;
+        } else {
+            atEnd = YES;
+            m_frameIndex--;
+        }
+    }
+    
+    if (atEnd) {
+        [self stop];
+    }
+
+    [m_delegate playheadDidUpdate:self];
+}
+
+
+#pragma mark -
+#pragma mark Accessors
+
+- (SwiftFrame *) frame
+{
+    NSArray *frames = [m_movie frames];
+
+    if (m_frameIndex < [frames count]) {
+        return [frames objectAtIndex:m_frameIndex];
+    }
+    
+    return nil;
+}
+
+
+- (SwiftScene *) scene
+{
+    return [[self frame] scene];
+}
+
+
+- (void) setDelegate:(id<SwiftPlayheadDelegate>)delegate
+{
+    if (m_delegate != delegate) {
+        m_delegate = delegate;
+        m_delegate_playheadDidUpdate = [m_delegate respondsToSelector:@selector(playheadDidUpdate:)];
     }
 }
 
@@ -267,7 +312,6 @@
 
 @synthesize delegate      = m_delegate,
             movie         = m_movie,
-            rawFrameIndex = m_rawFrameIndex,
             loopsMovie    = m_loopsMovie,
             loopsScene    = m_loopsScene;
 

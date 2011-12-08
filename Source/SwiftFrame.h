@@ -27,13 +27,13 @@
 
 #import <SwiftImport.h>
 
-@class SwiftScene, SwiftSoundDefinition;
+@class SwiftScene, SwiftPlacedObject, SwiftSoundDefinition;
 
 
 @interface SwiftFrame : NSObject {
 @private
     SwiftScene           *m_scene;
-    NSUInteger            m_index1InScene;
+    NSUInteger            m_indexInScene;
 
     NSString             *m_label;
     NSArray              *m_placedObjects;
@@ -46,10 +46,16 @@
 
 - (void) clearWeakReferences;
 
+- (NSArray *) instanceNames;
+- (SwiftPlacedObject *) placedObjectWithInstanceName:(NSString *)name;
+
 @property (nonatomic, copy, readonly) NSString *label;
 
 @property (nonatomic, assign, readonly) SwiftScene *scene;
 @property (nonatomic, assign, readonly) NSUInteger index1InScene;
+@property (nonatomic, assign, readonly) NSUInteger indexInScene;
+@property (nonatomic, assign, readonly) NSUInteger index1InMovie;
+@property (nonatomic, assign, readonly) NSUInteger indexInMovie;
 
 @property (nonatomic, retain, readonly) NSArray *soundEvents;
 @property (nonatomic, retain, readonly) SwiftSoundDefinition *streamSound;

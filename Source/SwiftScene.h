@@ -27,28 +27,35 @@
 
 #import <SwiftImport.h>
 
-@class SwiftFrame;
+@class SwiftFrame, SwiftMovie;
 
 
 @interface SwiftScene : NSObject {
 @private
+    SwiftMovie   *m_movie;
     NSString     *m_name;
     NSArray      *m_frames;
     NSDictionary *m_labelToFrameMap;
     NSUInteger    m_indexInMovie;
 }
 
-- (id) initWithName:(NSString *)name indexInMovie:(NSUInteger)indexInMovie frames:(NSArray *)frames;
+- (id) initWithMovie:(SwiftMovie *)movie name:(NSString *)name indexInMovie:(NSUInteger)indexInMovie frames:(NSArray *)frames;
+
+- (void) clearWeakReferences;
 
 - (SwiftFrame *) frameWithLabel:(NSString *)label;
-
-
 - (SwiftFrame *) firstFrame;
+
 - (SwiftFrame *) frameAtIndex1:(NSUInteger)index1;
 - (NSUInteger) index1OfFrame:(SwiftFrame *)frame;
 
-@property (nonatomic, assign, readonly) NSUInteger indexInMovie;
+- (SwiftFrame *) frameAtIndex:(NSUInteger)index;
+- (NSUInteger) indexOfFrame:(SwiftFrame *)frame;
 
+@property (nonatomic, assign, readonly) NSUInteger indexInMovie;
+@property (nonatomic, assign, readonly) NSUInteger index1InMovie;
+
+@property (nonatomic, assign, readonly) SwiftMovie *movie;
 @property (nonatomic, assign, readonly) NSString *name;
 @property (nonatomic, assign, readonly) NSArray *frames;
 

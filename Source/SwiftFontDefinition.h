@@ -30,26 +30,46 @@
 #import <SwiftDefinition.h>
 #import <SwiftParser.h>
 
+typedef struct _SwiftFontKerningRecord {
+    UInt16 leftCharacterCode;
+    UInt16 rightCharacterCode;
+    CGFloat adjustment;
+} SwiftFontKerningRecord;
+
+
+extern const CGFloat SwiftFontEmSquareHeight;           // 1024
+
+
 @class SwiftMovie, SwiftShapeDefinition;
 
 @interface SwiftFontDefinition : NSObject <SwiftDefinition> {
 @private
-    SwiftMovie *m_movie;
+    SwiftMovie       *m_movie;
  
-    NSString   *m_name;
-    NSString   *m_fullName;
-    NSString   *m_copyright;
-    UInt16     *m_codeTable;
+    NSString         *m_name;
+    NSString         *m_fullName;
+    NSString         *m_copyright;
+    UInt16           *m_codeTable;
 
-    CTFontDescriptorRef m_fontDescriptor;
+    SwiftLanguageCode m_languageCode;
+    NSStringEncoding  m_encoding;
+    NSUInteger        m_glyphCount;
+    NSUInteger        m_kerningCount;
+    CGPathRef        *m_glyphPaths;
+    CGFloat          *m_glyphAdvances;
+    CGRect           *m_glyphBounds;
 
-    NSUInteger  m_glyphCount;
-    SwiftShapeDefinition **m_glyphs;
+    CGFloat           m_ascent;
+    CGFloat           m_descent;
+    CGFloat           m_leading;
 
-    UInt16      m_libraryID;
-    BOOL        m_bold;
-    BOOL        m_italic;
-    BOOL        m_largerEmSquare;
+    SwiftFontKerningRecord *m_kerningRecords;
+
+    UInt16            m_libraryID;
+    BOOL              m_bold;
+    BOOL              m_italic;
+    BOOL              m_smallText;
+    BOOL              m_hasLayout;
 }
 
 
@@ -66,22 +86,31 @@
 - (void) readDefineFontInfoTagFromParser:(SwiftParser *)parser;
 - (void) readDefineFontAlignZonesFromParser:(SwiftParser *)parser;
 
-- (CGFloat) multiplierForPointSize:(CGFloat)pointSize;
-
 @property (nonatomic, assign, readonly) UInt16 libraryID;
 
-@property (nonatomic, /*strong*/ readonly) CTFontDescriptorRef fontDescriptor;
-
+@property (nonatomic, assign, readonly) SwiftLanguageCode languageCode;
 @property (nonatomic, retain, readonly) NSString *name;
 @property (nonatomic, retain, readonly) NSString *fullName;
 @property (nonatomic, retain, readonly) NSString *copyright;
 
 @property (nonatomic, assign, readonly) NSUInteger glyphCount;
-@property (nonatomic, readonly /*strong*/) SwiftShapeDefinition **glyphs;
+@property (nonatomic, readonly /*strong*/) CGPathRef *glyphPaths;   // CGPathRef[glyphCount]
 
 @property (nonatomic, assign, readonly) UInt16 *codeTable;
+@property (nonatomic, assign, readonly) NSStringEncoding encoding;
 
-@property (nonatomic, assign, readonly, getter=isBold)   BOOL bold;
+@property (nonatomic, assign, readonly, getter=isBold) BOOL bold;
 @property (nonatomic, assign, readonly, getter=isItalic) BOOL italic;
+@property (nonatomic, assign, readonly, getter=isSmallText) BOOL smallText;
+
+// Layout info.  Relative to an EM square of 1024x1024 units (SwiftFontEmSquareHeight)
+@property (nonatomic, assign, readonly) BOOL     hasLayout;
+@property (nonatomic, assign, readonly) CGFloat  ascent;
+@property (nonatomic, assign, readonly) CGFloat  descent;
+@property (nonatomic, assign, readonly) CGFloat  leading;
+@property (nonatomic,         readonly) CGFloat *glyphAdvances; // CGFloat[glyphCount]
+@property (nonatomic,         readonly) CGRect  *glyphBounds;   // CGRect[glyphCount]
+@property (nonatomic, assign, readonly) NSUInteger  kerningCount;
+@property (nonatomic,         readonly) SwiftFontKerningRecord *kerningRecords; // SwiftFontKerningRecord[kerningCount]
 
 @end

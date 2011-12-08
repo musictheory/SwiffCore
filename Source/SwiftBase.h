@@ -78,6 +78,17 @@ enum _SwiftSoundFormat {
 typedef NSInteger SwiftSoundFormat;
 
 
+enum _SwiftLanguageCode {
+    SwiftFontLanguageCodeNone               = 0,
+    SwiftFontLanguageCodeLatin              = 1,
+    SwiftFontLanguageCodeJapanese           = 2,
+    SwiftFontLanguageCodeKorean             = 3,
+    SwiftFontLanguageCodeSimplifiedChinese  = 4,
+    SwiftFontLanguageCodeTraditionalChinese = 5
+};
+typedef NSInteger SwiftLanguageCode;
+
+
 enum _SwiftTag {
     SwiftTagEnd                          = 0,
     SwiftTagShowFrame                    = 1,
@@ -114,7 +125,7 @@ enum _SwiftTag {
     SwiftTagFrameLabel                   = 43,
     SwiftTagSoundStreamHead2             = 45, // Mapped to SwiftTagSoundStreamHead, version=2
     SwiftTagDefineMorphShape             = 46,
-    SwiftTagDefineFont2                  = 48,
+    SwiftTagDefineFont2                  = 48, // Mapped to SwiftDefineFont, version=2
     SwiftTagExportAssets                 = 56,
     SwiftTagImportAssets                 = 57,
     SwiftTagEnableDebugger               = 58,
@@ -170,6 +181,15 @@ extern void SwiftEnableLogging(void);
 #define SwiftGetCGFloatFromTwips(TWIPS) ((TWIPS) / 20.0f)
 #endif
 
+// The encoding to use when the specification calls for "ANSI" encoding
+// Defaults to NSWindowsCP1252StringEncoding
+extern NSStringEncoding SwiftGetANSIStringEncoding(void);
+extern void SwiftSetANSIStringEncoding(NSStringEncoding encoding);
+
+// The encoding to used for STRINGs in old (< v5) .swf files
+// Defaults to NSWindowsCP1252StringEncoding
+extern NSStringEncoding SwiftGetLegacyStringEncoding(void);
+extern void SwiftSetLegacyStringEncoding(NSStringEncoding encoding);
 
 extern SwiftColor SwiftColorFromCGColor(CGColorRef cgColor);
 
