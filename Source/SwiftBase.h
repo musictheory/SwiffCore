@@ -192,17 +192,14 @@ extern NSStringEncoding SwiftGetLegacyStringEncoding(void);
 extern void SwiftSetLegacyStringEncoding(NSStringEncoding encoding);
 
 extern SwiftColor SwiftColorFromCGColor(CGColorRef cgColor);
-
 extern CGColorRef SwiftColorCopyCGColor(SwiftColor color) CF_RETURNS_RETAINED;
 
 extern SwiftColor SwiftColorApplyColorTransform(SwiftColor color, SwiftColorTransform transform);
 
 extern BOOL SwiftColorTransformIsIdentity(SwiftColorTransform transform);
-
 extern BOOL SwiftColorTransformEqualToTransform(SwiftColorTransform a, SwiftColorTransform b);
 
 extern NSString *SwiftStringFromColor(SwiftColor color);
-
 
 // CFArrayRef values must be valid (SwiftColorTransform *).  If stack is NULL, color is returned
 extern SwiftColor SwiftColorApplyColorTransformStack(SwiftColor color, CFArrayRef stack);
@@ -210,5 +207,5 @@ extern SwiftColor SwiftColorApplyColorTransformStack(SwiftColor color, CFArrayRe
 extern NSString *SwiftStringFromColorTransform(SwiftColorTransform transform);
 extern NSString *SwiftStringFromColorTransformStack(CFArrayRef stack);
 
-extern NSData *SwiftGetDataFromHeader(SwiftHeader header);
-
+extern BOOL SwiftTagSplit(SwiftTag inTag, SwiftTag *outTag, NSInteger *outVersion);
+extern BOOL SwiftTagJoin(SwiftTag inTag, NSInteger inVersion, SwiftTag *outTag);

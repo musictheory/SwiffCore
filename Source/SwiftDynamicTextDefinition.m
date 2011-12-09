@@ -144,12 +144,12 @@
 }
 
 
+#pragma mark -
+#pragma mark Accessors
+
 - (CGRect) edgeBounds  { return CGRectZero; }
 - (BOOL) hasEdgeBounds { return NO; }
 
-
-#pragma mark -
-#pragma mark Accessors
 
 - (SwiftColor *) colorPointer
 {

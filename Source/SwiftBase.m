@@ -32,6 +32,32 @@ static NSStringEncoding sANSIStringEncoding   = NSWindowsCP1252StringEncoding;
 static NSStringEncoding sLegacyStringEncoding = NSWindowsCP1252StringEncoding;
 
 
+static NSInteger const sTagMap[] = {
+    SwiftTagDefineBitsJPEG2,       SwiftTagDefineBits,           2,
+    SwiftTagDefineShape2,          SwiftTagDefineShape,          2,
+    SwiftTagPlaceObject2,          SwiftTagPlaceObject,          2,
+    SwiftTagRemoveObject2,         SwiftTagRemoveObject,         2,
+    SwiftTagDefineText2,           SwiftTagDefineText,           2,
+    SwiftTagDefineButton2,         SwiftTagDefineButton,         2,
+    SwiftTagDefineBitsLossless2,   SwiftTagDefineBitsLossless,   2,
+    SwiftTagSoundStreamHead2,      SwiftTagSoundStreamHead,      2,
+    SwiftTagDefineFont2,           SwiftTagDefineFont,           2,
+    SwiftTagDefineFontInfo2,       SwiftTagDefineFontInfo,       2,
+    SwiftTagEnableDebugger2,       SwiftTagEnableDebugger,       2,
+    SwiftTagImportAssets2,         SwiftTagImportAssets,         2,
+    SwiftTagDefineMorphShape2,     SwiftTagDefineMorphShape,     2,
+    SwiftTagStartSound2,           SwiftTagStartSound,           2,
+    SwiftTagDefineShape3,          SwiftTagDefineShape,          3,
+    SwiftTagDefineBitsJPEG3,       SwiftTagDefineBits,           3,
+    SwiftTagPlaceObject3,          SwiftTagPlaceObject,          3,
+    SwiftTagDefineFont3,           SwiftTagDefineFont,           3,
+    SwiftTagDefineShape4,          SwiftTagDefineShape,          4,
+    SwiftTagDefineBitsJPEG4,       SwiftTagDefineBits,           4,
+    SwiftTagDefineFont4,           SwiftTagDefineFont,           4,
+    0, 0, 0
+};
+
+
 const SwiftColorTransform SwiftColorTransformIdentity = {
     1.0, 1.0, 1.0, 1.0,
     0.0, 0.0, 0.0, 0.0
@@ -245,4 +271,55 @@ NSString *SwiftStringFromColorTransformStack(CFArrayRef stack)
     
     return result;
 }
+
+
+BOOL SwiftTagSplit(SwiftTag inTag, SwiftTag *outTag, NSInteger *outVersion)
+{
+    NSInteger i         = 0;
+    SwiftTag  mappedTag = inTag;
+    NSInteger version   = 1;
+    BOOL      yn        = NO;
+
+    SwiftTag currentTag;
+    while ((currentTag = sTagMap[i])) {
+        if (inTag == currentTag) {
+            mappedTag = sTagMap[i + 1];
+            version   = sTagMap[i + 2];
+            yn        = YES;
+            break;
+        }
+
+        i += 3;
+    }
+
+    if (outTag)     *outTag     = mappedTag;
+    if (outVersion) *outVersion = version;
+
+    return yn;
+}
+
+
+BOOL SwiftTagJoin(SwiftTag inTag, NSInteger inVersion, SwiftTag *outTag)
+{
+    NSInteger i         = 0;
+    SwiftTag  mappedTag = inTag;
+    BOOL      yn        = NO;
+
+    SwiftTag  currentTag;
+    NSInteger currentVersion;
+    while ((currentTag = sTagMap[i + 1]) && (currentVersion = sTagMap[i + 2])) {
+        if ((inTag == currentTag) && (inVersion == currentVersion)) {
+            mappedTag = sTagMap[i];
+            yn        = YES;
+            break;
+        }
+
+        i += 3;
+    }
+
+    if (outTag) *outTag = mappedTag;
+
+    return yn;
+}
+
 

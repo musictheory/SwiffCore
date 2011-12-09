@@ -42,9 +42,7 @@ enum {
     SwiftFillStyleTypeRepeatingBitmap            = 0x40,
     SwiftFillStyleTypeClippedBitmap              = 0x41,
     SwiftFillStyleTypeNonSmoothedRepeatingBitmap = 0x42,
-    SwiftFillStyleTypeNonSmoothedClippedBitmap   = 0x43,
-    
-    SwiftFillStyleTypeFontShape                  = 0x100
+    SwiftFillStyleTypeNonSmoothedClippedBitmap   = 0x43
 };
 typedef NSInteger SwiftFillStyleType;
 
@@ -52,27 +50,40 @@ typedef NSInteger SwiftFillStyleType;
 @interface SwiftFillStyle : NSObject {
 @private
     SwiftFillStyleType m_type;
-    SwiftColor         m_color;
-    SwiftGradient     *m_gradient;
-    CGAffineTransform  m_gradientTransform;
+    
+    union {
+        struct {
+            SwiftColor color;
+        };
+        struct {
+            SwiftGradient *gradient;
+            CGAffineTransform  gradientTransform;
+        };
+        struct {
+            NSUInteger bitmapID;
+            CGAffineTransform bitmapTransform;
+        };
+    } m_content;
 }
 
 // Reads a FILLSTYLEARRAY from the parser
-+ (NSArray *) fillStyleArrayWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)tagVersion;
-
-+ (SwiftFillStyle *) fontFillStyle;
++ (NSArray *) fillStyleArrayWithParser:(SwiftParser *)parser;
 
 // Reads a FILLSTYLE from the parser
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)tagVersion;
+- (id) initWithParser:(SwiftParser *)parser;
 
 @property (nonatomic, readonly, assign) SwiftFillStyleType type;
 
+// These properties are valid when type is SwiftFillStyleTypeColor
 @property (nonatomic, readonly, assign) SwiftColor color;
+@property (nonatomic, assign, readonly) SwiftColor *colorPointer;  // Inside pointer, valid for lifetime of the SwiftFillStyle
 
-// Inside pointer, valid for lifetime of the SwiftFillStyle
-@property (nonatomic, assign, readonly) SwiftColor *colorPointer;
-
+// These properties are valid when type is SwiftFillStyleType...Gradient
 @property (nonatomic, readonly, retain) SwiftGradient *gradient;
 @property (nonatomic, readonly, assign) CGAffineTransform gradientTransform;
+
+// These properties are valid when type is SwiftFillStyleType...Bitmap
+@property (nonatomic, readonly, assign) UInt16 bitmapID;
+@property (nonatomic, readonly, assign) CGAffineTransform bitmapTransform;
 
 @end

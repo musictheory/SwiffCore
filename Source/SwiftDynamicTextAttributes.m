@@ -231,7 +231,6 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, _SwiftFontM
    
     if (m_hasFontColor) {
         CGColorRef cgColor = SwiftColorCopyCGColor(m_fontColor);
-        NSLog(@"%@", cgColor);
         if (cgColor) {
             [result setObject:(id)cgColor forKey:(id)kCTForegroundColorAttributeName];
             CFRelease(cgColor);

@@ -39,6 +39,7 @@ struct _SwiftParser {
     const UInt8  *b;
     const UInt8  *nextTagB;
     
+    CFMutableDictionaryRef values;
     NSStringEncoding encoding;
 
     UInt32        length;
@@ -59,14 +60,14 @@ SwiftParser *SwiftParserCreate(const UInt8 *buffer, UInt32 length)
 {
     SwiftParser *parser = calloc(1, sizeof(SwiftParser));
 
-    parser->buffer        = buffer;
-    parser->length        = length;
-    parser->b             = parser->buffer;
-    parser->bitPosition   = 0;
-    parser->bitByte       = 0;
-    parser->isValid       = YES;
-    parser->encoding      = NSUTF8StringEncoding;
-    
+    parser->buffer      = buffer;
+    parser->length      = length;
+    parser->b           = parser->buffer;
+    parser->bitPosition = 0;
+    parser->bitByte     = 0;
+    parser->isValid     = YES;
+    parser->encoding    = NSUTF8StringEncoding;
+
     return parser;
 }
 
@@ -77,6 +78,10 @@ extern void SwiftParserFree(SwiftParser *parser)
         free((void *)parser->buffer);
     }
     
+    if (parser->values) {
+        CFRelease(parser->values);
+    }
+
     free(parser);
 }
 
@@ -220,6 +225,29 @@ NSStringEncoding SwiftParserGetStringEncoding(SwiftParser *parser)
 }
 
 
+extern void SwiftParserSetAssociatedValue(SwiftParser *parser, NSString *key, id value)
+{
+    if (value) {
+        if (!parser->values) {
+            parser->values = CFDictionaryCreateMutable(NULL, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        }
+
+        CFDictionarySetValue(parser->values, key, value);
+
+    } else {
+        if (parser->values) {
+            CFDictionaryRemoveValue(parser->values, key);
+        }
+    }
+}
+
+
+id SwiftParserGetAssociatedValue(SwiftParser *parser, NSString *key)
+{
+    return parser->values ? CFDictionaryGetValue(parser->values, key) : nil;
+}
+
+
 #pragma mark -
 #pragma mark Tags
 
@@ -237,41 +265,18 @@ void SwiftParserAdvanceToNextTag(SwiftParser *parser)
 
     SwiftTag  tag     = (tagCodeAndLength >> 6);
     UInt32    length  = (tagCodeAndLength & 0x3F);
-    NSInteger version = 1;
 
     // Long RECORDHEADER
     if (length == 0x3F) {
         SwiftParserReadUInt32(parser, &length);
     }
 
-    switch (tag) {
-    case SwiftTagDefineBitsJPEG2:       tag = SwiftTagDefineBits;           version = 2;    break;
-    case SwiftTagDefineShape2:          tag = SwiftTagDefineShape;          version = 2;    break;
-    case SwiftTagPlaceObject2:          tag = SwiftTagPlaceObject;          version = 2;    break;
-    case SwiftTagRemoveObject2:         tag = SwiftTagRemoveObject;         version = 2;    break;
-    case SwiftTagDefineText2:           tag = SwiftTagDefineText;           version = 2;    break;
-    case SwiftTagDefineButton2:         tag = SwiftTagDefineButton;         version = 2;    break;
-    case SwiftTagDefineBitsLossless2:   tag = SwiftTagDefineBitsLossless;   version = 2;    break;
-    case SwiftTagSoundStreamHead2:      tag = SwiftTagSoundStreamHead;      version = 2;    break;
-    case SwiftTagDefineFont2:           tag = SwiftTagDefineFont;           version = 2;    break;
-    case SwiftTagDefineFontInfo2:       tag = SwiftTagDefineFontInfo;       version = 2;    break;
-    case SwiftTagEnableDebugger2:       tag = SwiftTagEnableDebugger;       version = 2;    break;
-    case SwiftTagImportAssets2:         tag = SwiftTagImportAssets;         version = 2;    break;
-    case SwiftTagDefineMorphShape2:     tag = SwiftTagDefineMorphShape;     version = 2;    break;
-    case SwiftTagStartSound2:           tag = SwiftTagStartSound;           version = 2;    break;
+    SwiftTag  currentTag;
+    NSInteger currentTagVersion;
+    SwiftTagSplit(tag, &currentTag, &currentTagVersion);
 
-    case SwiftTagDefineShape3:          tag = SwiftTagDefineShape;          version = 3;    break;
-    case SwiftTagDefineBitsJPEG3:       tag = SwiftTagDefineBits;           version = 3;    break;
-    case SwiftTagPlaceObject3:          tag = SwiftTagPlaceObject;          version = 3;    break;
-    case SwiftTagDefineFont3:           tag = SwiftTagDefineFont;           version = 3;    break;
-
-    case SwiftTagDefineShape4:          tag = SwiftTagDefineShape;          version = 4;    break;
-    case SwiftTagDefineBitsJPEG4:       tag = SwiftTagDefineBits;           version = 4;    break;
-    case SwiftTagDefineFont4:           tag = SwiftTagDefineFont;           version = 4;    break;
-    }
-
-    parser->currentTag        = tag;
-    parser->currentTagVersion = version;
+    parser->currentTag = currentTag;
+    parser->currentTagVersion = currentTagVersion;
 
     parser->nextTagB = parser->b + length;
 }

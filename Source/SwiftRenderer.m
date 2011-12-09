@@ -28,6 +28,7 @@
 
 #import "SwiftRenderer.h"
 
+#import "SwiftBitmapDefinition.h"
 #import "SwiftDynamicTextAttributes.h"
 #import "SwiftDynamicTextDefinition.h"
 #import "SwiftFontDefinition.h"
@@ -157,6 +158,41 @@ static void sApplyFillStyle(SwiftRendererState *state, SwiftFillStyle *style)
         
         CGGradientRelease(gradient);
         CGContextRestoreGState(context);
+    } else if ((type >= SwiftFillStyleTypeRepeatingBitmap) && (type <= SwiftFillStyleTypeNonSmoothedClippedBitmap)) {
+        SwiftBitmapDefinition *bitmapDefinition = [state->movie bitmapDefinitionWithLibraryID:[style bitmapID]];
+        CGAffineTransform transform = [style bitmapTransform];
+
+        BOOL shouldInterpolate = (type == SwiftFillStyleTypeRepeatingBitmap) || (type == SwiftFillStyleTypeClippedBitmap);
+        BOOL shouldTile        = (type == SwiftFillStyleTypeRepeatingBitmap) || (type == SwiftFillStyleTypeNonSmoothedRepeatingBitmap);
+        
+
+//        NSLog(@"%lf,%lf,%lf,%lf,%lf,%lf",
+//            transform.a,
+//            transform.b,
+//            transform.c,
+//            transform.d,
+//            transform.tx,
+//            transform.ty);
+
+        CGImageRef image = [bitmapDefinition CGImage];
+        if (image) {
+            CGContextSaveGState(context);
+            
+            CGContextConcatCTM(context, state->affineTransform);
+            CGContextConcatCTM(context, transform);
+            
+            CGContextClip(context);
+
+            CGRect rect = CGRectMake(0, 0, CGImageGetWidth(image), CGImageGetHeight(image));
+            
+            CGContextTranslateCTM(context, 0, rect.size.height);
+            CGContextScaleCTM(context, 1, -1);
+            
+            CGContextSetInterpolationQuality(context, shouldInterpolate ? kCGInterpolationDefault : kCGInterpolationNone);
+
+            CGContextDrawImage(context, rect, image);
+            CGContextRestoreGState(context);
+        }   
     }
 }
 
@@ -275,7 +311,7 @@ static void sDrawShapeDefinition(SwiftRendererState *state, SwiftShapeDefinition
         if (fillStyle) {
             sApplyFillStyle(state, fillStyle);
             SwiftFillStyleType fillStyleType = [fillStyle type];
-            hasFill = (fillStyleType == SwiftFillStyleTypeColor) || (fillStyleType == SwiftFillStyleTypeFontShape);
+            hasFill = (fillStyleType == SwiftFillStyleTypeColor);
         }
         
         if (hasStroke || hasFill) {
@@ -441,24 +477,21 @@ static void sDrawPlacedObject(SwiftRendererState *state, SwiftPlacedObject *plac
 
     UInt16 libraryID = [placedObject libraryID];
 
-    SwiftSpriteDefinition      *spriteDefinition      = nil;
-    SwiftShapeDefinition       *shapeDefinition       = nil;
-    SwiftStaticTextDefinition  *staticTextDefinition  = nil;
-    SwiftDynamicTextDefinition *dynamicTextDefinition = nil;
+    id<SwiftDefinition> definition = [state->movie definitionWithLibraryID:libraryID];
     
-    if ((spriteDefinition = [state->movie spriteDefinitionWithLibraryID:libraryID])) {
-        sDrawSpriteDefinition(state, spriteDefinition);
-
-    } else if ((shapeDefinition = [state->movie shapeDefinitionWithLibraryID:libraryID])) {
-        sDrawShapeDefinition(state, shapeDefinition);
-
-    } else if ((staticTextDefinition = [state->movie staticTextDefinitionWithLibraryID:libraryID])) {
-        sDrawStaticTextDefinition(state, staticTextDefinition);
-
-    } else if ((dynamicTextDefinition = [state->movie dynamicTextDefinitionWithLibraryID:libraryID])) {
+    if ([definition isKindOfClass:[SwiftDynamicTextDefinition class]]) {
         if ([placedObject isKindOfClass:[SwiftPlacedDynamicText class]]) {
             sDrawPlacedDynamicText(state, (SwiftPlacedDynamicText *)placedObject);
         }
+
+    } else if ([definition isKindOfClass:[SwiftShapeDefinition class]]) {
+        sDrawShapeDefinition(state, (SwiftShapeDefinition *)definition);
+
+    } else if ([definition isKindOfClass:[SwiftSpriteDefinition class]]) {
+        sDrawSpriteDefinition(state, (SwiftSpriteDefinition *)definition);
+
+    } else if ([definition isKindOfClass:[SwiftStaticTextDefinition class]]) {
+        sDrawStaticTextDefinition(state, (SwiftStaticTextDefinition *)definition);
     }
 
     if (needsColorTransformPop) {

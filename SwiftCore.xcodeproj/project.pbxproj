@@ -33,6 +33,8 @@
 		5539A63C148DA5E500E8FA86 /* SwiftStaticTextRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 5539A63A148DA57B00E8FA86 /* SwiftStaticTextRecord.m */; };
 		5539A63F148EFB0500E8FA86 /* SwiftDynamicTextAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 5539A63E148EFB0400E8FA86 /* SwiftDynamicTextAttributes.m */; };
 		5539A640148EFB1800E8FA86 /* SwiftDynamicTextAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 5539A63E148EFB0400E8FA86 /* SwiftDynamicTextAttributes.m */; };
+		5539A64614905CB700E8FA86 /* SwiftBitmapDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 5539A64514905CB600E8FA86 /* SwiftBitmapDefinition.m */; };
+		5539A64814905E1200E8FA86 /* SwiftBitmapDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 5539A64514905CB600E8FA86 /* SwiftBitmapDefinition.m */; };
 		5545A6B11458B70A001428F6 /* SwiftSoundDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 5545A6B01458B70A001428F6 /* SwiftSoundDefinition.m */; };
 		55468097145F558C00BB74EB /* SwiftMPEGUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 5574A09D145CAB2C00DA4FB7 /* SwiftMPEGUtils.m */; };
 		55468098145F558C00BB74EB /* SwiftWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5574A0A2145D238700DA4FB7 /* SwiftWriter.m */; };
@@ -88,6 +90,8 @@
 		5539A63A148DA57B00E8FA86 /* SwiftStaticTextRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftStaticTextRecord.m; path = Source/SwiftStaticTextRecord.m; sourceTree = "<group>"; };
 		5539A63D148EFB0400E8FA86 /* SwiftDynamicTextAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftDynamicTextAttributes.h; path = Source/SwiftDynamicTextAttributes.h; sourceTree = "<group>"; };
 		5539A63E148EFB0400E8FA86 /* SwiftDynamicTextAttributes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftDynamicTextAttributes.m; path = Source/SwiftDynamicTextAttributes.m; sourceTree = "<group>"; };
+		5539A64414905CB500E8FA86 /* SwiftBitmapDefinition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftBitmapDefinition.h; path = Source/SwiftBitmapDefinition.h; sourceTree = "<group>"; };
+		5539A64514905CB600E8FA86 /* SwiftBitmapDefinition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftBitmapDefinition.m; path = Source/SwiftBitmapDefinition.m; sourceTree = "<group>"; };
 		5545A6AF1458B70A001428F6 /* SwiftSoundDefinition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftSoundDefinition.h; path = Source/SwiftSoundDefinition.h; sourceTree = "<group>"; };
 		5545A6B01458B70A001428F6 /* SwiftSoundDefinition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiftSoundDefinition.m; path = Source/SwiftSoundDefinition.m; sourceTree = "<group>"; };
 		5574A09C145CAB2B00DA4FB7 /* SwiftMPEGUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiftMPEGUtils.h; path = Source/SwiftMPEGUtils.h; sourceTree = "<group>"; };
@@ -179,6 +183,8 @@
 			isa = PBXGroup;
 			children = (
 				5574A0A0145D1BB300DA4FB7 /* SwiftDefinition.h */,
+				5539A64414905CB500E8FA86 /* SwiftBitmapDefinition.h */,
+				5539A64514905CB600E8FA86 /* SwiftBitmapDefinition.m */,
 				55F65A5F14429C9E00E12C27 /* SwiftDynamicTextDefinition.h */,
 				55F65A6014429C9E00E12C27 /* SwiftDynamicTextDefinition.m */,
 				55F65A6314429C9E00E12C27 /* SwiftFontDefinition.h */,
@@ -460,6 +466,7 @@
 				55F31590148A072100E6E625 /* SwiftPlacedDynamicText.m in Sources */,
 				5539A63C148DA5E500E8FA86 /* SwiftStaticTextRecord.m in Sources */,
 				5539A640148EFB1800E8FA86 /* SwiftDynamicTextAttributes.m in Sources */,
+				5539A64814905E1200E8FA86 /* SwiftBitmapDefinition.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -497,6 +504,7 @@
 				55F3158F148A072100E6E625 /* SwiftPlacedDynamicText.m in Sources */,
 				5539A63B148DA57B00E8FA86 /* SwiftStaticTextRecord.m in Sources */,
 				5539A63F148EFB0500E8FA86 /* SwiftDynamicTextAttributes.m in Sources */,
+				5539A64614905CB700E8FA86 /* SwiftBitmapDefinition.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

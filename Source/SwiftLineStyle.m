@@ -33,7 +33,7 @@ const CGFloat SwiftLineStyleHairlineWidth = CGFLOAT_MIN;
 
 @implementation SwiftLineStyle
 
-+ (NSArray *) lineStyleArrayWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version
++ (NSArray *) lineStyleArrayWithParser:(SwiftParser *)parser
 {
     UInt8 count8;
     NSInteger count;
@@ -51,7 +51,7 @@ const CGFloat SwiftLineStyleHairlineWidth = CGFLOAT_MIN;
     NSMutableArray *array = [NSMutableArray arrayWithCapacity:count];
 
     for (NSInteger i = 0; i < count; i++) {
-        SwiftLineStyle *lineStyle = [[self alloc] initWithParser:parser tag:tag version:version];
+        SwiftLineStyle *lineStyle = [[self alloc] initWithParser:parser];
 
         if (lineStyle) {
             [array addObject:lineStyle];
@@ -65,7 +65,7 @@ const CGFloat SwiftLineStyleHairlineWidth = CGFLOAT_MIN;
 }
 
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version
+- (id) initWithParser:(SwiftParser *)parser
 {
     if ((self = [super init])) {
         UInt16 width;
@@ -99,7 +99,9 @@ const CGFloat SwiftLineStyleHairlineWidth = CGFLOAT_MIN;
 
             return result;
         };
-        
+
+        NSInteger version = SwiftParserGetCurrentTagVersion(parser);
+
         if (version < 3) {
             SwiftParserReadColorRGB(parser, &m_color);
 
@@ -140,7 +142,7 @@ const CGFloat SwiftLineStyleHairlineWidth = CGFLOAT_MIN;
                 m_color.blue  = 0;
                 m_color.alpha = 255;
                 
-                m_fillStyle = [[SwiftFillStyle alloc] initWithParser:parser tag:tag version:version];
+                m_fillStyle = [[SwiftFillStyle alloc] initWithParser:parser];
             }
         }
 

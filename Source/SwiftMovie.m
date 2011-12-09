@@ -28,6 +28,7 @@
 
 #import "SwiftMovie.h"
 
+#import "SwiftBitmapDefinition.h"
 #import "SwiftDynamicTextDefinition.h"
 #import "SwiftFontDefinition.h"
 #import "SwiftParser.h"
@@ -38,6 +39,17 @@
 #import "SwiftSpriteDefinition.h"
 #import "SwiftStaticTextDefinition.h"
 
+
+// Associated value for parser - NSData of the movie-global JPEG tables
+static NSString * const SwiftMovieJPEGTablesDataKey = @"SwiftMovieJPEGTablesData";
+
+// Associated value for parser - NSArray of SwiftBitmapDefinition objects that need JPEG tables
+static NSString * const SwiftMovieNeedsJPEGTablesDataKey = @"SwiftMovieNeedsJPEGTablesData";
+
+
+@interface SwiftBitmapDefinition (Friend)
+- (void) _setJPEGTablesData:(NSData *)data;
+@end
 
 @interface SwiftSpriteDefinition (Protected)
 - (void) _decodeData:(NSData *)data;
@@ -112,6 +124,15 @@
         m_movie = nil;
     }
 
+    NSData *jpegTablesData = SwiftParserGetAssociatedValue(parser, SwiftMovieJPEGTablesDataKey);
+    if (jpegTablesData) {
+        NSArray *needsTables = SwiftParserGetAssociatedValue(parser, SwiftMovieNeedsJPEGTablesDataKey);
+
+        for (SwiftBitmapDefinition *bitmap in needsTables) {
+            [bitmap _setJPEGTablesData:jpegTablesData];
+        }
+    }
+
     if (m_sceneAndFrameLabelData) {
         [m_sceneAndFrameLabelData applyLabelsToFrames:m_frames];
         m_scenes = [[m_sceneAndFrameLabelData scenesForFrames:m_frames] retain];
@@ -149,8 +170,37 @@
     } else if (tag == SwiftTagDefineMorphShape) {
         //!nyi: MorphShape Support
 
+    } else if (tag == SwiftTagJPEGTables) {
+        UInt32 remaining = SwiftParserGetBytesRemainingInCurrentTag(parser);
+
+        if (!SwiftParserGetAssociatedValue(parser, SwiftMovieJPEGTablesDataKey)) {
+            NSData *data = nil;
+            SwiftParserReadData(parser, remaining, &data);
+            SwiftParserSetAssociatedValue(parser, SwiftMovieJPEGTablesDataKey, data);
+        }
+
     } else if (tag == SwiftTagDefineBits || tag == SwiftTagDefineBitsLossless) {
-        //!nyi: Bitmap Image Support
+        SwiftBitmapDefinition *bitmap = [[SwiftBitmapDefinition alloc] initWithParser:parser movie:self];
+
+        if (bitmap) {
+            NSNumber *key = [[NSNumber alloc] initWithInteger:[bitmap libraryID]];
+            [m_definitionMap setObject:bitmap forKey:key];
+            [key release];
+        }
+
+        if (tag == SwiftTagDefineBits) {
+            NSMutableArray *needsTables = SwiftParserGetAssociatedValue(parser, SwiftMovieNeedsJPEGTablesDataKey);
+
+            if (!needsTables) {
+                needsTables = [[NSMutableArray alloc] init];
+                SwiftParserSetAssociatedValue(parser, SwiftMovieNeedsJPEGTablesDataKey, needsTables);
+                [needsTables release];
+            }
+            
+            [needsTables addObject:bitmap];
+        }
+
+        [bitmap release];
 
     } else if (tag == SwiftTagDefineVideoStream) {
         //!nyi: Video Support
@@ -240,7 +290,7 @@
 #pragma mark -
 #pragma mark Public Methods
 
-- (id) definitionWithLibraryID:(UInt16)libraryID
+- (id<SwiftDefinition>) definitionWithLibraryID:(UInt16)libraryID
 {
     NSNumber *number = [[NSNumber alloc] initWithInteger:libraryID];
     id definition = [m_definitionMap objectForKey:number];
@@ -256,6 +306,14 @@
     return [definition isKindOfClass:cls] ? definition : nil;
 }
 
+- (SwiftBitmapDefinition *) bitmapDefinitionWithLibraryID:(UInt16)libraryID
+    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftBitmapDefinition class]]; }
+
+- (SwiftDynamicTextDefinition *) dynamicTextDefinitionWithLibraryID:(UInt16)libraryID
+    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftDynamicTextDefinition class]]; }
+
+- (SwiftFontDefinition *) fontDefinitionWithLibraryID:(UInt16)libraryID
+    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftFontDefinition class]]; }
 
 - (SwiftSpriteDefinition *) spriteDefinitionWithLibraryID:(UInt16)libraryID
     { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftSpriteDefinition class]]; }
@@ -263,17 +321,11 @@
 - (SwiftShapeDefinition *) shapeDefinitionWithLibraryID:(UInt16)libraryID
     { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftShapeDefinition class]]; }
 
-- (SwiftFontDefinition *) fontDefinitionWithLibraryID:(UInt16)libraryID
-    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftFontDefinition class]]; }
-
 - (SwiftSoundDefinition *) soundDefinitionWithLibraryID:(UInt16)libraryID
     { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftSoundDefinition class]]; }
 
 - (SwiftStaticTextDefinition *) staticTextDefinitionWithLibraryID:(UInt16)libraryID
     { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftStaticTextDefinition class]]; }
-
-- (SwiftDynamicTextDefinition *) dynamicTextDefinitionWithLibraryID:(UInt16)libraryID
-    { return [self _definitionWithLibraryID:libraryID ofClass:[SwiftDynamicTextDefinition class]]; }
 
 
 - (SwiftScene *) sceneWithName:(NSString *)name
