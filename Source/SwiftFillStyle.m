@@ -29,10 +29,17 @@
 #import "SwiftParser.h"
 #import "SwiftGradient.h"
 
+#define IS_COLOR_TYPE    (m_type == SwiftFillStyleTypeColor)
+
+#define IS_GRADIENT_TYPE ((m_type == SwiftFillStyleTypeLinearGradient) || \
+                          (m_type == SwiftFillStyleTypeRadialGradient) || \
+                          (m_type == SwiftFillStyleTypeFocalRadialGradient))
+
+#define IS_BITMAP_TYPE   ((m_type >= SwiftFillStyleTypeRepeatingBitmap) && (m_type <= SwiftFillStyleTypeNonSmoothedClippedBitmap))
 
 @implementation SwiftFillStyle
 
-+ (NSArray *) fillStyleArrayWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version
++ (NSArray *) fillStyleArrayWithParser:(SwiftParser *)parser
 {
     UInt8 count8;
     NSInteger count;
@@ -50,7 +57,7 @@
     NSMutableArray *array = [NSMutableArray arrayWithCapacity:count];
 
     for (NSInteger i = 0; i < count; i++) {
-        SwiftFillStyle *fillStyle = [[self alloc] initWithParser:parser tag:tag version:version];
+        SwiftFillStyle *fillStyle = [[self alloc] initWithParser:parser];
 
         if (fillStyle) {
             [array addObject:fillStyle];
@@ -64,47 +71,37 @@
 }
 
 
-+ (SwiftFillStyle *) fontFillStyle
-{
-    SwiftFillStyle *fillStyle = [[[SwiftFillStyle alloc] init] autorelease];
-    fillStyle->m_type = SwiftFillStyleTypeFontShape;
-    return fillStyle;
-}
-
-
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version
+- (id) initWithParser:(SwiftParser *)parser
 {
     if ((self = [self init])) {
         UInt8 type;
         SwiftParserReadUInt8(parser, &type);
         m_type = type;
 
-        // 0x00 = solid fill
-        if (type == 00) {
-            if (version >= 3) {
-                SwiftParserReadColorRGBA(parser, &m_color);
+        if (IS_COLOR_TYPE) {
+            SwiftTag  tag     = SwiftParserGetCurrentTag(parser);
+            NSInteger version = SwiftParserGetCurrentTagVersion(parser);
+        
+            if ((tag == SwiftTagDefineShape) && (version >= 3)) {
+                SwiftParserReadColorRGBA(parser, &m_content.color);
             } else {
-                SwiftParserReadColorRGB(parser, &m_color);
+                SwiftParserReadColorRGB(parser, &m_content.color);
             }
 
-        // 0x10 = linear gradient fill
-        // 0x12 = radial gradient fill
-        // 0x13 = focal radial gradient fill
-        } else if ((type == 0x10) || (type == 0x12) || (type == 0x13)) {
-            SwiftParserReadMatrix(parser, &m_gradientTransform);
+        } else if (IS_GRADIENT_TYPE) {
+            SwiftParserReadMatrix(parser, &m_content.gradientTransform);
             BOOL isFocalGradient = (m_type == SwiftFillStyleTypeFocalRadialGradient);
-            m_gradient = [[SwiftGradient alloc] initWithParser:parser tag:tag version:version isFocalGradient:isFocalGradient];
+            m_content.gradient = [[SwiftGradient alloc] initWithParser:parser isFocalGradient:isFocalGradient];
 
-        // 0x40 = repeating bitmap fill
-        // 0x41 = clipped bitmap fill
-        // 0x42 = non-smoothed repeating bitmap
-        // 0x43 = non-smoothed clipped bitmap
-        } else if (type >= 0x40 && type <= 0x43) {
-            UInt16 unused;
-            SwiftParserReadUInt16(parser, &unused);
+        } else if (IS_BITMAP_TYPE) {
+            UInt16 bitmapID;
+            SwiftParserReadUInt16(parser, &bitmapID);
+            m_content.bitmapID = bitmapID;
 
-            CGAffineTransform unused2;
-            SwiftParserReadMatrix(parser, &unused2);
+            SwiftParserReadMatrix(parser, &m_content.bitmapTransform);
+
+            m_content.bitmapTransform.a /= 20.0;
+            m_content.bitmapTransform.d /= 20.0;
 
         } else {
             [self release];
@@ -123,8 +120,10 @@
 
 - (void) dealloc
 {
-    [m_gradient release];
-    m_gradient = nil;
+    if (IS_GRADIENT_TYPE) {
+        [m_content.gradient release];
+        m_content.gradient = nil;
+    }
 
     [super dealloc];
 }
@@ -137,10 +136,10 @@
     if (m_type == SwiftFillStyleTypeColor) {
 
         typeString = [NSString stringWithFormat:@"#%02lX%02lX%02lX, %ld%%",
-            (long)(m_color.red   * 255.0),
-            (long)(m_color.green * 255.0),
-            (long)(m_color.blue  * 255.0),
-            (long)(m_color.alpha * 100.0)
+            (long)(m_content.color.red   * 255.0),
+            (long)(m_content.color.green * 255.0),
+            (long)(m_content.color.blue  * 255.0),
+            (long)(m_content.color.alpha * 100.0)
         ];
 
     } else if (m_type == SwiftFillStyleTypeLinearGradient) {
@@ -163,15 +162,66 @@
 }
 
 
+#pragma mark -
+#pragma mark Accessors
+
 - (SwiftColor *) colorPointer
 {
-    return &m_color;
+    if (IS_COLOR_TYPE) {
+        return &m_content.color;
+    } else {
+        return NULL;
+    }
 }
 
 
-@synthesize type = m_type,
-            color = m_color,
-            gradient = m_gradient,
-            gradientTransform = m_gradientTransform;
+- (SwiftColor) color
+{
+    if (IS_COLOR_TYPE) {
+        return m_content.color;
+    } else {
+        SwiftColor color = { 0, 0, 0, 0 };
+        return color;
+    }
+}
+
+
+- (SwiftGradient *) gradient
+{
+    if (IS_GRADIENT_TYPE) {
+        return m_content.gradient;
+    } else {
+        return nil;
+    }
+}
+
+
+- (CGAffineTransform) gradientTransform
+{
+    if (IS_GRADIENT_TYPE) {
+        return m_content.gradientTransform;
+    } else {
+        return CGAffineTransformIdentity;
+    }
+}
+
+
+- (UInt16) bitmapID
+{
+    return IS_BITMAP_TYPE ? m_content.bitmapID : 0;
+}
+
+
+- (CGAffineTransform) bitmapTransform
+{
+    if (IS_BITMAP_TYPE) {
+        return m_content.bitmapTransform;
+    } else {
+        return CGAffineTransformIdentity;
+    }
+}
+
+
+@synthesize type = m_type;
 
 @end

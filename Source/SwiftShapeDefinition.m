@@ -144,8 +144,8 @@ static void sPathAddShapeOperation(SwiftPath *path, _SwiftShapeOperation *op, Sw
             fillStyleOffset = [m_fillStyles count];
             lineStyleOffset = [m_lineStyles count];
 
-            [fillStyles addObjectsFromArray:[SwiftFillStyle fillStyleArrayWithParser:parser tag:tag version:version]];
-            [lineStyles addObjectsFromArray:[SwiftLineStyle lineStyleArrayWithParser:parser tag:tag version:version]];
+            [fillStyles addObjectsFromArray:[SwiftFillStyle fillStyleArrayWithParser:parser]];
+            [lineStyles addObjectsFromArray:[SwiftLineStyle lineStyleArrayWithParser:parser]];
         };
         
         _SwiftShapeOperation *(^nextOperation)() = ^{
@@ -192,9 +192,6 @@ static void sPathAddShapeOperation(SwiftPath *path, _SwiftShapeOperation *op, Sw
 
         if (tag == SwiftTagDefineShape) {
             readStyles();
-
-        } else if (tag == SwiftTagDefineFont) {
-            [fillStyles addObject:[SwiftFillStyle fontFillStyle]];
         }
 
         UInt32 fillBits, lineBits;

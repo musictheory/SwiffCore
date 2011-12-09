@@ -39,6 +39,10 @@ extern BOOL SwiftParserReadHeader(SwiftParser *parser, SwiftHeader *outHeader);
 extern void SwiftParserAdvance(SwiftParser *parser, UInt32 length);
 extern BOOL SwiftParserIsValid(SwiftParser *parser);
 
+// Allow the parser to store key-value pairs at parse time
+extern void SwiftParserSetAssociatedValue(SwiftParser *parser, NSString *key, id value);
+extern id   SwiftParserGetAssociatedValue(SwiftParser *parser, NSString *key);
+
 extern const UInt8 *SwiftParserGetCurrentBytePointer(SwiftParser *parser);
 
 // The encoding to use for STRINGs, defaults to NSUTF8StringEncoding

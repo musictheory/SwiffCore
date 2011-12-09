@@ -1,5 +1,5 @@
 /*
-    SwiftGradient.h
+    SwiftBitmapDefinition.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,43 +27,24 @@
 
 #import <SwiftImport.h>
 #import <SwiftBase.h>
+#import <SwiftDefinition.h>
 #import <SwiftParser.h>
 
 
-enum {
-    SwiftGradientSpreadModePad = 0,
-    SwiftGradientSpreadModeReflect,
-    SwiftGradientSpreadModeRepeat
-};
-typedef NSInteger SwiftGradientSpreadMode;
-
-
-enum {
-    SwiftGradientInterpolationModeNormalRGB = 0,
-    SwiftGradientInterpolationModeLinearRGB = 1
-};
-typedef NSInteger SwiftGradientInterpolationMode;
-
-
-@interface SwiftGradient : NSObject {
+@interface SwiftBitmapDefinition : NSObject <SwiftDefinition> {
 @private
-    NSInteger     m_spreadMode;
-    NSInteger     m_interpolationMode;
-    NSInteger     m_recordCount;
-    CGFloat       m_ratios[15];
-    SwiftColor    m_colors[15];
-    CGFloat       m_focalPoint;
+    SwiftMovie *m_movie;
+    UInt16      m_libraryID;
+    
+    SwiftTag    m_tag;
+    NSData     *m_tagData;
+    NSData     *m_jpegTablesData;
+
+    CGImageRef  m_CGImage;
 }
 
-- (id) initWithParser:(SwiftParser *)parser isFocalGradient:(BOOL)isFocalGradient;
+- (id) initWithParser:(SwiftParser *)parser movie:(SwiftMovie *)movie;
 
-@property (nonatomic, readonly, assign) NSInteger recordCount;
-- (void) getColor:(SwiftColor *)outColor ratio:(CGFloat *)outRatio forRecord:(NSUInteger)index;
-
-- (CGGradientRef) copyCGGradientWithColorTransformStack:(CFArrayRef)stack CF_RETURNS_RETAINED;
-
-@property (nonatomic, readonly, assign) SwiftGradientSpreadMode spreadMode;
-@property (nonatomic, readonly, assign) SwiftGradientInterpolationMode interpolationMode;
-@property (nonatomic, readonly, assign) CGFloat focalPoint;
+@property (nonatomic, readonly /*strong*/) CGImageRef CGImage;
 
 @end

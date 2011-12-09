@@ -51,10 +51,10 @@ extern const CGFloat SwiftLineStyleHairlineWidth;
 }
 
 // Reads a LINESTYLEARRAY from the parser
-+ (NSArray *) lineStyleArrayWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)tagVersion;
++ (NSArray *) lineStyleArrayWithParser:(SwiftParser *)parser;
 
 // Reads a LINESTYLE from the parser
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)tagVersion;
+- (id) initWithParser:(SwiftParser *)parser;
 
 @property (nonatomic, readonly, assign) CGFloat width;
 @property (nonatomic, readonly, assign) SwiftColor color;

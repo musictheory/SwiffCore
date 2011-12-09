@@ -145,56 +145,12 @@ NSData *SwiftWriterGetDataWithHeader(SwiftWriter *writer, SwiftHeader header)
 void SwiftWriterStartTag(SwiftWriter *writer, SwiftTag tag, NSInteger version)
 {
     if (writer->baseData == NULL) {
-        BOOL shouldWarn = NO;
+        SwiftTag currentTag;
+        SwiftTagJoin(tag, version, &currentTag);
         
-        if (version == 2) {
-            switch (tag) {
-            case SwiftTagDefineBits:         tag = SwiftTagDefineBitsJPEG2;         break;
-            case SwiftTagDefineShape:        tag = SwiftTagDefineShape2;            break;
-            case SwiftTagPlaceObject:        tag = SwiftTagPlaceObject2;            break;
-            case SwiftTagRemoveObject:       tag = SwiftTagRemoveObject2;           break;
-            case SwiftTagDefineText:         tag = SwiftTagDefineText2;             break;
-            case SwiftTagDefineButton:       tag = SwiftTagDefineButton2;           break;
-            case SwiftTagDefineBitsLossless: tag = SwiftTagDefineBitsLossless2;     break;
-            case SwiftTagSoundStreamHead:    tag = SwiftTagSoundStreamHead2;        break;
-            case SwiftTagDefineFont:         tag = SwiftTagDefineFont2;             break;
-            case SwiftTagDefineFontInfo:     tag = SwiftTagDefineFontInfo2;         break;
-            case SwiftTagEnableDebugger:     tag = SwiftTagEnableDebugger2;         break;
-            case SwiftTagImportAssets:       tag = SwiftTagImportAssets2;           break;
-            case SwiftTagDefineMorphShape:   tag = SwiftTagDefineMorphShape2;       break;
-            case SwiftTagStartSound:         tag = SwiftTagStartSound2;             break;                                                                   
-            default:                         shouldWarn = YES;                      break;
-            }
-        
-        } else if (version == 3) {
-            switch (tag) {
-            case SwiftTagDefineShape:        tag = SwiftTagDefineShape3;            break;
-            case SwiftTagDefineBits:         tag = SwiftTagDefineBitsJPEG3;         break;
-            case SwiftTagPlaceObject:        tag = SwiftTagPlaceObject3;            break;
-            case SwiftTagDefineFont:         tag = SwiftTagDefineFont3;             break;                                                                   
-            default:                         shouldWarn = YES;                      break;
-            }
-
-        } else if (version == 4) {
-            switch (tag) {
-            case SwiftTagDefineShape:        tag = SwiftTagDefineShape4;            break;
-            case SwiftTagDefineBits:         tag = SwiftTagDefineBitsJPEG4;         break;
-            case SwiftTagDefineFont:         tag = SwiftTagDefineFont4;             break;
-            default:                         shouldWarn = YES;                      break;
-            }
-
-        } else if (version != 1) {
-            version = 1;
-            shouldWarn = YES;
-        }
-
-        if (shouldWarn == YES) {
-            SwiftWarn(@"Unknown version %d for tag %d, defaulting to version 1", version, tag)
-        }
-
         writer->baseData = writer->data;
         writer->data = CFDataCreateMutable(NULL, 0);
-        writer->currentTag = tag;
+        writer->currentTag = currentTag;
         
         if (tag == SwiftTagShowFrame) {
             writer->frameCount++;

@@ -29,6 +29,7 @@
 
 #import <SwiftDefinition.h>
 
+#import <SwiftBitmapDefinition.h>
 #import <SwiftDynamicTextDefinition.h>
 #import <SwiftFontDefinition.h>
 #import <SwiftShapeDefinition.h>

@@ -67,8 +67,16 @@
 }
 
 
-- (BOOL) hasEdgeBounds { return NO; }
-- (CGRect) edgeBounds { return CGRectZero; }
+- (BOOL) hasEdgeBounds
+{
+    return NO;
+}
+
+
+- (CGRect) edgeBounds
+{
+    return CGRectZero;
+}
 
 
 @synthesize movie         = m_movie,

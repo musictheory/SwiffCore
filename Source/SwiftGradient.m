@@ -33,10 +33,13 @@
 
 @implementation SwiftGradient
 
-- (id) initWithParser:(SwiftParser *)parser tag:(SwiftTag)tag version:(NSInteger)version isFocalGradient:(BOOL)isFocalGradient
+- (id) initWithParser:(SwiftParser *)parser isFocalGradient:(BOOL)isFocalGradient
 {
     if ((self = [super init])) {
-        BOOL alpha = (version > 2);
+        SwiftTag  tag     = SwiftParserGetCurrentTag(parser);
+        NSInteger version = SwiftParserGetCurrentTagVersion(parser);
+    
+        BOOL usesAlphaColors = (tag == SwiftTagDefineShape) && (version >= 3);
 
         UInt32 spreadMode, interpolationMode, count, i;
 
@@ -55,7 +58,7 @@
             SwiftParserReadUInt8(parser, &ratio);
             m_ratios[i] = ratio / 255.0;
             
-            if (alpha) {
+            if (usesAlphaColors) {
                 SwiftParserReadColorRGBA(parser, &m_colors[i]);
             } else {
                 SwiftParserReadColorRGB(parser,  &m_colors[i]);
