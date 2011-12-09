@@ -1,0 +1,3 @@
+#include "../SwiffCore_Base.xcconfig"
+#include "../SwiffCore_Debug.xcconfig"
+#include "../SwiffCore_Mac.xcconfig"

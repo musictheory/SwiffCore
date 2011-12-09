@@ -1,3 +1,0 @@
-#include "../SwiftCore_Base.xcconfig"
-#include "../SwiftCore_Debug.xcconfig"
-#include "../SwiftCore_iOS.xcconfig"
