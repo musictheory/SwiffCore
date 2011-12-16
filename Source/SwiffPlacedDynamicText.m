@@ -31,6 +31,7 @@
 #import "SwiffHTMLToCoreTextConverter.h"
 #import "SwiffMovie.h"
 #import "SwiffFontDefinition.h"
+#import "SwiffPlacedDynamicText.h"
 
 
 @implementation SwiffPlacedDynamicText
@@ -44,11 +45,9 @@
 
             m_text = [placedText->m_text copy];
             m_HTML =  placedText->m_HTML;
-            m_attributedTextOffset = placedText->m_attributedTextOffset;
 
             if (placedText->m_attributedText) {
                 m_attributedText = CFAttributedStringCreateCopy(NULL, placedText->m_attributedText);
-                m_framesetter = CTFramesetterCreateWithAttributedString(m_attributedText);
             }
         }
     }
@@ -56,8 +55,12 @@
     return self;
 }
 
+
 - (void) dealloc
 {
+    [m_definition release];
+    m_definition = nil;
+
     [m_text release];
     m_text = nil;
 
@@ -72,38 +75,52 @@
 
 - (SwiffDynamicTextAttributes *) _newBaseAttributes
 {
-    SwiffDynamicTextDefinition *definition = [self definition];
     SwiffDynamicTextAttributes *attributes = [[SwiffDynamicTextAttributes alloc] init];
 
-    if ([definition hasFont]) {
-        SwiffFontDefinition *fontDefinition = [[definition movie] fontDefinitionWithLibraryID:[definition fontID]];
+    if ([m_definition hasFont]) {
+        SwiffFontDefinition *fontDefinition = [[m_definition movie] fontDefinitionWithLibraryID:[m_definition fontID]];
 
         [attributes setFontName: [fontDefinition name]];
         [attributes setBold:     [fontDefinition isBold]];
         [attributes setItalic:   [fontDefinition isItalic]];
     }
     
-    [attributes setFontSizeInTwips:    [definition fontHeightInTwips]  ];
-    [attributes setFontColor:          [definition colorPointer]       ];
-    [attributes setTextAlignment:      [definition textAlignment]      ];
-    [attributes setLeftMarginInTwips:  [definition leftMarginInTwips]  ];
-    [attributes setRightMarginInTwips: [definition rightMarginInTwips] ];
-    [attributes setIndentInTwips:      [definition indentInTwips]      ];
-    [attributes setLeadingInTwips:     [definition leadingInTwips]     ];
+    [attributes setFontSizeInTwips:    [m_definition fontHeightInTwips]  ];
+    [attributes setFontColor:          [m_definition colorPointer]       ];
+    [attributes setTextAlignment:      [m_definition textAlignment]      ];
+    [attributes setLeftMarginInTwips:  [m_definition leftMarginInTwips]  ];
+    [attributes setRightMarginInTwips: [m_definition rightMarginInTwips] ];
+    [attributes setIndentInTwips:      [m_definition indentInTwips]      ];
+    [attributes setLeadingInTwips:     [m_definition leadingInTwips]     ];
 
     return attributes;
+}
+
+
+- (void) setupWithDefinition:(id<SwiffPlacableDefinition>)definition
+{
+    if (m_definition != definition) {
+        [m_definition release];
+        m_definition = nil;
+        
+        if ([definition isKindOfClass:[SwiffDynamicTextDefinition class]]) {
+            m_definition = (SwiffDynamicTextDefinition *)[definition retain];
+            [self setText:[m_definition initialText] HTML:[m_definition isHTML]]; 
+        }
+    }
 }
 
 
 - (void) setText:(NSString *)text HTML:(BOOL)isHTML
 {
     if ((m_text != text) || (isHTML != m_HTML)) {
-        m_text = [text copy];
+        if (m_text != text) {
+            [m_text release];
+            m_text = [text copy];
+        }
+
         m_HTML = isHTML;
 
-        if (m_framesetter) CFRelease(m_framesetter);
-        m_framesetter = NULL;
-        
         if (m_attributedText) CFRelease(m_attributedText);
         m_attributedText = NULL;
         
@@ -127,21 +144,6 @@
                 [attributes release];
             }
         }
-
-        if (m_attributedText) {
-            m_framesetter = CTFramesetterCreateWithAttributedString(m_attributedText);
-        }
-    }
-}
-
-
-- (void) setDefinition:(SwiffDynamicTextDefinition *)definition
-{
-    if (m_definition != definition) {
-        [m_definition release];
-        m_definition = [definition retain];
-        
-        [self setText:[definition initialText] HTML:[definition isHTML]];
     }
 }
 
@@ -152,12 +154,9 @@
 }
 
 
-@synthesize text                 = m_text,
-            framesetter          = m_framesetter,
-            attributedText       = m_attributedText,
-            attributedTextOffset = m_attributedTextOffset,
-            HTML                 = m_HTML;
-
-@dynamic definition;
+@synthesize text           = m_text,
+            definition     = m_definition,
+            attributedText = m_attributedText,
+            HTML           = m_HTML;
 
 @end

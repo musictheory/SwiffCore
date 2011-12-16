@@ -29,37 +29,36 @@
 #import "SwiffPath.h"
 
 
-const CGFloat SwiffPathOperationMove  = 0.0;
-const CGFloat SwiffPathOperationLine  = 1.0;
-const CGFloat SwiffPathOperationCurve = 2.0;
-const CGFloat SwiffPathOperationEnd   = 3.0;
-
-extern void SwiffPathAddOperation(SwiffPath *path, CGFloat type, CGPoint *toPoint, CGPoint *controlPoint);
+static const NSUInteger sGrowthForOperations = 64;
+static const NSUInteger sGrowthForPoints     = 128;
 
 
 @implementation SwiffPath
 
-void SwiffPathAddOperation(SwiffPath *path, CGFloat type, CGPoint *toPoint, CGPoint *controlPoint)
+void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation, const CGPoint *toPoint, const CGPoint *controlPoint)
 {
-    NSUInteger spaceNeeded = (type == SwiffPathOperationCurve) ? 5 : 3;
-    NSUInteger newCount    = path->m_operationsCount + spaceNeeded;
-
-    if (newCount >= path->m_operationsCapacity) {
-        path->m_operationsCapacity *= 2;
-        if (!path->m_operationsCapacity) path->m_operationsCapacity = 64;
-        path->m_operations = realloc(path->m_operations, sizeof(CGFloat) * path->m_operationsCapacity);
+    if ((path->m_operationsCount % sGrowthForOperations) == 0) {
+        NSUInteger capacity = (path->m_operationsCount + sGrowthForOperations);
+        path->m_operations = realloc(path->m_operations, sizeof(UInt8) * capacity);
     }
-    
-    path->m_operations[path->m_operationsCount + 0] = type;
-    path->m_operations[path->m_operationsCount + 1] = toPoint->x;
-    path->m_operations[path->m_operationsCount + 2] = toPoint->y;
 
-    if (type == SwiffPathOperationCurve) {
-        path->m_operations[path->m_operationsCount + 3] = controlPoint->x;
-        path->m_operations[path->m_operationsCount + 4] = controlPoint->y;
+    if ((path->m_pointsCount % sGrowthForPoints) == 0) {
+        NSUInteger capacity = (path->m_pointsCount + sGrowthForPoints);
+        path->m_points = realloc(path->m_points, sizeof(CGPoint) * capacity);
     }
+
+    path->m_operations[path->m_operationsCount++] = operation;
     
-    path->m_operationsCount += spaceNeeded;
+    if (operation == SwiffPathOperationCurve) {
+        path->m_points[path->m_pointsCount++] = *toPoint;
+        path->m_points[path->m_pointsCount++] = *controlPoint;
+
+    } else if (operation == SwiffPathOperationEnd) {
+        path->m_points[path->m_pointsCount++] = CGPointZero;
+
+    } else {
+        path->m_points[path->m_pointsCount++] = *toPoint;
+    }
 }
 
 
@@ -81,6 +80,11 @@ void SwiffPathAddOperation(SwiffPath *path, CGFloat type, CGPoint *toPoint, CGPo
         m_operations = NULL;
     }
 
+    if (m_points) {
+        free(m_points);
+        m_points = NULL;
+    }
+
     [m_fillStyle  release];  m_fillStyle  = nil;
     [m_lineStyle  release];  m_lineStyle  = nil;
     
@@ -89,6 +93,9 @@ void SwiffPathAddOperation(SwiffPath *path, CGFloat type, CGPoint *toPoint, CGPo
 
 
 @synthesize operations      = m_operations,
+            points          = m_points,
+            operationsCount = m_operationsCount,
+            pointsCount     = m_pointsCount,
             fillStyle       = m_fillStyle,
             lineStyle       = m_lineStyle;
 

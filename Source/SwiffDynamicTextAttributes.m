@@ -207,20 +207,17 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, _SwiffFontM
     CGFloat minimumLineHeight   = 0.0;
     CGFloat maximumLineHeight   = 0.0;
 
+    CGFloat ascent  = CTFontGetAscent(font);
+    CGFloat descent = CTFontGetDescent(font);
+    CGFloat leading = CTFontGetLeading(font);
+
     // For direct fonts, Flash appears to use a line height exactly equal to the font size
     if (m_mapType == _SwiffFontMapTypeDirect) {
-        CGFloat ascent  = CTFontGetAscent(font);
-        CGFloat descent = CTFontGetDescent(font);
-
-        minimumLineHeight = maximumLineHeight = floor(ascent) + floor(descent);
-
-    } else if (m_mapType == _SwiffFontMapTypeIndirectSans) {
-        // Tweak for mapping _sans -> Helvetica
-        verticalOffsetTweak -= (round(fontPointSize / 10.0) - 1);
-
-    } else if (m_mapType == _SwiffFontMapTypeIndirectSerif) {
-        // Tweak for mapping _serif -> Times
-        verticalOffsetTweak -=  round(fontPointSize / 12.0);
+        minimumLineHeight = maximumLineHeight = floor(ascent + descent) - floor(leading);
+        
+    } else {
+        // Tweak for mapping indirect font to Helvetica or Times
+        minimumLineHeight = maximumLineHeight = round(fontPointSize * 1.125);
     }
 
     if (font) {

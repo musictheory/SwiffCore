@@ -124,8 +124,8 @@ const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
             m_startLineCap       =  getLineCap(startCapStyle);
             m_endLineCap         =  getLineCap(endCapStyle);
             m_lineJoin           =  getLineJoin(joinStyle);
-            m_scalesHorizontally = !noHScaleFlag;
-            m_scalesVertically   = !noVScaleFlag;
+            m_scalesHorizontally = !noHScaleFlag && (m_width != SwiffLineStyleHairlineWidth);
+            m_scalesVertically   = !noVScaleFlag && (m_width != SwiffLineStyleHairlineWidth);
             m_pixelAligned       =  pixelHintingFlag;
             m_closesStroke       = !noClose;
 

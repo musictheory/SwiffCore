@@ -49,6 +49,7 @@ typedef struct _SwiffRendererState {
     CGContextRef      context;
     CGAffineTransform affineTransform;
     CFMutableArrayRef colorTransforms;
+    const SwiffColorTransform *postColorTransform;
 } SwiffRendererState;
 
 static void sDrawPlacedObject(SwiffRendererState *state, SwiffPlacedObject *placedObject, BOOL applyColorTransform, BOOL applyAffineTransform);
@@ -62,7 +63,7 @@ static void sCleanupState(SwiffRendererState *state)
 }
 
 
-static void sPushColorTransform(SwiffRendererState *state, SwiffColorTransform *transform)
+static void sPushColorTransform(SwiffRendererState *state, const SwiffColorTransform *transform)
 {
     if (!state->colorTransforms) {
         state->colorTransforms = CFArrayCreateMutable(NULL, 0, NULL);
@@ -90,9 +91,7 @@ static void sApplyLineStyle(SwiffRendererState *state, SwiffLineStyle *style)
     if (width == SwiffLineStyleHairlineWidth) {
         CGContextSetLineWidth(context, 1);
     } else {
-        CGFloat transformedWidth = (width * MAX(state->affineTransform.a, state->affineTransform.d));
-        if (transformedWidth < 0.0) transformedWidth *= -1.0;
-        CGContextSetLineWidth(context, transformedWidth);
+        CGContextSetLineWidth(context, width);
     }
     
     CGContextSetLineCap(context, [style startLineCap]);
@@ -103,6 +102,7 @@ static void sApplyLineStyle(SwiffRendererState *state, SwiffLineStyle *style)
     }
 
     SwiffColor color = SwiffColorApplyColorTransformStack([style color], state->colorTransforms);
+    color = SwiffColorApplyColorTransform(color, state->postColorTransform);
     CGContextSetStrokeColor(context, (CGFloat *)&color);
     
     CGContextStrokePath(context);
@@ -117,13 +117,17 @@ static void sApplyFillStyle(SwiffRendererState *state, SwiffFillStyle *style)
 
     if (type == SwiffFillStyleTypeColor) {
         SwiffColor color = SwiffColorApplyColorTransformStack([style color], state->colorTransforms);
+        color = SwiffColorApplyColorTransform(color, state->postColorTransform);
         CGContextSetFillColor(context, (CGFloat *)&color);
 
     } else if ((type == SwiffFillStyleTypeLinearGradient) || (type == SwiffFillStyleTypeRadialGradient)) {
         CGContextSaveGState(context);
         CGContextEOClip(context);
 
+        if (state->postColorTransform) sPushColorTransform(state, state->postColorTransform);
         CGGradientRef gradient = [[style gradient] copyCGGradientWithColorTransformStack:state->colorTransforms];
+        if (state->postColorTransform) sPopColorTransform(state);
+
         CGGradientDrawingOptions options = (kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
 
         if (type == SwiffFillStyleTypeLinearGradient) {
@@ -137,8 +141,6 @@ static void sApplyFillStyle(SwiffRendererState *state, SwiffFillStyle *style)
             
             CGAffineTransform t = [style gradientTransform];
 
-            t = CGAffineTransformConcat(t, state->affineTransform);
-
             point1 = CGPointApplyAffineTransform(point1, t);
             point2 = CGPointApplyAffineTransform(point2, t);
         
@@ -147,11 +149,8 @@ static void sApplyFillStyle(SwiffRendererState *state, SwiffFillStyle *style)
         } else {
             CGAffineTransform t = [style gradientTransform];
 
-            CGFloat radius = 819.2 * t.a * state->affineTransform.a;
-            CGFloat x = state->affineTransform.tx + (t.tx * state->affineTransform.a);
-            CGFloat y = state->affineTransform.ty + (t.ty * state->affineTransform.d);
-
-            CGPoint centerPoint = CGPointMake(x, y);
+            CGFloat radius = 819.2 * t.a;
+            CGPoint centerPoint = CGPointMake(t.tx, t.ty);
 
             CGContextDrawRadialGradient(context, gradient, centerPoint, 0, centerPoint, radius, options);
         }
@@ -165,20 +164,12 @@ static void sApplyFillStyle(SwiffRendererState *state, SwiffFillStyle *style)
         BOOL shouldInterpolate = (type == SwiffFillStyleTypeRepeatingBitmap) || (type == SwiffFillStyleTypeClippedBitmap);
         BOOL shouldTile        = (type == SwiffFillStyleTypeRepeatingBitmap) || (type == SwiffFillStyleTypeNonSmoothedRepeatingBitmap);
         
-
-//        NSLog(@"%lf,%lf,%lf,%lf,%lf,%lf",
-//            transform.a,
-//            transform.b,
-//            transform.c,
-//            transform.d,
-//            transform.tx,
-//            transform.ty);
+        //!nyi: implement tiling
+        (void)shouldTile;
 
         CGImageRef image = [bitmapDefinition CGImage];
         if (image) {
             CGContextSaveGState(context);
-            
-            CGContextConcatCTM(context, state->affineTransform);
             CGContextConcatCTM(context, transform);
             
             CGContextClip(context);
@@ -190,6 +181,11 @@ static void sApplyFillStyle(SwiffRendererState *state, SwiffFillStyle *style)
             
             CGContextSetInterpolationQuality(context, shouldInterpolate ? kCGInterpolationDefault : kCGInterpolationNone);
 
+            SwiffColor color = { 1.0, 1.0, 1.0, 1.0 };
+            color = SwiffColorApplyColorTransformStack(color, state->colorTransforms);
+
+            CGContextSetAlpha(context, color.alpha);
+    
             CGContextDrawImage(context, rect, image);
             CGContextRestoreGState(context);
         }   
@@ -230,9 +226,9 @@ static void sDrawShapeDefinition(SwiffRendererState *state, SwiffShapeDefinition
         SwiffLineStyle *lineStyle = [path lineStyle];
         SwiffFillStyle *fillStyle = [path fillStyle];
 
-        CGFloat lineWidth   = [lineStyle width];
-        BOOL    shouldRound = (lineWidth == SwiffLineStyleHairlineWidth);
-        BOOL    shouldClose = !lineStyle || [lineStyle closesStroke];
+        CGFloat lineWidth = [lineStyle width];
+        BOOL shouldRound  = (lineWidth == SwiffLineStyleHairlineWidth);
+        BOOL shouldClose  = !lineStyle || [lineStyle closesStroke];
 
         // Prevent blurry lines when a/d are 1/-1 
         if ((lround(lineWidth) % 2) == 1 &&
@@ -245,28 +241,31 @@ static void sDrawShapeDefinition(SwiffRendererState *state, SwiffShapeDefinition
         CGPoint lastMove = { NAN, NAN };
         CGPoint location = { NAN, NAN };
 
-        CGFloat *operations = [path operations];
-        BOOL     isDone     = (operations == nil);
+        CGAffineTransform pointTransform   = CGAffineTransformIdentity;
+        CGAffineTransform contextTransform = CGAffineTransformIdentity;
+        
+        if (!lineStyle || [lineStyle scalesHorizontally] || [lineStyle scalesVertically]) {
+            contextTransform = state->affineTransform;
+        } else {
+            pointTransform = state->affineTransform;
+        }
+
+        SwiffPathOperation *operations = [path operations];
+        CGPoint *points = [path points];
+        BOOL     isDone = (operations == nil);
+
+        CGContextSaveGState(context);
+        CGContextConcatCTM(context, contextTransform);
 
         while (!isDone) {
             CGFloat  type    = *operations++;
-            CGFloat  toX     = *operations++;
-            CGFloat  toY     = *operations++;
-            CGPoint  toPoint = { toX, toY };
+            CGPoint  toPoint = *points++;
 
-            toPoint = CGPointApplyAffineTransform(toPoint, state->affineTransform);
+            toPoint = CGPointApplyAffineTransform(toPoint, pointTransform);
 
             if (shouldRound) {
-                CGFloat (^roundForHairline)(CGFloat, BOOL) = ^(CGFloat inValue, BOOL flipped) {
-                    if (flipped) {
-                        return (CGFloat)(ceil(inValue) - 0.5);
-                    } else {
-                        return (CGFloat)(floor(inValue) + 0.5);
-                    }
-                };
-
-                toPoint.x = roundForHairline(toPoint.x, (state->affineTransform.a < 0));
-                toPoint.y = roundForHairline(toPoint.y, (state->affineTransform.d < 0));
+                toPoint.x = (state->affineTransform.a < 0) ? (ceil(toPoint.x) - 0.5) : (floor(toPoint.x) + 0.5);
+                toPoint.y = (state->affineTransform.d < 0) ? (ceil(toPoint.y) - 0.5) : (floor(toPoint.y) + 0.5);
             }
 
             if (type == SwiffPathOperationMove) {
@@ -281,11 +280,9 @@ static void sDrawShapeDefinition(SwiffRendererState *state, SwiffShapeDefinition
                 CGContextAddLineToPoint(context, toPoint.x, toPoint.y);
             
             } else if (type == SwiffPathOperationCurve) {
-                CGFloat controlX = *operations++;
-                CGFloat controlY = *operations++;
-                CGPoint controlPoint = CGPointMake(controlX, controlY);
-
-                controlPoint = CGPointApplyAffineTransform(controlPoint, state->affineTransform);
+                CGPoint controlPoint = *points++;
+                
+                controlPoint = CGPointApplyAffineTransform(controlPoint, pointTransform);
 
                 CGContextAddQuadCurveToPoint(context, controlPoint.x, controlPoint.y, toPoint.x, toPoint.y);
             
@@ -310,8 +307,7 @@ static void sDrawShapeDefinition(SwiffRendererState *state, SwiffShapeDefinition
         
         if (fillStyle) {
             sApplyFillStyle(state, fillStyle);
-            SwiffFillStyleType fillStyleType = [fillStyle type];
-            hasFill = (fillStyleType == SwiffFillStyleTypeColor);
+            hasFill = ([fillStyle type] == SwiffFillStyleTypeColor);
         }
         
         if (hasStroke || hasFill) {
@@ -323,6 +319,8 @@ static void sDrawShapeDefinition(SwiffRendererState *state, SwiffShapeDefinition
             
             CGContextDrawPath(context, mode);
         }
+
+        CGContextRestoreGState(context);
     }
 }
 
@@ -456,6 +454,10 @@ static void sDrawPlacedObject(SwiffRendererState *state, SwiffPlacedObject *plac
 {
     CGAffineTransform savedTransform;
 
+    if ([placedObject isHidden]) {
+        return;
+    }
+
     if (applyAffineTransform) {
         savedTransform = state->affineTransform;
         CGAffineTransform newTransform = [placedObject affineTransform];
@@ -525,23 +527,25 @@ static void sDrawPlacedObject(SwiffRendererState *state, SwiffPlacedObject *plac
                  movie: (SwiffMovie *) movie
                context: (CGContextRef) context
    baseAffineTransform: (CGAffineTransform) baseAffineTransform
-    baseColorTransform: (SwiffColorTransform) baseColorTransform
+    baseColorTransform: (const SwiffColorTransform *) baseColorTransform
+    postColorTransform: (const SwiffColorTransform *) postColorTransform
 {
-    SwiffRendererState state = { movie, context, baseAffineTransform, NULL };
-    BOOL hasColorTransform = !SwiffColorTransformIsIdentity(baseColorTransform);
+    BOOL hasBaseColorTransform = !SwiffColorTransformIsIdentity(baseColorTransform);
+
+    if (SwiffColorTransformIsIdentity(postColorTransform)) {
+        postColorTransform = NULL;
+    }
+
+    SwiffRendererState state = { movie, context, baseAffineTransform, NULL, postColorTransform };
 
     sSetupContext(context);
 
-    if (hasColorTransform) {
-        sPushColorTransform(&state, &baseColorTransform);
+    if (hasBaseColorTransform) {
+        sPushColorTransform(&state, baseColorTransform);
     }
 
     for (SwiffPlacedObject *object in [frame placedObjects]) {
         sDrawPlacedObject(&state, object, YES, YES);
-    }
-    
-    if (hasColorTransform) {
-        sPopColorTransform(&state);
     }
     
     sCleanupState(&state);
@@ -552,23 +556,24 @@ static void sDrawPlacedObject(SwiffRendererState *state, SwiffPlacedObject *plac
                       movie: (SwiffMovie *) movie
                     context: (CGContextRef) context
         baseAffineTransform: (CGAffineTransform) baseAffineTransform
-         baseColorTransform: (SwiffColorTransform) baseColorTransform
+         baseColorTransform: (const SwiffColorTransform *) baseColorTransform
+         postColorTransform: (const SwiffColorTransform *) postColorTransform
 {
-    SwiffRendererState state = { movie, context, baseAffineTransform, NULL };
+    BOOL hasBaseColorTransform = !SwiffColorTransformIsIdentity(baseColorTransform);
 
-    BOOL hasColorTransform = !SwiffColorTransformIsIdentity(baseColorTransform);
+    if (SwiffColorTransformIsIdentity(postColorTransform)) {
+        postColorTransform = NULL;
+    }
+
+    SwiffRendererState state = { movie, context, baseAffineTransform, NULL, postColorTransform };
 
     sSetupContext(context);
 
-    if (hasColorTransform) {
-        sPushColorTransform(&state, &baseColorTransform);
+    if (hasBaseColorTransform) {
+        sPushColorTransform(&state, baseColorTransform);
     }
 
     sDrawPlacedObject(&state, placedObject, YES, NO);
-
-    if (hasColorTransform) {
-        sPopColorTransform(&state);
-    }
 
     sCleanupState(&state);
 }

@@ -39,8 +39,9 @@
     id<SwiffMovieLayerDelegate> m_movieLayerDelegate;
     SwiffPlayhead *m_playhead;
 
-    CGAffineTransform m_baseAffineTransform;
+    CGAffineTransform   m_baseAffineTransform;
     SwiffColorTransform m_baseColorTransform;
+    SwiffColorTransform m_postColorTransform;
 
     BOOL        m_drawsBackground;
     BOOL        m_movieLayerDelegate_movieLayer_willDisplayFrame;
@@ -55,6 +56,7 @@
 
 @property (nonatomic, assign) CGAffineTransform baseAffineTransform;
 @property (nonatomic, assign) SwiffColorTransform baseColorTransform;
+@property (nonatomic, assign) SwiffColorTransform postColorTransform;
 
 @end
 

@@ -35,28 +35,24 @@
 @private
     UInt16               m_libraryID;
     UInt16               m_depth;
-    UInt16               m_clipDepth;
-    UInt16               m_ratio;
-    NSString            *m_instanceName;
-    SwiffColorTransform *m_colorTransformPtr;
     CGAffineTransform    m_affineTransform;
-
-@protected
-    id<SwiffPlacableDefinition> m_definition;
+    void                *m_additional;      // Keep less commonly used ivars here
 }
 
 - (id) initWithDepth:(NSInteger)depth;
 - (id) initWithPlacedObject:(SwiffPlacedObject *)placedObject;
 
-@property (nonatomic, retain) id<SwiffPlacableDefinition> definition;
+// Called after libraryID has changed, allows subclasses to setup variables based on definition
+- (void) setupWithDefinition:(id<SwiffPlacableDefinition>)definition;
 
-@property (nonatomic, copy) NSString *instanceName;
+@property (nonatomic, copy)   NSString *name;
 @property (nonatomic, assign) UInt16 libraryID;
 @property (nonatomic, assign) UInt16 depth;
 @property (nonatomic, assign) UInt16 clipDepth;
 @property (nonatomic, assign) CGFloat ratio;
 @property (nonatomic, assign) CGAffineTransform affineTransform;
 @property (nonatomic, assign) SwiffColorTransform colorTransform;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
 
 // Inside pointers, valid for lifetime of the SwiffPlacedObject
 @property (nonatomic, assign, readonly) CGAffineTransform   *affineTransformPointer;

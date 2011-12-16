@@ -46,6 +46,7 @@
     if ((self = [super init])) {
         m_baseAffineTransform = CGAffineTransformIdentity;
         m_baseColorTransform  = SwiffColorTransformIdentity;
+        m_postColorTransform  = SwiffColorTransformIdentity;
     }
 
     return self;
@@ -104,9 +105,15 @@
 }
 
 
-- (SwiffColorTransform) _baseColorTransform
+- (SwiffColorTransform *) _baseColorTransform
 {
-    return m_baseColorTransform;
+    return &m_baseColorTransform;
+}
+
+
+- (SwiffColorTransform *) _postColorTransform
+{
+    return &m_postColorTransform;
 }
 
 
@@ -180,8 +187,17 @@
 
 - (void) setBaseColorTransform:(SwiffColorTransform)baseColorTransform
 {
-    if (!SwiffColorTransformEqualToTransform(baseColorTransform, m_baseColorTransform)) {
+    if (!SwiffColorTransformEqualToTransform(&baseColorTransform, &m_baseColorTransform)) {
         m_baseColorTransform = baseColorTransform;
+        [self _setNeedsDisplayOnAll];
+    }
+}
+
+
+- (void) setPostColorTransform:(SwiffColorTransform)postColorTransform
+{
+    if (!SwiffColorTransformEqualToTransform(&postColorTransform, &m_postColorTransform)) {
+        m_postColorTransform = postColorTransform;
         [self _setNeedsDisplayOnAll];
     }
 }
@@ -191,6 +207,7 @@
             playhead            = m_playhead,
             drawsBackground     = m_drawsBackground,
             baseAffineTransform = m_baseAffineTransform,
-            baseColorTransform  = m_baseColorTransform;
+            baseColorTransform  = m_baseColorTransform,
+            postColorTransform  = m_postColorTransform;
 
 @end

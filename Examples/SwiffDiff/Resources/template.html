@@ -15,35 +15,66 @@ body {
 }
 
 </style>
-<script type="text/javascript" src="swfobject.js"></script>
 <script>
+
+var gMovie;
 var gCurrentFrame = 1;
-var gMovie = nil;
 
-function DoLoad(url) {
-    var id         = "movie",
-        width      = "100%",
-        height     = "100%",
-        version    = "0",
-        flashvars  = { },
-        params     = { "AllowScriptAccess": true },
-        attributes = { };
+function SyncFrame()
+{
+    if (!(gMovie && gMovie.TGetProperty && gMovie.TGetProperty("/", 4) == gCurrentFrame)) {
+        if (gMovie && gMovie.GotoFrame) {
+            gMovie.GotoFrame(gCurrentFrame - 1);
+        }
 
-    swfobject.embedSWF(url, id, width, height, version, null, flashvars, params, attributes, function(e) {
-        gMovie = e.ref;
-        gMovie.GotoFrame(gCurrentFrame - 1);
-    });
+        setTimeout(SyncFrame, 0);
+    }
 }
 
 
-function GotoFrame(n) {
+function GotoFrame(n)
+{
     gCurrentFrame = n;
-    if (gMovie) gMovie.GotoFrame(gCurrentFrame - 1);
+    SyncFrame();
 }
+
+
+function SetURL(url)
+{
+    var movie = document.createElement("object");
+    var param = document.createElement("param");
+
+    movie.setAttribute("data",    url);
+    movie.setAttribute("allowScriptAccess", "always");
+    movie.setAttribute("type",   "application/x-shockwave-flash");
+    movie.setAttribute("width",  "100%");
+    movie.setAttribute("height", "100%");
+    movie.setAttribute("play",   "false");
+    movie.setAttribute("id",     "movie");
+
+    param.setAttribute("name", "AllowScriptAccess");
+    param.setAttribute("value", "true");
+    
+    movie.appendChild(param);
+    document.body.appendChild(movie);
+    
+    gMovie = movie;
+
+    SyncFrame();
+}
+
 
 </script>
 </head>
 <body>
-<div id="movie"></div>
+<object
+    wmode="opaque"
+    allowScriptAccess="always"
+    width="100%"
+    height="100%"
+    data=""
+    id="movie">
+    <param name="AllowScriptAccess" value="true">
+</object>
 </body>
 </html>

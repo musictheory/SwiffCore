@@ -39,6 +39,7 @@
 @implementation SwiffFrame
 
 - (id) _initWithSortedPlacedObjects: (NSArray *) placedObjects
+                          withNames: (NSArray *) placedObjectsWithNames
                         soundEvents: (NSArray *) soundEvents
                         streamSound: (SwiffSoundDefinition *) streamSound
                    streamBlockIndex: (NSUInteger) streamBlockIndex
@@ -48,15 +49,7 @@
         m_soundEvents   = [soundEvents   retain];
         m_streamSound   = [streamSound   retain];
 
-        NSMutableDictionary *instanceNameToPlacedObjectMap = [[NSMutableDictionary alloc] initWithCapacity:[placedObjects count]];
-        for (SwiffPlacedObject *placedObject in placedObjects) {
-            NSString *instanceName = [placedObject instanceName];
-
-            if ([instanceName length]) {
-                [instanceNameToPlacedObjectMap setObject:placedObjects forKey:instanceName];
-            }
-        }
-        m_instanceNameToPlacedObjectMap = instanceNameToPlacedObjectMap;
+        m_placedObjectsWithNames = [placedObjectsWithNames retain];
 
         m_streamBlockIndex = streamBlockIndex;
     }
@@ -78,8 +71,8 @@
     [m_streamSound   release];  m_streamSound   = nil;
     [m_soundEvents   release];  m_soundEvents   = nil;
 
-    [m_instanceNameToPlacedObjectMap release];
-    m_instanceNameToPlacedObjectMap = nil;
+    [m_placedObjectsWithNames release];
+    m_placedObjectsWithNames = nil;
 
     [super dealloc];
 }
@@ -105,15 +98,15 @@
 #pragma mark -
 #pragma mark Public Methods
 
-- (NSArray *) instanceNames
+- (SwiffPlacedObject *) placedObjectWithName:(NSString *)name
 {
-    return [m_instanceNameToPlacedObjectMap allKeys];
-}
+    for (SwiffPlacedObject *object in m_placedObjectsWithNames) {
+        if ([[object name] isEqualToString:name]) {
+            return object;
+        }
+    }
 
-
-- (SwiffPlacedObject *) placedObjectWithInstanceName:(NSString *)name
-{
-    return [m_instanceNameToPlacedObjectMap objectForKey:name];
+    return nil;
 }
 
 
@@ -135,6 +128,12 @@
 - (NSUInteger) indexInMovie
 {
     return [m_scene indexInMovie] + m_indexInScene;
+}
+
+
+- (NSArray *) placedObjectsWithNames
+{
+    return m_placedObjectsWithNames;
 }
 
 

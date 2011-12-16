@@ -34,22 +34,19 @@
 
 @interface SwiffPlacedDynamicText : SwiffPlacedObject {
 @private
+    SwiffDynamicTextDefinition *m_definition;
     NSString              *m_text;
-    CTFramesetterRef       m_framesetter;
     CFAttributedStringRef  m_attributedText;
-    CGPoint                m_attributedTextOffset;
     BOOL                   m_HTML;
 }
-
-@property (nonatomic, retain) SwiffDynamicTextDefinition *definition;
 
 - (void) setText:(NSString *)text HTML:(BOOL)isHTML;
 
 @property (nonatomic, copy) NSString *text;
 
-@property (nonatomic, readonly /*strong*/) CTFramesetterRef framesetter;
 @property (nonatomic, readonly /*strong*/) CFAttributedStringRef attributedText;
-@property (nonatomic, readonly) CGPoint attributedTextOffset;
 @property (nonatomic, assign, readonly, getter=isHTML) BOOL HTML;
+
+@property (nonatomic, retain, readonly) SwiffDynamicTextDefinition *definition;
 
 @end

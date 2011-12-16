@@ -1,5 +1,5 @@
 /*
-    SwiffMovieView.m
+    SwiffView.m
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,17 +25,17 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiffMovieView.h"
+#import "SwiffView.h"
 #import "SwiffMovie.h"
 
 
-@interface SwiffMovieView ()
+@interface SwiffView ()
 - (void) _setupMovieLayer;
 - (void) _layoutMovieLayer;
 @end
 
 
-@implementation SwiffMovieView
+@implementation SwiffView
 
 - (void) dealloc
 {
@@ -49,7 +49,7 @@
 
 #pragma mark -
 #pragma mark UIKit Implementation
-#ifdef SwiffMovieViewUsesUIKit
+#ifdef SwiffViewUsesUIKit
 
 - (id) initWithFrame:(CGRect)frame
 {
@@ -90,7 +90,7 @@
 
 #pragma mark -
 #pragma mark AppKit Implementation
-#ifndef SwiffMovieViewUsesUIKit
+#ifndef SwiffViewUsesUIKit
 
 - (id) initWithFrame:(NSRect)frame
 {
@@ -154,24 +154,24 @@
 
 - (void) movieLayer:(SwiffMovieLayer *)movieLayer willDisplayFrame:(SwiffFrame *)frame
 {
-    if (m_delegate_movieView_willDisplayFrame) {
-        [m_delegate movieView:self willDisplayFrame:frame];
+    if (m_delegate_swiffView_willDisplayFrame) {
+        [m_delegate swiffView:self willDisplayFrame:frame];
     }
 }
 
 
 - (void) movieLayer:(SwiffMovieLayer *)movieLayer didDisplayFrame:(SwiffFrame *)frame
 {
-    if (m_delegate_movieView_willDisplayFrame) {
-        [m_delegate movieView:self didDisplayFrame:frame];
+    if (m_delegate_swiffView_willDisplayFrame) {
+        [m_delegate swiffView:self didDisplayFrame:frame];
     }
 }
 
 
 - (BOOL) movieLayer:(SwiffMovieLayer *)movieLayer spriteLayer:(SwiffSpriteLayer *)spriteLayer shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame
 {
-    if (m_delegate_movieView_spriteLayer_shouldInterpolateFromFrame_toFrame) {
-        return [m_delegate movieView:self spriteLayer:spriteLayer shouldInterpolateFromFrame:fromFrame toFrame:toFrame];
+    if (m_delegate_swiffView_spriteLayer_shouldInterpolateFromFrame_toFrame) {
+        return [m_delegate swiffView:self spriteLayer:spriteLayer shouldInterpolateFromFrame:fromFrame toFrame:toFrame];
     }
         
     return NO;
@@ -181,16 +181,16 @@
 #pragma mark -
 #pragma mark Accessors
 
-- (void) setDelegate:(id<SwiffMovieViewDelegate>)delegate
+- (void) setDelegate:(id<SwiffViewDelegate>)delegate
 {
     if (m_delegate != delegate) {
         [m_movieLayer setMovieLayerDelegate:(delegate ? self : nil)];
 
         m_delegate = delegate;
         
-        m_delegate_movieView_willDisplayFrame = [m_delegate respondsToSelector:@selector(movieView:willDisplayFrame:)];
-        m_delegate_movieView_didDisplayFrame  = [m_delegate respondsToSelector:@selector(movieView:didDisplayFrame:)];
-        m_delegate_movieView_spriteLayer_shouldInterpolateFromFrame_toFrame = [m_delegate respondsToSelector:@selector(movieView:spriteLayer:shouldInterpolateFromFrame:toFrame:)];
+        m_delegate_swiffView_willDisplayFrame = [m_delegate respondsToSelector:@selector(swiffView:willDisplayFrame:)];
+        m_delegate_swiffView_didDisplayFrame  = [m_delegate respondsToSelector:@selector(swiffView:didDisplayFrame:)];
+        m_delegate_swiffView_spriteLayer_shouldInterpolateFromFrame_toFrame = [m_delegate respondsToSelector:@selector(swiffView:spriteLayer:shouldInterpolateFromFrame:toFrame:)];
     }
 }
 
@@ -231,6 +231,12 @@
 }
 
 
+- (void) setPostColorTransform:(SwiffColorTransform)transform
+{
+    [m_movieLayer setPostColorTransform:transform];
+}
+
+
 - (void) setUsesSublayers:(BOOL)usesSublayers
 {
     [m_movieLayer setUsesSublayers:usesSublayers];
@@ -243,7 +249,7 @@
 - (BOOL)                usesSublayers       { return [m_movieLayer usesSublayers];       }
 - (CGAffineTransform)   baseAffineTransform { return [m_movieLayer baseAffineTransform]; }
 - (SwiffColorTransform) baseColorTransform  { return [m_movieLayer baseColorTransform];  }
-
+- (SwiffColorTransform) postColorTransform  { return [m_movieLayer postColorTransform];  }
 
 @synthesize delegate = m_delegate;
 @dynamic layer;

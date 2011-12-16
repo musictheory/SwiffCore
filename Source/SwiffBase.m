@@ -114,8 +114,10 @@ void _SwiffLog(NSInteger level, NSString *format, ...)
 }
 
 
-static void sSwiffColorApplyColorTransformPointer(SwiffColor *color, SwiffColorTransform *transform)
+static void sSwiffColorApplyColorTransformPointer(SwiffColor *color, const SwiffColorTransform *transform)
 {
+    if (!transform) return;
+
     color->red = (color->red * transform->redMultiply) + transform->redAdd;
     if      (color->red < 0.0) color->red = 0.0;
     else if (color->red > 1.0) color->red = 1.0;
@@ -210,9 +212,9 @@ NSString *SwiffStringFromColor(SwiffColor color)
 }
 
 
-SwiffColor SwiffColorApplyColorTransform(SwiffColor color, SwiffColorTransform transform)
+SwiffColor SwiffColorApplyColorTransform(SwiffColor color, const SwiffColorTransform *transform)
 {
-    sSwiffColorApplyColorTransformPointer(&color, &transform);
+    sSwiffColorApplyColorTransformPointer(&color, transform);
     return color;
 }
 
@@ -229,25 +231,32 @@ SwiffColor SwiffColorApplyColorTransformStack(SwiffColor color, CFArrayRef stack
 }
 
 
-BOOL SwiffColorTransformEqualToTransform(SwiffColorTransform a, SwiffColorTransform b)
+BOOL SwiffColorTransformEqualToTransform(const SwiffColorTransform *a, const SwiffColorTransform *b)
 {
-    return (0 == memcmp(&a, &b, sizeof(SwiffColorTransform)));
+    if (a && b) {
+        return (0 == memcmp(a, b, sizeof(SwiffColorTransform)));
+    } else if (!a && !b) {
+        return YES;
+    } else {
+        return NO;
+    }
 }
 
 
-BOOL SwiffColorTransformIsIdentity(SwiffColorTransform transform)
+BOOL SwiffColorTransformIsIdentity(const SwiffColorTransform *transform)
 {
-    return (0 == memcmp(&transform, &SwiffColorTransformIdentity, sizeof(SwiffColorTransform)));
+    if (!transform) return YES;
+    return (0 == memcmp(transform, &SwiffColorTransformIdentity, sizeof(SwiffColorTransform)));
 }
 
 
-NSString *SwiffStringFromColorTransform(SwiffColorTransform transform)
+NSString *SwiffStringFromColorTransform(const SwiffColorTransform *transform)
 {
     return [NSString stringWithFormat:@"(r * %.02f) + %.02f, (g * %.02f) + %.02f, (b * %.02f) + %.02f, (a * %.02f) + %.02f",
-        (float)transform.redMultiply,   (float)transform.redAdd,
-        (float)transform.greenMultiply, (float)transform.greenAdd,
-        (float)transform.blueMultiply,  (float)transform.blueAdd,
-        (float)transform.alphaMultiply, (float)transform.alphaAdd];
+        (float)transform->redMultiply,   (float)transform->redAdd,
+        (float)transform->greenMultiply, (float)transform->greenAdd,
+        (float)transform->blueMultiply,  (float)transform->blueAdd,
+        (float)transform->alphaMultiply, (float)transform->alphaAdd];
 }
 
 
@@ -263,7 +272,7 @@ NSString *SwiffStringFromColorTransformStack(CFArrayRef stack)
     CFIndex lastI = (count - 1);
     for (CFIndex i = 0; i < count; i++) {
         SwiffColorTransform *transformPtr = (SwiffColorTransform *)CFArrayGetValueAtIndex(stack, i);
-        NSString *string = SwiffStringFromColorTransform(*transformPtr);
+        NSString *string = SwiffStringFromColorTransform(transformPtr);
         [result appendFormat:@"    %@%@\n", string, (i == lastI) ? @"" : @","];
     }
 

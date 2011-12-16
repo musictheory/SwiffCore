@@ -39,12 +39,14 @@
                movie: (SwiffMovie *) movie
              context: (CGContextRef) context
  baseAffineTransform: (CGAffineTransform) baseAffineTransform
-  baseColorTransform: (SwiffColorTransform) baseColorTransform;
+  baseColorTransform: (const SwiffColorTransform *) baseColorTransform
+  postColorTransform: (const SwiffColorTransform *) postColorTransform;
 
 - (void) renderPlacedObject: (SwiffPlacedObject *) placedObject
                       movie: (SwiffMovie *) movie
                     context: (CGContextRef) context
         baseAffineTransform: (CGAffineTransform) baseAffineTransform
-         baseColorTransform: (SwiffColorTransform) baseColorTransform;
+         baseColorTransform: (const SwiffColorTransform *) baseColorTransform
+         postColorTransform: (const SwiffColorTransform *) postColorTransform;
 
 @end
