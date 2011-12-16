@@ -41,4 +41,7 @@
 @property (nonatomic, assign, readonly) CGRect bounds;
 @property (nonatomic, assign, readonly) CGRect edgeBounds;
 @property (nonatomic, assign, readonly) BOOL hasEdgeBounds;
+
+@optional
++ (Class) placedObjectClass; // If not present, defaults to SwiffPlacedObject
 @end

@@ -49,6 +49,7 @@
 
 @interface SwiffFrame ()
 - (id) _initWithSortedPlacedObjects: (NSArray *) placedObjects
+                          withNames: (NSArray *) placedObjectsWithNames
                         soundEvents: (NSArray *) soundEvents
                         streamSound: (SwiffSoundDefinition *) streamSound
                    streamBlockIndex: (NSUInteger) streamBlockIndex;
@@ -215,36 +216,40 @@
     // Not supported yet
     hasClipActions = NO;
 
-    Class cls = [SwiffPlacedObject class];
     SwiffPlacedObject *placedObject = nil;
 
-    id<SwiffDefinition> definition = nil;
-    
-    if (hasLibraryID) {
-        definition = [m_movie definitionWithLibraryID:libraryID];
+    id<SwiffPlacableDefinition> placableDefinition = nil;
+    Class cls = [SwiffPlacedObject class];
 
-        if ([definition isKindOfClass:[SwiffDynamicTextDefinition class]]) {
-            cls = [SwiffPlacedDynamicText class];
+    if (hasLibraryID) {
+        id<SwiffDefinition> definition = [m_movie definitionWithLibraryID:libraryID];
+
+        if ([definition conformsToProtocol:@protocol(SwiffPlacableDefinition)]) {
+            placableDefinition = (id<SwiffPlacableDefinition>)definition;
+
+            if ([[placableDefinition class] respondsToSelector:@selector(placedObjectClass)]) {
+                cls = [[placableDefinition class] placedObjectClass];
+            }
         }
     }
 
     if (move) {
-        SwiffPlacedObject *existing = (SwiffPlacedObject *)CFDictionaryGetValue(m_depthToPlacedObjectMap, (const void *)depth);
-        if (!hasLibraryID) cls = [existing class];
-        placedObject = existing ? [[cls alloc] initWithPlacedObject:existing] : nil;
+        SwiffPlacedObject *existingPlacedObject = (SwiffPlacedObject *)CFDictionaryGetValue(m_depthToPlacedObjectMap, (const void *)depth);
+        if (!hasLibraryID) cls = [existingPlacedObject class];
+        placedObject = existingPlacedObject ? [[cls alloc] initWithPlacedObject:existingPlacedObject] : nil;
     }
 
     if (!placedObject) {
         placedObject = [[cls alloc] initWithDepth:depth];
     }
     
-    if ([definition conformsToProtocol:@protocol(SwiffPlacableDefinition)]) {
-        [placedObject setDefinition:(id<SwiffPlacableDefinition>)definition];
+    if (hasLibraryID) {
+        [placedObject setLibraryID:libraryID];
+        [placedObject setupWithDefinition:placableDefinition];
     }
     
-    if (hasLibraryID)      [placedObject setLibraryID:libraryID];
     if (hasClipDepth)      [placedObject setClipDepth:clipDepth];
-    if (hasName)           [placedObject setInstanceName:name];
+    if (hasName)           [placedObject setName:name];
     if (hasRatio)          [placedObject setRatio:ratio];
     if (hasColorTransform) [placedObject setColorTransform:colorTransform];
     if (hasMatrix) {
@@ -293,43 +298,58 @@
 
 - (void) _parser:(SwiffParser *)parser didFindShowFrameTag:(SwiffTag)tag version:(NSInteger)version
 {
-    // If _lastFrame is still valid, there were no modifications to it, push it
+    NSArray *placedObjects = nil;
+    NSArray *placedObjectsWithNames = nil;
+
+    // If _lastFrame is still valid, there were no modifications to it, use the same placed objects array
+    //
     if (m_lastFrame) {
-        [m_frames addObject:m_lastFrame];
+        placedObjects = [[m_lastFrame placedObjects] retain];
+        placedObjectsWithNames = [[m_lastFrame placedObjectsWithNames] retain];
 
     } else {
         CFIndex count = CFDictionaryGetCount(m_depthToPlacedObjectMap);
-        NSMutableArray *placedObjects = nil;
 
         if (count > 0) {
             void **values = (void **)calloc(count, sizeof(void *));
             CFDictionaryGetKeysAndValues(m_depthToPlacedObjectMap, NULL, (const void **)values);
             
-            placedObjects = [[NSMutableArray alloc] initWithObjects:(const id *)values count:count];
-            [placedObjects sortUsingComparator:^(id a, id b) {
+            NSMutableArray *sortedPlacedObjects = [[NSMutableArray alloc] initWithObjects:(const id *)values count:count];
+            [sortedPlacedObjects sortUsingComparator:^(id a, id b) {
                 NSInteger aDepth = [((SwiffPlacedObject *)a) depth];
                 NSInteger bDepth = [((SwiffPlacedObject *)b) depth];
                 return aDepth - bDepth;
             }];
             
+            NSMutableArray *sortedPlacedObjectsWithNames = [[NSMutableArray alloc] initWithCapacity:[sortedPlacedObjects count]];
+            for (SwiffPlacedObject *po in sortedPlacedObjects) {
+                if ([po name]) {
+                    [sortedPlacedObjectsWithNames addObject:po];
+                }
+            }
+            
+            placedObjects          = sortedPlacedObjects;
+            placedObjectsWithNames = sortedPlacedObjectsWithNames;
+            
             free(values);
         }
-        
-        SwiffSoundDefinition *streamSound      = m_currentStreamBlockIndex >= 0 ? m_currentStreamSoundDefinition : nil;
-        NSInteger             streamBlockIndex = m_currentStreamBlockIndex >= 0 ? m_currentStreamBlockIndex      : 0;
-        
-        SwiffFrame *frame = [[SwiffFrame alloc] _initWithSortedPlacedObjects: placedObjects
-                        soundEvents: m_currentSoundEvents
-                        streamSound: streamSound
-                   streamBlockIndex: streamBlockIndex];
-
-        [m_frames addObject:frame];
-
-        m_lastFrame = frame;
-
-        [frame release];
-        [placedObjects release];
     }
+
+    SwiffSoundDefinition *streamSound      = m_currentStreamBlockIndex >= 0 ? m_currentStreamSoundDefinition : nil;
+    NSInteger             streamBlockIndex = m_currentStreamBlockIndex >= 0 ? m_currentStreamBlockIndex      : 0;
+
+    SwiffFrame *frame = [[SwiffFrame alloc] _initWithSortedPlacedObjects: placedObjects
+                                                               withNames: placedObjectsWithNames
+                                                             soundEvents: m_currentSoundEvents
+                                                             streamSound: streamSound
+                                                        streamBlockIndex: streamBlockIndex];
+
+    [m_frames addObject:frame];
+    m_lastFrame = frame;
+
+    [frame release];
+    [placedObjects release];
+    [placedObjectsWithNames release];
 
     if (SwiffShouldLog()) {
         SwiffLog(@"SHOWFRAME");

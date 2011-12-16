@@ -39,7 +39,7 @@
 
     NSTimer            *m_diffTimer;
     SwiffMovie         *m_movie;
-    SwiffMovieView     *m_movieView;
+    SwiffView          *m_swiffView;
     WebView            *m_webView;
     
 }

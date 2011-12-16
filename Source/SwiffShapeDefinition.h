@@ -36,11 +36,11 @@
 @private
     SwiffMovie *m_movie;
     UInt16      m_libraryID;
-    NSData     *m_tagData;
     CFArrayRef  m_groups;
     NSArray    *m_fillStyles;
     NSArray    *m_lineStyles;
     NSArray    *m_paths;
+    
     CGRect      m_bounds;
     CGRect      m_edgeBounds;
     BOOL        m_usesFillWindingRule;

@@ -71,8 +71,3 @@
 @property (nonatomic, assign, readonly) SwiffColor *backgroundColorPointer;
 
 @end
-
-
-@protocol SwiffMovieDecoder <NSObject>
-- (void) movie:(SwiffMovie *)movie didDecodeFrame:(SwiffFrame *)frame;
-@end

@@ -28,8 +28,16 @@
 #import "SwiffDynamicTextDefinition.h"
 
 #import "SwiffParser.h"
+#import "SwiffPlacedDynamicText.h"
+
 
 @implementation SwiffDynamicTextDefinition
+
++ (Class) placedObjectClass
+{
+    return [SwiffPlacedDynamicText class];
+}
+
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie
 {

@@ -28,6 +28,18 @@
 
 #import "SwiffPlacedObject.h"
 
+typedef struct _SwiffPlacedObjectAdditionalStorage
+{
+    NSString *name;
+    SwiffColorTransform colorTransform;
+    UInt16 clipDepth;
+    UInt16 ratio;
+    BOOL   hasColorTransform;
+    BOOL   hidden;
+} SwiffPlacedObjectAdditionalStorage;
+
+#define ADDITIONAL ((SwiffPlacedObjectAdditionalStorage *)m_additional)
+#define MAKE_ADDITIONAL { if (!m_additional) m_additional = calloc(sizeof(SwiffPlacedObjectAdditionalStorage), 1); }
 
 @implementation SwiffPlacedObject
 
@@ -47,14 +59,22 @@
 {
     if ((self = [self initWithDepth:placedObject->m_depth])) {
         m_libraryID         = placedObject->m_libraryID;
-        m_clipDepth         = placedObject->m_clipDepth;
-        m_ratio             = placedObject->m_ratio;
         m_affineTransform   = placedObject->m_affineTransform;
-        m_instanceName      = [placedObject->m_instanceName copy];
-        m_definition        = [placedObject->m_definition retain];
 
-        if (placedObject->m_colorTransformPtr) {
-            [self setColorTransform:*placedObject->m_colorTransformPtr];
+        if (placedObject->m_additional) {
+            m_additional = malloc(sizeof(SwiffPlacedObjectAdditionalStorage));
+
+            SwiffPlacedObjectAdditionalStorage *other = placedObject->m_additional;
+
+            ADDITIONAL->name              = [other->name copy];
+            ADDITIONAL->clipDepth         =  other->clipDepth;
+            ADDITIONAL->ratio             =  other->ratio;
+            ADDITIONAL->hasColorTransform =  other->hasColorTransform;
+            ADDITIONAL->hidden            =  other->hidden;
+
+            if (other->hasColorTransform) {
+                ADDITIONAL->colorTransform = other->colorTransform;
+            }
         }
     }
     
@@ -64,35 +84,24 @@
 
 - (void) dealloc
 {
-    [m_definition release];
-    m_definition = nil;
-    
-    if (m_colorTransformPtr) {
-        free(m_colorTransformPtr);
-        m_colorTransformPtr = NULL;
+    if (m_additional) {
+        [ADDITIONAL->name release];
+
+        free(m_additional);
+        m_additional = NULL;
     }
 
-    [m_instanceName release];
-    m_instanceName = nil;
-    
     [super dealloc];
+}
+
+- (void) setupWithDefinition:(id<SwiffPlacableDefinition>)definition
+{
+    // ABSTRACT
 }
 
 
 #pragma mark -
 #pragma mark Accessors
-
-- (void) setRatio:(CGFloat)ratio
-{
-    m_ratio = ratio * 65535.0;
-}
-
-
-- (CGFloat) ratio
-{
-    return m_ratio / 65535.0;
-}
-
 
 - (BOOL) hasAffineTransform
 {
@@ -106,39 +115,100 @@
 }
 
 
-- (BOOL) hasColorTransform
+- (void) setHidden:(BOOL)hidden
 {
-    return (m_colorTransformPtr != NULL);
+    MAKE_ADDITIONAL;
+    ADDITIONAL->hidden = hidden;
+}
+
+
+- (BOOL) isHidden
+{
+    return m_additional ? ADDITIONAL->hidden : NO;
+}
+
+
+- (void) setRatio:(CGFloat)ratio
+{
+    MAKE_ADDITIONAL;
+    ADDITIONAL->ratio = round(ratio * 65535.0);
+}
+
+
+- (CGFloat) ratio
+{
+    return m_additional ? (ADDITIONAL->ratio / 65535.0) : 0;
 }
 
 
 - (void) setColorTransform:(SwiffColorTransform)colorTransform
 {
-    if (!m_colorTransformPtr) {
-        m_colorTransformPtr = malloc(sizeof(SwiffColorTransform));
-    }
-
-    *m_colorTransformPtr = colorTransform;
+    MAKE_ADDITIONAL;
+    ADDITIONAL->colorTransform = colorTransform;
+    ADDITIONAL->hasColorTransform = YES;
 }
 
 
 - (SwiffColorTransform) colorTransform
 {
-    return m_colorTransformPtr ? *m_colorTransformPtr : SwiffColorTransformIdentity;
+    if (m_additional && ADDITIONAL->hasColorTransform) {
+        return ADDITIONAL->colorTransform;
+    } else {
+        return SwiffColorTransformIdentity;
+    }
 }
 
 
 - (SwiffColorTransform *) colorTransformPointer
 {
-    return m_colorTransformPtr ? m_colorTransformPtr : &SwiffColorTransformIdentity;
+    if (m_additional && ADDITIONAL->hasColorTransform) {
+        return &(ADDITIONAL->colorTransform);
+    } else {
+        return NULL;
+    }
 }
 
 
-@synthesize definition         = m_definition,
-            instanceName       = m_instanceName,
-            libraryID          = m_libraryID,
-            depth              = m_depth,
-            clipDepth          = m_clipDepth,
-            affineTransform    = m_affineTransform;
+- (BOOL) hasColorTransform
+{
+    return m_additional && ADDITIONAL->hasColorTransform;
+}
+
+
+- (void) setName:(NSString *)name
+{
+    if (name != [self name]) {
+        MAKE_ADDITIONAL;
+        [ADDITIONAL->name release];
+        ADDITIONAL->name = [name copy];
+    }
+}
+
+
+- (NSString *) name
+{
+    return m_additional ? ADDITIONAL->name : nil;
+}
+
+
+- (void) setClipDepth:(UInt16)clipDepth
+{
+    if (clipDepth != [self clipDepth]) {
+        MAKE_ADDITIONAL;
+        ADDITIONAL->clipDepth = clipDepth;
+    }
+}
+
+
+- (UInt16) clipDepth
+{
+    return m_additional ? ADDITIONAL->clipDepth : 0;
+}
+
+
+@synthesize libraryID        = m_libraryID,
+            depth            = m_depth,
+            clipDepth        = m_clipDepth,
+            affineTransform  = m_affineTransform;
 
 @end

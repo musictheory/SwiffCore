@@ -20,7 +20,6 @@
 		55B079CD14884E25006769C8 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079CB14884E25006769C8 /* QuartzCore.framework */; };
 		55B079CF148859CC006769C8 /* template.html in Resources */ = {isa = PBXBuildFile; fileRef = 55B079CE148859CC006769C8 /* template.html */; };
 		55B079D1148859E7006769C8 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079D0148859E7006769C8 /* WebKit.framework */; };
-		55B079D4148862FE006769C8 /* swfobject.js in Resources */ = {isa = PBXBuildFile; fileRef = 55B079D214885D92006769C8 /* swfobject.js */; };
 		55F3158B1489E85700E6E625 /* SwiffDiffAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F3158A1489E85600E6E625 /* SwiffDiffAppDelegate.m */; };
 /* End PBXBuildFile section */
 
@@ -68,7 +67,6 @@
 		55B079CB14884E25006769C8 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		55B079CE148859CC006769C8 /* template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = template.html; path = Resources/template.html; sourceTree = SOURCE_ROOT; };
 		55B079D0148859E7006769C8 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
-		55B079D214885D92006769C8 /* swfobject.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = swfobject.js; path = Resources/swfobject.js; sourceTree = SOURCE_ROOT; };
 		55F315891489E85600E6E625 /* SwiffDiffAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffDiffAppDelegate.h; path = Source/SwiffDiffAppDelegate.h; sourceTree = SOURCE_ROOT; };
 		55F3158A1489E85600E6E625 /* SwiffDiffAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffDiffAppDelegate.m; path = Source/SwiffDiffAppDelegate.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -150,7 +148,6 @@
 			isa = PBXGroup;
 			children = (
 				55B079CE148859CC006769C8 /* template.html */,
-				55B079D214885D92006769C8 /* swfobject.js */,
 				5529CA801489B32000A78C2F /* Document.xib */,
 				5580A9191488473100F55ED0 /* InfoPlist.strings */,
 				5580A9141488472400F55ED0 /* MainMenu.xib */,
@@ -162,8 +159,8 @@
 		55B079B614884C25006769C8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				55B079BB14884C25006769C8 /* libSwiffCore.a */,
-				55B079BD14884C25006769C8 /* libSwiffCoreMac.a */,
+				55B079BB14884C25006769C8 /* lib.a */,
+				55B079BD14884C25006769C8 /* lib.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -221,7 +218,7 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		55B079BB14884C25006769C8 /* libSwiffCore.a */ = {
+		55B079BB14884C25006769C8 /* lib.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			name = lib.a;
@@ -229,7 +226,7 @@
 			remoteRef = 55B079BA14884C25006769C8 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		55B079BD14884C25006769C8 /* libSwiffCoreMac.a */ = {
+		55B079BD14884C25006769C8 /* lib.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			name = lib.a;
@@ -244,7 +241,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55B079D4148862FE006769C8 /* swfobject.js in Resources */,
 				5580A9161488472400F55ED0 /* MainMenu.xib in Resources */,
 				5580A91B1488473100F55ED0 /* InfoPlist.strings in Resources */,
 				55B079CF148859CC006769C8 /* template.html in Resources */,

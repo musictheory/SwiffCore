@@ -37,7 +37,7 @@
 
     NSString             *m_label;
     NSArray              *m_placedObjects;
-    NSDictionary         *m_instanceNameToPlacedObjectMap;
+    NSArray              *m_placedObjectsWithNames;
 
     SwiffSoundDefinition *m_streamSound;
     NSArray              *m_soundEvents;
@@ -46,8 +46,7 @@
 
 - (void) clearWeakReferences;
 
-- (NSArray *) instanceNames;
-- (SwiffPlacedObject *) placedObjectWithInstanceName:(NSString *)name;
+- (SwiffPlacedObject *) placedObjectWithName:(NSString *)name;
 
 @property (nonatomic, copy, readonly) NSString *label;
 
@@ -62,6 +61,7 @@
 @property (nonatomic, assign, readonly) NSUInteger streamBlockIndex;
 
 // Sorted by ascending depth 
-@property (nonatomic, copy, readonly) NSArray *placedObjects;
+@property (nonatomic, retain, readonly) NSArray *placedObjects;
+@property (nonatomic, retain, readonly) NSArray *placedObjectsWithNames;
 
 @end

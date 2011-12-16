@@ -194,17 +194,17 @@ extern void SwiffSetLegacyStringEncoding(NSStringEncoding encoding);
 extern SwiffColor SwiffColorFromCGColor(CGColorRef cgColor);
 extern CGColorRef SwiffColorCopyCGColor(SwiffColor color) CF_RETURNS_RETAINED;
 
-extern SwiffColor SwiffColorApplyColorTransform(SwiffColor color, SwiffColorTransform transform);
+extern SwiffColor SwiffColorApplyColorTransform(SwiffColor color, const SwiffColorTransform *transform);
 
-extern BOOL SwiffColorTransformIsIdentity(SwiffColorTransform transform);
-extern BOOL SwiffColorTransformEqualToTransform(SwiffColorTransform a, SwiffColorTransform b);
+extern BOOL SwiffColorTransformIsIdentity(const SwiffColorTransform *transform);
+extern BOOL SwiffColorTransformEqualToTransform(const SwiffColorTransform *a, const SwiffColorTransform *b);
 
 extern NSString *SwiffStringFromColor(SwiffColor color);
 
 // CFArrayRef values must be valid (SwiffColorTransform *).  If stack is NULL, color is returned
 extern SwiffColor SwiffColorApplyColorTransformStack(SwiffColor color, CFArrayRef stack);
 
-extern NSString *SwiffStringFromColorTransform(SwiffColorTransform transform);
+extern NSString *SwiffStringFromColorTransform(const SwiffColorTransform *transform);
 extern NSString *SwiffStringFromColorTransformStack(CFArrayRef stack);
 
 extern BOOL SwiffTagSplit(SwiffTag inTag, SwiffTag *outTag, NSInteger *outVersion);

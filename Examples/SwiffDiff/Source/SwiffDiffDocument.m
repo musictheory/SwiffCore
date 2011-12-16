@@ -123,8 +123,7 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
     [o_frameSlider       release];  o_frameSlider       = nil;
     [o_containerView     release];  o_containerView     = nil;
 
-
-    [m_movieView release]; m_movieView = nil;
+    [m_swiffView release]; m_swiffView = nil;
     [m_movie     release]; m_movie = nil;
     
     [super dealloc];
@@ -146,21 +145,26 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 
     [[o_containerView window] setFrameAutosaveName:[[self fileURL] absoluteString]];
 
-    m_movieView = [[SwiffMovieView alloc] initWithFrame:[o_containerView bounds]];
-    [m_movieView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-    [m_movieView setDrawsBackground:YES];
+    m_swiffView = [[SwiffView alloc] initWithFrame:[o_containerView bounds]];
+    [m_swiffView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    [m_swiffView setDrawsBackground:YES];
 
-    [o_containerView addSubview:m_movieView];
+    [o_containerView addSubview:m_swiffView];
 
     m_webView = [[WebView alloc] initWithFrame:[o_containerView bounds]];
     [m_webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     [m_webView setFrameLoadDelegate:self];
     [m_webView setResourceLoadDelegate:self];
+    [m_webView setUIDelegate:self];
 
     [[m_webView preferences] setPlugInsEnabled:YES];
     [[m_webView preferences] setJavaScriptEnabled:YES];
     
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"template" withExtension:@"html"];
+    
+    static NSInteger sCounter = 0;
+    url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?%d", [url absoluteString], sCounter++]];
+
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
     [[m_webView mainFrame] loadRequest:request];
     [request release];
@@ -173,7 +177,7 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
     [o_frameSlider setMaxValue:numberOfFrames];
     [o_totalFrameField setStringValue:[NSString stringWithFormat:@"/ %ld", (long)numberOfFrames]];
 
-    [m_movieView setMovie:m_movie];
+    [m_swiffView setMovie:m_movie];
 
     NSDictionary *state = [[[self class] _allDocumentState] objectForKey:[[self fileURL] absoluteString]];
     [self loadState:state];
@@ -193,7 +197,7 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 
 - (void) saveState:(NSMutableDictionary *)state
 {
-    NSInteger frameIndex = [[[m_movieView playhead] frame] indexInMovie];
+    NSInteger frameIndex = [[[m_swiffView playhead] frame] indexInMovie];
 
     [state setObject:[NSNumber numberWithInteger:frameIndex] forKey:sCurrentFrameKey];
     [state setObject:[NSNumber numberWithInteger:[o_modeSelect selectedSegment]] forKey:sCurrentModeKey];
@@ -219,7 +223,7 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 
 - (void) _updateFlashPlayer
 {
-    NSInteger  frameIndex1 = [[[m_movieView playhead] frame] index1InMovie];
+    NSInteger  frameIndex1 = [[[m_swiffView playhead] frame] index1InMovie];
     NSArray   *arguments   = [NSArray arrayWithObject:[NSNumber numberWithInteger:frameIndex1]];
     
     [[m_webView windowScriptObject] callWebScriptMethod:@"GotoFrame" withArguments:arguments];
@@ -228,7 +232,7 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 
 - (void) _updateControls
 {
-    NSInteger  frameIndex1 = [[[m_movieView playhead] frame] index1InMovie];
+    NSInteger  frameIndex1 = [[[m_swiffView playhead] frame] index1InMovie];
     [o_currentFrameField setStringValue:[NSString stringWithFormat:@"%ld", frameIndex1]];
     [o_frameSlider setIntegerValue:frameIndex1];
 }
@@ -236,7 +240,7 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 
 - (void) _setCurrentFrame:(NSInteger)frame
 {
-    [[m_movieView playhead] gotoFrameWithIndex:frame play:NO];
+    [[m_swiffView playhead] gotoFrameWithIndex:frame play:NO];
 
     [self _updateControls];
     [self _updateFlashPlayer];
@@ -245,9 +249,9 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 
 - (void) _handleDiffTick:(NSTimer *)timer
 {
-    BOOL isHidden = [m_movieView isHidden];
+    BOOL isHidden = [m_swiffView isHidden];
     
-    [m_movieView setHidden:!isHidden];
+    [m_swiffView setHidden:!isHidden];
     [m_webView   setHidden:isHidden];
 }
 
@@ -261,7 +265,7 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
     m_diffTimer = nil;
 
     if ((mode == 0) || (mode == 1)) {
-        [m_movieView setHidden:(mode != 0)];
+        [m_swiffView setHidden:(mode != 0)];
         [m_webView   setHidden:(mode == 0)];
    
     } else if (mode == 2) {
@@ -282,6 +286,7 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 - (IBAction) changeMode:(id)sender
 {
     [self _setCurrentMode:[sender selectedSegment]];
+    [SwiffDiffDocument saveState];
 }
 
 
@@ -300,6 +305,8 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
     windowFrame.size = CGSizeMake(stageSize.width + sizeDiff.width, stageSize.height + sizeDiff.height);
 
     [[o_containerView window] setFrame:windowFrame display:YES animate:YES];
+
+    [SwiffDiffDocument saveState];
 }
 
      
@@ -310,6 +317,8 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
     if (frameIndex1 > 0) {
         [self _setCurrentFrame:(frameIndex1 - 1)];
     }
+
+    [SwiffDiffDocument saveState];
 }
 
 
@@ -323,9 +332,21 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
     [self _updateFlashPlayer];
 
     WebScriptObject *wso = [m_webView windowScriptObject];
-    [wso callWebScriptMethod:@"DoLoad" withArguments:arguments];
-
+    [wso callWebScriptMethod:@"SetURL" withArguments:arguments];
+    
     [arguments release];
+}
+
+
+- (void) webView: (WebView*)webView addMessageToConsole: (NSDictionary*)dictionary
+{
+    NSString *message   = [dictionary objectForKey:@"message"];
+    NSString *sourceURL = [dictionary objectForKey:@"sourceURL"];
+    NSInteger line     = [[dictionary objectForKey:@"lineNumber"] integerValue];
+    
+    NSString *filename = [[NSURL URLWithString:sourceURL] lastPathComponent];
+
+    NSLog(@"%@:%ld %@", filename, (long)line, message); 
 }
 
 

@@ -43,6 +43,7 @@
 #import <SwiffLineStyle.h>
 #import <SwiffParser.h>
 #import <SwiffPath.h>
+#import <SwiffPlacedDynamicText.h>
 #import <SwiffPlacedObject.h>
 #import <SwiffPlayhead.h>
 #import <SwiffRenderer.h>
@@ -53,4 +54,4 @@
 
 #import <SwiffSpriteLayer.h>
 #import <SwiffMovieLayer.h>
-#import <SwiffMovieView.h>
+#import <SwiffView.h>

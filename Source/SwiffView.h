@@ -1,5 +1,5 @@
 /*
-    SwiffMovieView.h
+    SwiffView.h
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -30,40 +30,41 @@
 #import <SwiffMovieLayer.h>
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR || TARGET_HAS_UIKIT
-#define SwiffMovieViewUsesUIKit 1
+#define SwiffViewUsesUIKit 1
 #endif
 
-#if SwiffMovieViewUsesUIKit
+#if SwiffViewUsesUIKit
 #import <UIKit/UIKit.h>
-#define SwiffMovieViewSuperclass UIView
+#define SwiffViewSuperclass UIView
 #else
 #import <AppKit/AppKit.h>
-#define SwiffMovieViewSuperclass NSView
+#define SwiffViewSuperclass NSView
 #endif
 
 
 @class SwiffLayer, SwiffMovie, SwiffFrame, SwiffPlayhead;
 @class SwiffMovieLayer, SwiffSpriteLayer;
 
-@protocol SwiffMovieViewDelegate;
+@protocol SwiffViewDelegate;
 
-@interface SwiffMovieView : SwiffMovieViewSuperclass <SwiffMovieLayerDelegate> {
+@interface SwiffView : SwiffViewSuperclass <SwiffMovieLayerDelegate> {
 @private
-    id<SwiffMovieViewDelegate> m_delegate;
+    id<SwiffViewDelegate> m_delegate;
     SwiffMovieLayer *m_movieLayer;
     
-    BOOL m_delegate_movieView_willDisplayFrame;
-    BOOL m_delegate_movieView_didDisplayFrame;
-    BOOL m_delegate_movieView_spriteLayer_shouldInterpolateFromFrame_toFrame;
+    BOOL m_delegate_swiffView_willDisplayFrame;
+    BOOL m_delegate_swiffView_didDisplayFrame;
+    BOOL m_delegate_swiffView_spriteLayer_shouldInterpolateFromFrame_toFrame;
 }
 
 @property (nonatomic, retain) SwiffMovie *movie;
 
-@property (nonatomic, assign) id<SwiffMovieViewDelegate> delegate;
+@property (nonatomic, assign) id<SwiffViewDelegate> delegate;
 @property (nonatomic, assign) BOOL drawsBackground;
 @property (nonatomic, assign) BOOL usesSublayers;
 @property (nonatomic, assign) CGAffineTransform baseAffineTransform;
 @property (nonatomic, assign) SwiffColorTransform baseColorTransform;
+@property (nonatomic, assign) SwiffColorTransform postColorTransform;
 
 @property (nonatomic, retain, readonly) SwiffMovieLayer *layer;
 @property (nonatomic, retain, readonly) SwiffPlayhead *playhead;
@@ -72,9 +73,9 @@
 @end
 
 
-@protocol SwiffMovieViewDelegate <NSObject>
+@protocol SwiffViewDelegate <NSObject>
 @optional
-- (void) movieView:(SwiffMovieView *)movieView willDisplayFrame:(SwiffFrame *)frame;
-- (void) movieView:(SwiffMovieView *)movieView didDisplayFrame:(SwiffFrame *)frame;
-- (BOOL) movieView:(SwiffMovieView *)movieView spriteLayer:(SwiffSpriteLayer *)spriteLayer shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame;
+- (void) swiffView:(SwiffView *)swiffView willDisplayFrame:(SwiffFrame *)frame;
+- (void) swiffView:(SwiffView *)swiffView didDisplayFrame:(SwiffFrame *)frame;
+- (BOOL) swiffView:(SwiffView *)swiffView spriteLayer:(SwiffSpriteLayer *)spriteLayer shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame;
 @end

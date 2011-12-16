@@ -33,8 +33,6 @@
 #import "SwiffPath.h"
 
 
-extern void SwiffPathAddOperation(SwiffPath *path, CGFloat type, CGPoint *toPoint, CGPoint *controlPoint);
-
 enum {
     _SwiffShapeOperationTypeHeader = 0,
     _SwiffShapeOperationTypeLine   = 1,
@@ -334,8 +332,14 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
 
 - (void) dealloc
 {
-    [m_tagData release];  m_tagData = nil;
-    [m_paths   release];  m_paths  = nil;
+    if (m_groups) {
+        CFRelease(m_groups);
+        m_groups = NULL;
+    }
+
+    [m_fillStyles release];  m_fillStyles = nil;
+    [m_lineStyles release];  m_lineStyles = nil;
+    [m_paths      release];  m_paths      = nil;
 
     [super dealloc];
 }
@@ -518,32 +522,41 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
 }
 
 
+- (void) _makePaths
+{
+    @autoreleasepool {
+        NSMutableArray *result = [[NSMutableArray alloc] init];
+
+        CFIndex length = CFArrayGetCount(m_groups);
+        for (CFIndex i = 0; i < length; i++) {
+            _SwiffShapeOperation *operations = (_SwiffShapeOperation *)CFArrayGetValueAtIndex(m_groups, i);
+           
+            [result addObjectsFromArray:[self _fillPathsForOperations:operations]];
+            [result addObjectsFromArray:[self _linePathsForOperations:operations]];
+        
+            free(operations);
+        }
+        
+        CFRelease(m_groups);
+        m_groups = NULL;
+
+        m_paths = result;
+    }
+}
+
+
 #pragma mark -
 #pragma mark Accessors
 
 - (NSArray *) paths
 {
     if (!m_paths && m_groups) {
-        @autoreleasepool {
-            NSMutableArray *result = [[NSMutableArray alloc] init];
-
-            CFIndex length = CFArrayGetCount(m_groups);
-            for (CFIndex i = 0; i < length; i++) {
-                _SwiffShapeOperation *operations = (_SwiffShapeOperation *)CFArrayGetValueAtIndex(m_groups, i);
-               
-                [result addObjectsFromArray:[self _fillPathsForOperations:operations]];
-                [result addObjectsFromArray:[self _linePathsForOperations:operations]];
-            
-                free(operations);
-            }
-            
-            CFRelease(m_groups);
-            m_paths = result;
-        }
+        [self _makePaths];
     }
 
     return m_paths;
 }
+
 
 @synthesize movie                 = m_movie,
             libraryID             = m_libraryID,

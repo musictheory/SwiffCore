@@ -163,9 +163,15 @@ static NSString * const PlacedObjectKey = @"SwiffPlacedObject";
 }
 
 
-- (SwiffColorTransform) _baseColorTransform
+- (const SwiffColorTransform *) _baseColorTransform
 {
-    return SwiffColorTransformIdentity;
+    return &SwiffColorTransformIdentity;
+}
+
+
+- (const SwiffColorTransform *) _postColorTransform
+{
+    return &SwiffColorTransformIdentity;
 }
 
 
@@ -283,17 +289,29 @@ static NSString * const PlacedObjectKey = @"SwiffPlacedObject";
         CGContextTranslateCTM(context, -position.x, -position.y);
 
         CGAffineTransform baseTransform = [self _baseAffineTransform];
-        SwiffColorTransform baseColorTransform = [self _baseColorTransform];
+        const SwiffColorTransform *baseColorTransform = [self _baseColorTransform];
+        const SwiffColorTransform *postColorTransform = [self _postColorTransform];
 
-        [[SwiffRenderer sharedInstance] renderPlacedObject:placedObject movie:m_movie context:context baseAffineTransform:baseTransform baseColorTransform:baseColorTransform];
+        [[SwiffRenderer sharedInstance] renderPlacedObject: placedObject 
+                                                     movie: m_movie 
+                                                   context: context 
+                                       baseAffineTransform: baseTransform 
+                                        baseColorTransform: baseColorTransform
+                                        postColorTransform: postColorTransform];
 
     } else if (m_spriteDefinition) {
 
     } else if (m_currentFrame) {
         CGAffineTransform baseTransform = [self _baseAffineTransform];
-        SwiffColorTransform baseColorTransform = [self _baseColorTransform];
+        const SwiffColorTransform *baseColorTransform = [self _baseColorTransform];
+        const SwiffColorTransform *postColorTransform = [self _postColorTransform];
 
-        [[SwiffRenderer sharedInstance] renderFrame:m_currentFrame movie:m_movie context:context baseAffineTransform:baseTransform baseColorTransform:baseColorTransform];
+        [[SwiffRenderer sharedInstance] renderFrame: m_currentFrame 
+                                              movie: m_movie 
+                                            context: context 
+                                baseAffineTransform: baseTransform 
+                                 baseColorTransform: baseColorTransform
+                                 postColorTransform: postColorTransform];
     }
 
     CGContextRestoreGState(context);
