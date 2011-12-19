@@ -52,6 +52,5 @@
 
 #import <SwiffMovie.h>
 
-#import <SwiffSpriteLayer.h>
-#import <SwiffMovieLayer.h>
+#import <SwiffLayer.h>
 #import <SwiffView.h>

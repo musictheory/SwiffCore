@@ -131,6 +131,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
         __block _SwiffShapeOperation *operations = NULL;
         __block NSUInteger operationsCount = 0;
         __block NSUInteger operationsCapacity = 0;
+        __block CGFloat maxWidth = 0.0;
 
         CFMutableArrayRef groups = CFArrayCreateMutable(NULL, 0, NULL);
 
@@ -142,8 +143,16 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
             fillStyleOffset = [m_fillStyles count];
             lineStyleOffset = [m_lineStyles count];
 
-            [fillStyles addObjectsFromArray:[SwiffFillStyle fillStyleArrayWithParser:parser]];
-            [lineStyles addObjectsFromArray:[SwiffLineStyle lineStyleArrayWithParser:parser]];
+            NSArray *moreFillStyles = [SwiffFillStyle fillStyleArrayWithParser:parser];
+            NSArray *moreLineStyles = [SwiffLineStyle lineStyleArrayWithParser:parser];
+
+            for (SwiffLineStyle *lineStyle in moreLineStyles) {
+                CGFloat width = [lineStyle width];
+                if (width > maxWidth) maxWidth = width;
+            }
+
+            [fillStyles addObjectsFromArray:moreFillStyles];
+            [lineStyles addObjectsFromArray:moreLineStyles];
         };
         
         _SwiffShapeOperation *(^nextOperation)() = ^{
@@ -324,6 +333,9 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
             addEndOperation();
             CFArrayAppendValue(groups, operations);
         }
+        
+        CGFloat padding = ceil(maxWidth / 2.0) + 1;
+        m_renderBounds = CGRectInset(m_bounds, -padding, -padding);
     }
 
     return self;
@@ -333,6 +345,11 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
 - (void) dealloc
 {
     if (m_groups) {
+        CFIndex length = CFArrayGetCount(m_groups);
+        for (CFIndex i = 0; i < length; i++) {
+            free((void *)CFArrayGetValueAtIndex(m_groups, i));
+        }
+
         CFRelease(m_groups);
         m_groups = NULL;
     }
@@ -561,6 +578,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
 @synthesize movie                 = m_movie,
             libraryID             = m_libraryID,
             bounds                = m_bounds,
+            renderBounds          = m_renderBounds,
             edgeBounds            = m_edgeBounds,
             usesFillWindingRule   = m_usesFillWindingRule,
             usesNonScalingStrokes = m_usesNonScalingStrokes,

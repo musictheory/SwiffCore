@@ -27,6 +27,7 @@
 
 
 #import "SwiffPlacedObject.h"
+#import "SwiffMovie.h"
 
 typedef struct _SwiffPlacedObjectAdditionalStorage
 {
@@ -36,6 +37,7 @@ typedef struct _SwiffPlacedObjectAdditionalStorage
     UInt16 ratio;
     BOOL   hasColorTransform;
     BOOL   hidden;
+    BOOL   wantsLayer;
 } SwiffPlacedObjectAdditionalStorage;
 
 #define ADDITIONAL ((SwiffPlacedObjectAdditionalStorage *)m_additional)
@@ -63,18 +65,10 @@ typedef struct _SwiffPlacedObjectAdditionalStorage
 
         if (placedObject->m_additional) {
             m_additional = malloc(sizeof(SwiffPlacedObjectAdditionalStorage));
-
+            memcpy(m_additional, placedObject->m_additional, sizeof(SwiffPlacedObjectAdditionalStorage));
+            
             SwiffPlacedObjectAdditionalStorage *other = placedObject->m_additional;
-
-            ADDITIONAL->name              = [other->name copy];
-            ADDITIONAL->clipDepth         =  other->clipDepth;
-            ADDITIONAL->ratio             =  other->ratio;
-            ADDITIONAL->hasColorTransform =  other->hasColorTransform;
-            ADDITIONAL->hidden            =  other->hidden;
-
-            if (other->hasColorTransform) {
-                ADDITIONAL->colorTransform = other->colorTransform;
-            }
+            ADDITIONAL->name = [other->name copy];
         }
     }
     
@@ -94,7 +88,11 @@ typedef struct _SwiffPlacedObjectAdditionalStorage
     [super dealloc];
 }
 
-- (void) setupWithDefinition:(id<SwiffPlacableDefinition>)definition
+
+#pragma mark -
+#pragma mark Public Methods
+
+- (void) setupWithDefinition:(id<SwiffDefinition>)definition
 {
     // ABSTRACT
 }
@@ -125,6 +123,19 @@ typedef struct _SwiffPlacedObjectAdditionalStorage
 - (BOOL) isHidden
 {
     return m_additional ? ADDITIONAL->hidden : NO;
+}
+
+
+- (void) setWantsLayer:(BOOL)wantsLayer
+{
+    MAKE_ADDITIONAL;
+    ADDITIONAL->wantsLayer = wantsLayer;
+}
+
+
+- (BOOL) wantsLayer
+{
+    return m_additional ? ADDITIONAL->wantsLayer : NO;
 }
 
 

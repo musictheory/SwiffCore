@@ -43,8 +43,7 @@
 		5546809B145F558C00BB74EB /* SwiffSoundPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 550C99B5145A03F200836C62 /* SwiffSoundPlayer.m */; };
 		5574A09E145CAB2C00DA4FB7 /* SwiffMPEGUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 5574A09D145CAB2C00DA4FB7 /* SwiffMPEGUtils.m */; };
 		5574A0A3145D238800DA4FB7 /* SwiffWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5574A0A2145D238700DA4FB7 /* SwiffWriter.m */; };
-		5580F4D5146DE203005F2AC0 /* SwiffMovieLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5580F4D4146DE202005F2AC0 /* SwiffMovieLayer.m */; };
-		5580F4D9146DE35E005F2AC0 /* SwiffSpriteLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5580F4D8146DE35E005F2AC0 /* SwiffSpriteLayer.m */; };
+		5580F4D9146DE35E005F2AC0 /* SwiffLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5580F4D8146DE35E005F2AC0 /* SwiffLayer.m */; };
 		5595A5F51442C03300DECD41 /* SwiffDynamicTextDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A6014429C9E00E12C27 /* SwiffDynamicTextDefinition.m */; };
 		5595A5F61442C03300DECD41 /* SwiffFillStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A6214429C9E00E12C27 /* SwiffFillStyle.m */; };
 		5595A5F71442C03300DECD41 /* SwiffFontDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A6414429C9E00E12C27 /* SwiffFontDefinition.m */; };
@@ -60,8 +59,7 @@
 		5595A6031442C03300DECD41 /* SwiffSpriteDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A7C14429C9E00E12C27 /* SwiffSpriteDefinition.m */; };
 		5595A6041442C03300DECD41 /* SwiffStaticTextDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A7E14429C9E00E12C27 /* SwiffStaticTextDefinition.m */; };
 		5595A6061442C03300DECD41 /* SwiffBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A5E14429C9E00E12C27 /* SwiffBase.m */; };
-		55B079C214884D60006769C8 /* SwiffMovieLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5580F4D4146DE202005F2AC0 /* SwiffMovieLayer.m */; };
-		55B079C314884D60006769C8 /* SwiffSpriteLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5580F4D8146DE35E005F2AC0 /* SwiffSpriteLayer.m */; };
+		55B079C314884D60006769C8 /* SwiffLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5580F4D8146DE35E005F2AC0 /* SwiffLayer.m */; };
 		55B34CA214934E8900C67849 /* SwiffView.m in Sources */ = {isa = PBXBuildFile; fileRef = 55B34CA114934E8900C67849 /* SwiffView.m */; };
 		55B34CA314934EFA00C67849 /* SwiffView.m in Sources */ = {isa = PBXBuildFile; fileRef = 55B34CA114934E8900C67849 /* SwiffView.m */; };
 		55DBFAC11444EE22003AA0DA /* SwiffScene.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DBFAC01444EE20003AA0DA /* SwiffScene.m */; };
@@ -99,10 +97,8 @@
 		5574A0A0145D1BB300DA4FB7 /* SwiffDefinition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffDefinition.h; path = Source/SwiffDefinition.h; sourceTree = "<group>"; };
 		5574A0A1145D238700DA4FB7 /* SwiffWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffWriter.h; path = Source/SwiffWriter.h; sourceTree = "<group>"; };
 		5574A0A2145D238700DA4FB7 /* SwiffWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffWriter.m; path = Source/SwiffWriter.m; sourceTree = "<group>"; };
-		5580F4D3146DE202005F2AC0 /* SwiffMovieLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffMovieLayer.h; path = Source/SwiffMovieLayer.h; sourceTree = "<group>"; };
-		5580F4D4146DE202005F2AC0 /* SwiffMovieLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffMovieLayer.m; path = Source/SwiffMovieLayer.m; sourceTree = "<group>"; };
-		5580F4D7146DE35E005F2AC0 /* SwiffSpriteLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffSpriteLayer.h; path = Source/SwiffSpriteLayer.h; sourceTree = "<group>"; };
-		5580F4D8146DE35E005F2AC0 /* SwiffSpriteLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffSpriteLayer.m; path = Source/SwiffSpriteLayer.m; sourceTree = "<group>"; };
+		5580F4D7146DE35E005F2AC0 /* SwiffLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffLayer.h; path = Source/SwiffLayer.h; sourceTree = "<group>"; };
+		5580F4D8146DE35E005F2AC0 /* SwiffLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffLayer.m; path = Source/SwiffLayer.m; sourceTree = "<group>"; };
 		55955E0B147089BC00BAB75E /* SwiffCore_Profile.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = SwiffCore_Profile.xcconfig; path = Config/SwiffCore_Profile.xcconfig; sourceTree = SOURCE_ROOT; };
 		55955E0D147089F000BAB75E /* SwiffCore_iOS_Profile.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = SwiffCore_iOS_Profile.xcconfig; sourceTree = "<group>"; };
 		55955E0E147089F000BAB75E /* SwiffCore_Mac_Profile.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = SwiffCore_Mac_Profile.xcconfig; sourceTree = "<group>"; };
@@ -292,10 +288,8 @@
 			children = (
 				55F65A6F14429C9E00E12C27 /* SwiffRenderer.h */,
 				55F65A7014429C9E00E12C27 /* SwiffRenderer.m */,
-				5580F4D3146DE202005F2AC0 /* SwiffMovieLayer.h */,
-				5580F4D4146DE202005F2AC0 /* SwiffMovieLayer.m */,
-				5580F4D7146DE35E005F2AC0 /* SwiffSpriteLayer.h */,
-				5580F4D8146DE35E005F2AC0 /* SwiffSpriteLayer.m */,
+				5580F4D7146DE35E005F2AC0 /* SwiffLayer.h */,
+				5580F4D8146DE35E005F2AC0 /* SwiffLayer.m */,
 				55B34CA014934E8900C67849 /* SwiffView.h */,
 				55B34CA114934E8900C67849 /* SwiffView.m */,
 			);
@@ -436,8 +430,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55B079C214884D60006769C8 /* SwiffMovieLayer.m in Sources */,
-				55B079C314884D60006769C8 /* SwiffSpriteLayer.m in Sources */,
+				55B079C314884D60006769C8 /* SwiffLayer.m in Sources */,
 				55468097145F558C00BB74EB /* SwiffMPEGUtils.m in Sources */,
 				55468098145F558C00BB74EB /* SwiffWriter.m in Sources */,
 				55468099145F558C00BB74EB /* SwiffSoundDefinition.m in Sources */,
@@ -498,8 +491,7 @@
 				550C99BA145A04FD00836C62 /* SwiffSoundEvent.m in Sources */,
 				5574A09E145CAB2C00DA4FB7 /* SwiffMPEGUtils.m in Sources */,
 				5574A0A3145D238800DA4FB7 /* SwiffWriter.m in Sources */,
-				5580F4D5146DE203005F2AC0 /* SwiffMovieLayer.m in Sources */,
-				5580F4D9146DE35E005F2AC0 /* SwiffSpriteLayer.m in Sources */,
+				5580F4D9146DE35E005F2AC0 /* SwiffLayer.m in Sources */,
 				55F3158F148A072100E6E625 /* SwiffPlacedDynamicText.m in Sources */,
 				5539A63B148DA57B00E8FA86 /* SwiffStaticTextRecord.m in Sources */,
 				5539A63F148EFB0500E8FA86 /* SwiffDynamicTextAttributes.m in Sources */,

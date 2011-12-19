@@ -488,6 +488,18 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
 }
 
 
+- (CGRect) bounds
+{
+    return CGRectZero;
+}
+
+
+- (CGRect) renderBounds
+{
+    return CGRectZero;
+}
+
+
 @synthesize movie     = m_movie,
             libraryID = m_libraryID;
 

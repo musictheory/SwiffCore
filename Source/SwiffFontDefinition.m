@@ -420,6 +420,9 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 #pragma mark -
 #pragma mark Accessors
 
+- (CGRect) bounds       { return CGRectZero; }
+- (CGRect) renderBounds { return CGRectZero; }
+
 @synthesize movie         = m_movie,
             libraryID     = m_libraryID,
             name          = m_name,

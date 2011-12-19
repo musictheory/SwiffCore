@@ -27,7 +27,7 @@
 
 #import <SwiffImport.h>
 #import <SwiffBase.h>
-#import <SwiffMovieLayer.h>
+#import <SwiffLayer.h>
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR || TARGET_HAS_UIKIT
 #define SwiffViewUsesUIKit 1
@@ -36,39 +36,41 @@
 #if SwiffViewUsesUIKit
 #import <UIKit/UIKit.h>
 #define SwiffViewSuperclass UIView
+#define SwiffViewRect       CGRect
 #else
 #import <AppKit/AppKit.h>
 #define SwiffViewSuperclass NSView
+#define SwiffViewRect       NSRect
 #endif
 
 
 @class SwiffLayer, SwiffMovie, SwiffFrame, SwiffPlayhead;
-@class SwiffMovieLayer, SwiffSpriteLayer;
 
 @protocol SwiffViewDelegate;
 
-@interface SwiffView : SwiffViewSuperclass <SwiffMovieLayerDelegate> {
+@interface SwiffView : SwiffViewSuperclass <SwiffLayerDelegate> {
 @private
     id<SwiffViewDelegate> m_delegate;
-    SwiffMovieLayer *m_movieLayer;
+    SwiffLayer           *m_layer;
     
     BOOL m_delegate_swiffView_willDisplayFrame;
     BOOL m_delegate_swiffView_didDisplayFrame;
-    BOOL m_delegate_swiffView_spriteLayer_shouldInterpolateFromFrame_toFrame;
+    BOOL m_delegate_swiffView_shouldInterpolateFromFrame_toFrame;
 }
 
-@property (nonatomic, retain) SwiffMovie *movie;
+- (id) initWithFrame:(SwiffViewRect)frame movie:(SwiffMovie *)movie;
+
+- (void) redisplay;
 
 @property (nonatomic, assign) id<SwiffViewDelegate> delegate;
 @property (nonatomic, assign) BOOL drawsBackground;
-@property (nonatomic, assign) BOOL usesSublayers;
+
 @property (nonatomic, assign) CGAffineTransform baseAffineTransform;
 @property (nonatomic, assign) SwiffColorTransform baseColorTransform;
 @property (nonatomic, assign) SwiffColorTransform postColorTransform;
 
-@property (nonatomic, retain, readonly) SwiffMovieLayer *layer;
+@property (nonatomic, retain, readonly) SwiffMovie *movie;
 @property (nonatomic, retain, readonly) SwiffPlayhead *playhead;
-
 
 @end
 
@@ -77,5 +79,5 @@
 @optional
 - (void) swiffView:(SwiffView *)swiffView willDisplayFrame:(SwiffFrame *)frame;
 - (void) swiffView:(SwiffView *)swiffView didDisplayFrame:(SwiffFrame *)frame;
-- (BOOL) swiffView:(SwiffView *)swiffView spriteLayer:(SwiffSpriteLayer *)spriteLayer shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame;
+- (BOOL) swiffView:(SwiffView *)swiffView shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame;
 @end

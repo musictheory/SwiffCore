@@ -32,7 +32,7 @@
 
 
 @interface SwiffPlacedObject : NSObject {
-@private
+@package
     UInt16               m_libraryID;
     UInt16               m_depth;
     CGAffineTransform    m_affineTransform;
@@ -43,7 +43,7 @@
 - (id) initWithPlacedObject:(SwiffPlacedObject *)placedObject;
 
 // Called after libraryID has changed, allows subclasses to setup variables based on definition
-- (void) setupWithDefinition:(id<SwiffPlacableDefinition>)definition;
+- (void) setupWithDefinition:(id<SwiffDefinition>)definition;
 
 @property (nonatomic, copy)   NSString *name;
 @property (nonatomic, assign) UInt16 libraryID;
@@ -53,6 +53,7 @@
 @property (nonatomic, assign) CGAffineTransform affineTransform;
 @property (nonatomic, assign) SwiffColorTransform colorTransform;
 @property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@property (nonatomic, assign) BOOL wantsLayer;
 
 // Inside pointers, valid for lifetime of the SwiffPlacedObject
 @property (nonatomic, assign, readonly) CGAffineTransform   *affineTransformPointer;

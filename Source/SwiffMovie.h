@@ -37,14 +37,14 @@
 
 @interface SwiffMovie : SwiffSpriteDefinition {
 @private
-    NSArray             *m_scenes;
-    NSDictionary        *m_sceneNameToSceneMap;
-    NSMutableDictionary *m_definitionMap;
+    NSArray                *m_scenes;
+    NSDictionary           *m_sceneNameToSceneMap;
+    CFMutableDictionaryRef  m_definitionMap;
 
-    NSInteger            m_version;
-    CGRect               m_stageRect;
-    CGFloat              m_frameRate;
-    SwiffColor           m_backgroundColor;
+    NSInteger   m_version;
+    CGRect      m_stageRect;
+    CGFloat     m_frameRate;
+    SwiffColor  m_backgroundColor;
 }
 
 - (id) initWithData:(NSData *)data;
@@ -71,3 +71,5 @@
 @property (nonatomic, assign, readonly) SwiffColor *backgroundColorPointer;
 
 @end
+
+extern id<SwiffDefinition> SwiffMovieGetDefinition(SwiffMovie *movie, UInt16 libraryID);
