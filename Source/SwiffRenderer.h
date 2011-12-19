@@ -28,25 +28,13 @@
 #import <SwiffImport.h>
 #import <SwiffBase.h>
 
-@class SwiffFrame, SwiffMovie, SwiffPlacedObject;
+@class SwiffFrame, SwiffMovie;
 
-
-@interface SwiffRenderer : NSObject
-
-+ (id) sharedInstance;
-
-- (void) renderFrame: (SwiffFrame *) frame
-               movie: (SwiffMovie *) movie
-             context: (CGContextRef) context
- baseAffineTransform: (CGAffineTransform) baseAffineTransform
-  baseColorTransform: (const SwiffColorTransform *) baseColorTransform
-  postColorTransform: (const SwiffColorTransform *) postColorTransform;
-
-- (void) renderPlacedObject: (SwiffPlacedObject *) placedObject
-                      movie: (SwiffMovie *) movie
-                    context: (CGContextRef) context
-        baseAffineTransform: (CGAffineTransform) baseAffineTransform
-         baseColorTransform: (const SwiffColorTransform *) baseColorTransform
-         postColorTransform: (const SwiffColorTransform *) postColorTransform;
-
-@end
+extern void SwiffRender(
+    CGContextRef context,
+    SwiffMovie *movie, 
+    NSArray *placedObjects,
+    CGAffineTransform baseAffineTransform,
+    const SwiffColorTransform *baseColorTransform,
+    const SwiffColorTransform *postColorTransform
+);

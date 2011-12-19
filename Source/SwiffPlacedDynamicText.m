@@ -97,7 +97,7 @@
 }
 
 
-- (void) setupWithDefinition:(id<SwiffPlacableDefinition>)definition
+- (void) setupWithDefinition:(id<SwiffDefinition>)definition
 {
     if (m_definition != definition) {
         [m_definition release];
@@ -124,26 +124,6 @@
         if (m_attributedText) CFRelease(m_attributedText);
         m_attributedText = NULL;
         
-        if (m_text) {
-            if (isHTML) {
-                SwiffHTMLToCoreTextConverter *converter = [SwiffHTMLToCoreTextConverter sharedInstance];
-                
-                SwiffDynamicTextAttributes *baseAttributes = [self _newBaseAttributes];
-                m_attributedText = [converter copyAttributedStringForHTML:m_text baseAttributes:baseAttributes];
-                [baseAttributes release];
-
-                CFRetain(m_attributedText);
-
-            } else {
-                SwiffDynamicTextAttributes *attributes = [self _newBaseAttributes];
-                NSDictionary *dictionary = [attributes copyCoreTextAttributes];
-
-                m_attributedText = CFAttributedStringCreate(NULL, (__bridge CFStringRef)m_text, (__bridge CFDictionaryRef)dictionary);
-
-                [dictionary release];
-                [attributes release];
-            }
-        }
     }
 }
 
@@ -154,9 +134,33 @@
 }
 
 
+- (CFAttributedStringRef) attributedText
+{
+    if (!m_attributedText && m_text) {
+        if (m_HTML) {
+            SwiffHTMLToCoreTextConverter *converter = [SwiffHTMLToCoreTextConverter sharedInstance];
+            
+            SwiffDynamicTextAttributes *baseAttributes = [self _newBaseAttributes];
+            m_attributedText = [converter copyAttributedStringForHTML:m_text baseAttributes:baseAttributes];
+            [baseAttributes release];
+
+        } else {
+            SwiffDynamicTextAttributes *attributes = [self _newBaseAttributes];
+            NSDictionary *dictionary = [attributes copyCoreTextAttributes];
+
+            m_attributedText = CFAttributedStringCreate(NULL, (__bridge CFStringRef)m_text, (__bridge CFDictionaryRef)dictionary);
+
+            [dictionary release];
+            [attributes release];
+        }
+    }
+
+    return m_attributedText;
+}
+
+
 @synthesize text           = m_text,
             definition     = m_definition,
-            attributedText = m_attributedText,
             HTML           = m_HTML;
 
 @end

@@ -46,6 +46,8 @@ static NSString * const SwiffMovieJPEGTablesDataKey = @"SwiffMovieJPEGTablesData
 // Associated value for parser - NSArray of SwiffBitmapDefinition objects that need JPEG tables
 static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEGTablesData";
 
+static void SwiffMovieSetDefinition(SwiffMovie *movie, UInt16 libraryID, id<SwiffDefinition> definition);
+
 
 @interface SwiffBitmapDefinition (Friend)
 - (void) _setJPEGTablesData:(NSData *)data;
@@ -62,7 +64,7 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 - (id) initWithData:(NSData *)data
 {
     if ((self = [self init])) {
-        m_definitionMap = [[NSMutableDictionary alloc] init];
+        m_definitionMap = CFDictionaryCreateMutable(NULL, 0, NULL, &kCFTypeDictionaryValueCallBacks);
 
         SwiffColor white = { 1.0, 1.0, 1.0, 1.0 };
         m_backgroundColor = white;
@@ -76,11 +78,15 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 
 - (void) dealloc
 {
-    [[m_definitionMap allValues] makeObjectsPerformSelector:@selector(clearWeakReferences)];
+    if (m_definitionMap) {
+        [[(NSDictionary *)m_definitionMap allValues] makeObjectsPerformSelector:@selector(clearWeakReferences)];
+
+        CFRelease(m_definitionMap);
+        m_definitionMap = NULL;
+    }
 
     [m_scenes              release];  m_scenes              = nil;
     [m_sceneNameToSceneMap release];  m_sceneNameToSceneMap = nil;
-    [m_definitionMap       release];  m_definitionMap       = nil;
 
     [super dealloc];
 }
@@ -155,13 +161,7 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 {
     if (tag == SwiffTagDefineShape) {
         SwiffShapeDefinition *shape = [[SwiffShapeDefinition alloc] initWithParser:parser movie:self];
-
-        if (shape) {
-            NSNumber *key = [[NSNumber alloc] initWithInteger:[shape libraryID]];
-            [m_definitionMap setObject:shape forKey:key];
-            [key release];
-        }
-
+        SwiffMovieSetDefinition(self, [shape libraryID], shape);
         [shape release];
 
     } else if (tag == SwiffTagDefineButton) {
@@ -181,12 +181,7 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 
     } else if (tag == SwiffTagDefineBits || tag == SwiffTagDefineBitsLossless) {
         SwiffBitmapDefinition *bitmap = [[SwiffBitmapDefinition alloc] initWithParser:parser movie:self];
-
-        if (bitmap) {
-            NSNumber *key = [[NSNumber alloc] initWithInteger:[bitmap libraryID]];
-            [m_definitionMap setObject:bitmap forKey:key];
-            [key release];
-        }
+        SwiffMovieSetDefinition(self, [bitmap libraryID], bitmap);
 
         if (tag == SwiffTagDefineBits) {
             NSMutableArray *needsTables = SwiffParserGetAssociatedValue(parser, SwiffMovieNeedsJPEGTablesDataKey);
@@ -207,24 +202,12 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 
     } else if (tag == SwiffTagDefineSound) {
         SwiffSoundDefinition *sound = [[SwiffSoundDefinition alloc] initWithParser:parser movie:self];
-
-        if (sound) {
-            NSNumber *key = [[NSNumber alloc] initWithInteger:[sound libraryID]];
-            [m_definitionMap setObject:sound forKey:key];
-            [key release];
-        }
-
+        SwiffMovieSetDefinition(self, [sound libraryID], sound);
         [sound release];
 
     } else if (tag == SwiffTagDefineSprite) {
         SwiffSpriteDefinition *sprite = [[SwiffSpriteDefinition alloc] initWithParser:parser movie:self];
-
-        if (sprite) {
-            NSNumber *key = [[NSNumber alloc] initWithInteger:[sprite libraryID]];
-            [m_definitionMap setObject:sprite forKey:key];
-            [key release];
-        }
-        
+        SwiffMovieSetDefinition(self, [sprite libraryID], sprite);
         [sprite release];
 
     } else if ((tag == SwiffTagDefineFont)     ||
@@ -236,11 +219,11 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
         SwiffParserReadUInt16(parser, &fontID);
 
         NSNumber  *key  = [[NSNumber alloc] initWithInteger:(NSInteger)fontID];
-        SwiffFontDefinition *font = [m_definitionMap objectForKey:key];
+        SwiffFontDefinition *font = SwiffMovieGetDefinition(self, fontID);
         
         if (![font isKindOfClass:[SwiffFontDefinition class]]) {
             font = [[SwiffFontDefinition alloc] initWithLibraryID:fontID movie:self];
-            [m_definitionMap setObject:font forKey:key];
+            SwiffMovieSetDefinition(self, [font libraryID], font);
             [font release];
         }
         
@@ -258,24 +241,12 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
     
     } else if (tag == SwiffTagDefineText) {
         SwiffStaticTextDefinition *text = [[SwiffStaticTextDefinition alloc] initWithParser:parser movie:self];
-        
-        if (text) {
-            NSNumber *key = [[NSNumber alloc] initWithInteger:[text libraryID]];
-            [m_definitionMap setObject:text forKey:key];
-            [key release];
-        }
-        
+        SwiffMovieSetDefinition(self, [text libraryID], text);
         [text release];
     
     } else if (tag == SwiffTagDefineEditText) {
         SwiffDynamicTextDefinition *text = [[SwiffDynamicTextDefinition alloc] initWithParser:parser movie:self];
-        
-        if (text) {
-            NSNumber *key = [[NSNumber alloc] initWithInteger:[text libraryID]];
-            [m_definitionMap setObject:text forKey:key];
-            [key release];
-        }
-        
+        SwiffMovieSetDefinition(self, [text libraryID], text);
         [text release];
 
     } else if (tag == SwiffTagSetBackgroundColor) {
@@ -290,13 +261,24 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 #pragma mark -
 #pragma mark Public Methods
 
+id<SwiffDefinition> SwiffMovieGetDefinition(SwiffMovie *movie, UInt16 libraryID)
+{
+    UInt32 hash = (libraryID << 16) | libraryID;
+    return CFDictionaryGetValue(movie->m_definitionMap, (const void *)hash);
+}
+
+
+static void SwiffMovieSetDefinition(SwiffMovie *movie, UInt16 libraryID, id<SwiffDefinition> definition)
+{
+    if (!definition) return;
+    UInt32 hash = (libraryID << 16) | libraryID;
+    CFDictionarySetValue(movie->m_definitionMap, (const void *)hash, definition);
+}
+
+
 - (id<SwiffDefinition>) definitionWithLibraryID:(UInt16)libraryID
 {
-    NSNumber *number = [[NSNumber alloc] initWithInteger:libraryID];
-    id definition = [m_definitionMap objectForKey:number];
-    [number release];
-    
-    return definition;
+    return SwiffMovieGetDefinition(self, libraryID);
 }
 
 

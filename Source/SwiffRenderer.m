@@ -44,26 +44,48 @@
 #import "SwiffStaticTextRecord.h"
 #import "SwiffStaticTextDefinition.h"
 
-typedef struct _SwiffRendererState {
+typedef struct _SwiffRenderState {
     SwiffMovie       *movie;
     CGContextRef      context;
+    CGRect            clipBoundingBox;
     CGAffineTransform affineTransform;
     CFMutableArrayRef colorTransforms;
     const SwiffColorTransform *postColorTransform;
-} SwiffRendererState;
 
-static void sDrawPlacedObject(SwiffRendererState *state, SwiffPlacedObject *placedObject, BOOL applyColorTransform, BOOL applyAffineTransform);
+    UInt16            clipDepth;
+    BOOL              isBuildingClippingPath;
+    BOOL              skipUntilClipDepth;
+    
+} SwiffRenderState;
 
-static void sCleanupState(SwiffRendererState *state)
+static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placedObject, BOOL applyColorTransform, BOOL applyAffineTransform);
+static void sStopClipping(SwiffRenderState *state);
+
+
+static void sStartClipping(SwiffRenderState *state, UInt16 clipDepth)
 {
-    if (state->colorTransforms) {
-        CFRelease(state->colorTransforms);
-        state->colorTransforms = NULL;
+    if (state->clipDepth == 0) {
+        CGContextRef context = state->context;
+
+        CGContextSaveGState(context);
+        CGContextClip(context);
+
+        state->clipDepth = clipDepth;
     }
 }
 
 
-static void sPushColorTransform(SwiffRendererState *state, const SwiffColorTransform *transform)
+static void sStopClipping(SwiffRenderState *state)
+{
+    if (state->clipDepth) {
+        CGContextRestoreGState(state->context);
+        state->clipDepth = 0;
+        state->skipUntilClipDepth = NO;
+    }
+}
+
+
+static void sPushColorTransform(SwiffRenderState *state, const SwiffColorTransform *transform)
 {
     if (!state->colorTransforms) {
         state->colorTransforms = CFArrayCreateMutable(NULL, 0, NULL);
@@ -74,14 +96,14 @@ static void sPushColorTransform(SwiffRendererState *state, const SwiffColorTrans
 }
 
 
-static void sPopColorTransform(SwiffRendererState *state)
+static void sPopColorTransform(SwiffRenderState *state)
 {
     CFMutableArrayRef array = state->colorTransforms;
     CFArrayRemoveValueAtIndex(array, CFArrayGetCount(array) - 1);
 }
 
 
-static void sApplyLineStyle(SwiffRendererState *state, SwiffLineStyle *style)
+static void sApplyLineStyle(SwiffRenderState *state, SwiffLineStyle *style)
 {
     CGContextRef context = state->context;
     
@@ -104,12 +126,10 @@ static void sApplyLineStyle(SwiffRendererState *state, SwiffLineStyle *style)
     SwiffColor color = SwiffColorApplyColorTransformStack([style color], state->colorTransforms);
     color = SwiffColorApplyColorTransform(color, state->postColorTransform);
     CGContextSetStrokeColor(context, (CGFloat *)&color);
-    
-    CGContextStrokePath(context);
 }
 
 
-static void sApplyFillStyle(SwiffRendererState *state, SwiffFillStyle *style)
+static void sApplyFillStyle(SwiffRenderState *state, SwiffFillStyle *style)
 {
      CGContextRef context = state->context;
    
@@ -157,6 +177,7 @@ static void sApplyFillStyle(SwiffRendererState *state, SwiffFillStyle *style)
         
         CGGradientRelease(gradient);
         CGContextRestoreGState(context);
+
     } else if ((type >= SwiffFillStyleTypeRepeatingBitmap) && (type <= SwiffFillStyleTypeNonSmoothedClippedBitmap)) {
         SwiffBitmapDefinition *bitmapDefinition = [state->movie bitmapDefinitionWithLibraryID:[style bitmapID]];
         CGAffineTransform transform = [style bitmapTransform];
@@ -192,22 +213,7 @@ static void sApplyFillStyle(SwiffRendererState *state, SwiffFillStyle *style)
     }
 }
 
-
-static void sSetupContext(CGContextRef context)
-{
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-
-    CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
-    CGContextSetLineCap(context, kCGLineCapRound);
-    CGContextSetLineJoin(context, kCGLineJoinRound);
-    CGContextSetFillColorSpace(context, colorSpace);
-    CGContextSetStrokeColorSpace(context, colorSpace);
-
-    CGColorSpaceRelease(colorSpace);
-}
-
-
-static void sDrawSpriteDefinition(SwiffRendererState *state, SwiffSpriteDefinition *spriteDefinition)
+static void sDrawSpriteDefinition(SwiffRenderState *state, SwiffSpriteDefinition *spriteDefinition)
 {
     NSArray    *frames = [spriteDefinition frames];
     SwiffFrame *frame  = [frames count] ? [frames objectAtIndex:0] : nil;
@@ -218,13 +224,23 @@ static void sDrawSpriteDefinition(SwiffRendererState *state, SwiffSpriteDefiniti
 }
 
 
-static void sDrawShapeDefinition(SwiffRendererState *state, SwiffShapeDefinition *shapeDefinition)
+static void sDrawShapeDefinition(SwiffRenderState *state, SwiffShapeDefinition *shapeDefinition)
 {
     CGContextRef context = state->context;
+    BOOL isBuildingClippingPath = state->isBuildingClippingPath;
 
     for (SwiffPath *path in [shapeDefinition paths]) {
         SwiffLineStyle *lineStyle = [path lineStyle];
         SwiffFillStyle *fillStyle = [path fillStyle];
+
+        if (isBuildingClippingPath) {
+            if (!fillStyle) {
+                continue;
+            }
+
+        } else {
+            CGContextBeginPath(context);
+        }
 
         CGFloat lineWidth = [lineStyle width];
         BOOL shouldRound  = (lineWidth == SwiffLineStyleHairlineWidth);
@@ -238,30 +254,29 @@ static void sDrawShapeDefinition(SwiffRendererState *state, SwiffShapeDefinition
             shouldRound = YES;
         }
 
-        CGPoint lastMove = { NAN, NAN };
-        CGPoint location = { NAN, NAN };
+        BOOL hasPointTransform = NO;
 
-        CGAffineTransform pointTransform   = CGAffineTransformIdentity;
-        CGAffineTransform contextTransform = CGAffineTransformIdentity;
-        
+        CGContextSaveGState(context);
+
         if (!lineStyle || [lineStyle scalesHorizontally] || [lineStyle scalesVertically]) {
-            contextTransform = state->affineTransform;
+            CGContextConcatCTM(context, state->affineTransform);
         } else {
-            pointTransform = state->affineTransform;
+            hasPointTransform = YES;
         }
 
         SwiffPathOperation *operations = [path operations];
-        CGPoint *points = [path points];
-        BOOL     isDone = (operations == nil);
-
-        CGContextSaveGState(context);
-        CGContextConcatCTM(context, contextTransform);
+        CGPoint *points   = [path points];
+        BOOL     isDone   = (operations == nil);
+        CGPoint  lastMove = { NAN, NAN };
+        CGPoint  location = { NAN, NAN };
 
         while (!isDone) {
             CGFloat  type    = *operations++;
             CGPoint  toPoint = *points++;
 
-            toPoint = CGPointApplyAffineTransform(toPoint, pointTransform);
+            if (hasPointTransform) {
+                toPoint = CGPointApplyAffineTransform(toPoint, state->affineTransform);
+            }
 
             if (shouldRound) {
                 toPoint.x = (state->affineTransform.a < 0) ? (ceil(toPoint.x) - 0.5) : (floor(toPoint.x) + 0.5);
@@ -282,7 +297,9 @@ static void sDrawShapeDefinition(SwiffRendererState *state, SwiffShapeDefinition
             } else if (type == SwiffPathOperationCurve) {
                 CGPoint controlPoint = *points++;
                 
-                controlPoint = CGPointApplyAffineTransform(controlPoint, pointTransform);
+                if (hasPointTransform) {
+                    controlPoint = CGPointApplyAffineTransform(controlPoint, state->affineTransform);
+                }
 
                 CGContextAddQuadCurveToPoint(context, controlPoint.x, controlPoint.y, toPoint.x, toPoint.y);
             
@@ -300,24 +317,26 @@ static void sDrawShapeDefinition(SwiffRendererState *state, SwiffShapeDefinition
         BOOL hasStroke = NO;
         BOOL hasFill   = NO;
 
-        if (lineWidth > 0) {
-            sApplyLineStyle(state, lineStyle);
-            hasStroke = YES;
-        }
-        
-        if (fillStyle) {
-            sApplyFillStyle(state, fillStyle);
-            hasFill = ([fillStyle type] == SwiffFillStyleTypeColor);
-        }
-        
-        if (hasStroke || hasFill) {
-            CGPathDrawingMode mode;
+        if (!isBuildingClippingPath) {
+            if (lineWidth > 0) {
+                sApplyLineStyle(state, lineStyle);
+                hasStroke = YES;
+            }
             
-            if      (hasStroke && hasFill) mode = kCGPathFillStroke;
-            else if (hasStroke)            mode = kCGPathStroke;
-            else                           mode = kCGPathFill;
+            if (fillStyle) {
+                sApplyFillStyle(state, fillStyle);
+                hasFill = ([fillStyle type] == SwiffFillStyleTypeColor);
+            }
             
-            CGContextDrawPath(context, mode);
+            if (hasStroke || hasFill) {
+                CGPathDrawingMode mode;
+                
+                if      (hasStroke && hasFill) mode = kCGPathFillStroke;
+                else if (hasStroke)            mode = kCGPathStroke;
+                else                           mode = kCGPathFill;
+                
+                CGContextDrawPath(context, mode);
+            }
         }
 
         CGContextRestoreGState(context);
@@ -325,7 +344,7 @@ static void sDrawShapeDefinition(SwiffRendererState *state, SwiffShapeDefinition
 }
 
 
-static void sDrawStaticTextDefinition(SwiffRendererState *state, SwiffStaticTextDefinition *staticTextDefinition)
+static void sDrawStaticTextDefinition(SwiffRenderState *state, SwiffStaticTextDefinition *staticTextDefinition)
 {
     SwiffFontDefinition *font = nil;
     CGPathRef *glyphPaths = NULL;
@@ -394,7 +413,7 @@ static void sDrawStaticTextDefinition(SwiffRendererState *state, SwiffStaticText
 }
 
 
-static void sDrawPlacedDynamicText(SwiffRendererState *state, SwiffPlacedDynamicText *placedDynamicText)
+static void sDrawPlacedDynamicText(SwiffRenderState *state, SwiffPlacedDynamicText *placedDynamicText)
 {
     CFAttributedStringRef as = [placedDynamicText attributedText];
     SwiffDynamicTextDefinition *definition = [placedDynamicText definition];
@@ -450,18 +469,52 @@ static void sDrawPlacedDynamicText(SwiffRendererState *state, SwiffPlacedDynamic
 }
 
 
-static void sDrawPlacedObject(SwiffRendererState *state, SwiffPlacedObject *placedObject, BOOL applyColorTransform, BOOL applyAffineTransform)
+static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placedObject, BOOL applyColorTransform, BOOL applyAffineTransform)
 {
-    CGAffineTransform savedTransform;
+    UInt16 placedObjectClipDepth = placedObject->m_additional ? [placedObject clipDepth] : 0;
+    UInt16 placedObjectDepth     = placedObject->m_depth;
+    BOOL   placedObjectIsHidden  = placedObject->m_additional ? [placedObject isHidden] : NO;
 
-    if ([placedObject isHidden]) {
+    // If we are in a clipping mask...
+    if (state->clipDepth) {
+    
+        // Stop clipping if the depth is higher than the clipDepth
+        if (placedObjectDepth > state->clipDepth) {
+            sStopClipping(state);
+        }
+        
+        // Our clipping mask layer was hidden (or not in the clip bounding box).  We can safely skip drawing this layer
+        if (state->skipUntilClipDepth) {
+            return;
+        }
+    }
+
+    // The current depth starts a clipping mask
+    if (placedObjectClipDepth) {
+        state->isBuildingClippingPath = YES;
+        state->skipUntilClipDepth = YES;
+    }
+
+    // Bail out if placedObject is hidden
+    if (placedObjectIsHidden) {
         return;
     }
 
+    id<SwiffDefinition> definition = SwiffMovieGetDefinition(state->movie, [placedObject libraryID]);
+
+    CGAffineTransform newTransform = CGAffineTransformConcat([placedObject affineTransform], state->affineTransform);
+
+    // Bail out if renderBounds is not in the clipBoundingBox
+    CGRect renderBounds = CGRectApplyAffineTransform([definition renderBounds], newTransform);
+    if (!CGRectIntersectsRect(renderBounds, state->clipBoundingBox)) {
+        return;
+    }
+
+    CGAffineTransform savedTransform;
+
     if (applyAffineTransform) {
         savedTransform = state->affineTransform;
-        CGAffineTransform newTransform = [placedObject affineTransform];
-        state->affineTransform = CGAffineTransformConcat(newTransform, savedTransform);
+        state->affineTransform = newTransform;
     }
 
     BOOL needsColorTransformPop = NO;
@@ -475,12 +528,6 @@ static void sDrawPlacedObject(SwiffRendererState *state, SwiffPlacedObject *plac
         }
     }
 
-    CGContextSaveGState(state->context);
-
-    UInt16 libraryID = [placedObject libraryID];
-
-    id<SwiffDefinition> definition = [state->movie definitionWithLibraryID:libraryID];
-    
     if ([definition isKindOfClass:[SwiffDynamicTextDefinition class]]) {
         if ([placedObject isKindOfClass:[SwiffPlacedDynamicText class]]) {
             sDrawPlacedDynamicText(state, (SwiffPlacedDynamicText *)placedObject);
@@ -503,80 +550,55 @@ static void sDrawPlacedObject(SwiffRendererState *state, SwiffPlacedObject *plac
     if (applyAffineTransform) {
         state->affineTransform = savedTransform;
     }
-    
-    CGContextRestoreGState(state->context);
+
+    if (placedObjectClipDepth) {
+        sStartClipping(state, placedObjectClipDepth);
+        state->isBuildingClippingPath = NO;
+        state->skipUntilClipDepth = NO;
+    }
 }
 
 
-@implementation SwiffRenderer
-
-+ (id) sharedInstance
-{
-    static SwiffRenderer *sSharedInstance = nil;
-
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        sSharedInstance = [[SwiffRenderer alloc] init]; 
-    });
-    
-    return sSharedInstance;
-}
-
-
-- (void)   renderFrame: (SwiffFrame *) frame
-                 movie: (SwiffMovie *) movie
-               context: (CGContextRef) context
-   baseAffineTransform: (CGAffineTransform) baseAffineTransform
-    baseColorTransform: (const SwiffColorTransform *) baseColorTransform
-    postColorTransform: (const SwiffColorTransform *) postColorTransform
-{
+void SwiffRender(
+    CGContextRef context,
+    SwiffMovie *movie, 
+    NSArray *placedObjects,
+    CGAffineTransform baseAffineTransform,
+    const SwiffColorTransform *baseColorTransform,
+    const SwiffColorTransform *postColorTransform
+) {
     BOOL hasBaseColorTransform = !SwiffColorTransformIsIdentity(baseColorTransform);
 
     if (SwiffColorTransformIsIdentity(postColorTransform)) {
         postColorTransform = NULL;
     }
 
-    SwiffRendererState state = { movie, context, baseAffineTransform, NULL, postColorTransform };
+    CGRect clipBoundingBox = CGContextGetClipBoundingBox(context);
 
-    sSetupContext(context);
+    SwiffRenderState state = { movie, context, clipBoundingBox, baseAffineTransform, NULL, postColorTransform, 0, NO };
+
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+
+    CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
+    CGContextSetLineCap(context, kCGLineCapRound);
+    CGContextSetLineJoin(context, kCGLineJoinRound);
+    CGContextSetFillColorSpace(context, colorSpace);
+    CGContextSetStrokeColorSpace(context, colorSpace);
+
+    CGColorSpaceRelease(colorSpace);
 
     if (hasBaseColorTransform) {
         sPushColorTransform(&state, baseColorTransform);
     }
 
-    for (SwiffPlacedObject *object in [frame placedObjects]) {
+    for (SwiffPlacedObject *object in placedObjects) {
         sDrawPlacedObject(&state, object, YES, YES);
     }
     
-    sCleanupState(&state);
-}
-
-
-- (void) renderPlacedObject: (SwiffPlacedObject *) placedObject
-                      movie: (SwiffMovie *) movie
-                    context: (CGContextRef) context
-        baseAffineTransform: (CGAffineTransform) baseAffineTransform
-         baseColorTransform: (const SwiffColorTransform *) baseColorTransform
-         postColorTransform: (const SwiffColorTransform *) postColorTransform
-{
-    BOOL hasBaseColorTransform = !SwiffColorTransformIsIdentity(baseColorTransform);
-
-    if (SwiffColorTransformIsIdentity(postColorTransform)) {
-        postColorTransform = NULL;
+    if (state.colorTransforms) {
+        CFRelease(state.colorTransforms);
     }
 
-    SwiffRendererState state = { movie, context, baseAffineTransform, NULL, postColorTransform };
-
-    sSetupContext(context);
-
-    if (hasBaseColorTransform) {
-        sPushColorTransform(&state, baseColorTransform);
-    }
-
-    sDrawPlacedObject(&state, placedObject, YES, NO);
-
-    sCleanupState(&state);
+    sStopClipping(&state);
 }
 
-
-@end

@@ -283,6 +283,10 @@ CFRange SwiffSoundDefinitionGetFrameRangeAtIndex(SwiffSoundDefinition *self, CFI
 #pragma mark -
 #pragma mark Accessors
 
+- (CGRect) bounds       { return CGRectZero; }
+- (CGRect) renderBounds { return CGRectZero; }
+
+
 - (float) sampleRate
 {
     if      (m_rawSampleRate == 0)  return  5512.5f;

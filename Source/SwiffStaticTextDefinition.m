@@ -67,15 +67,9 @@
 }
 
 
-- (BOOL) hasEdgeBounds
+- (CGRect) renderBounds
 {
-    return NO;
-}
-
-
-- (CGRect) edgeBounds
-{
-    return CGRectZero;
+    return m_bounds;
 }
 
 

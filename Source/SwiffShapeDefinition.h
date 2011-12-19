@@ -32,7 +32,7 @@
 @class SwiffMovie;
 
 
-@interface SwiffShapeDefinition : NSObject <SwiffPlacableDefinition> {
+@interface SwiffShapeDefinition : NSObject <SwiffDefinition> {
 @private
     SwiffMovie *m_movie;
     UInt16      m_libraryID;
@@ -42,7 +42,9 @@
     NSArray    *m_paths;
     
     CGRect      m_bounds;
+    CGRect      m_renderBounds;
     CGRect      m_edgeBounds;
+
     BOOL        m_usesFillWindingRule;
     BOOL        m_usesNonScalingStrokes;
     BOOL        m_usesScalingStrokes;

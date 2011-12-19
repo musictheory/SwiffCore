@@ -30,7 +30,6 @@
 
 
 @interface SwiffView ()
-- (void) _setupMovieLayer;
 - (void) _layoutMovieLayer;
 @end
 
@@ -39,11 +38,17 @@
 
 - (void) dealloc
 {
-    [m_movieLayer setMovieLayerDelegate:nil];
-    [m_movieLayer release];
-    m_movieLayer = nil;
+    [m_layer setSwiffLayerDelegate:nil];
+    [m_layer release];
+    m_layer = nil;
 
     [super dealloc];
+}
+
+
+- (void) redisplay
+{
+    [m_layer redisplay];
 }
 
 
@@ -51,10 +56,11 @@
 #pragma mark UIKit Implementation
 #ifdef SwiffViewUsesUIKit
 
-- (id) initWithFrame:(CGRect)frame
+- (id) initWithFrame:(CGRect)frame movie:(SwiffMovie *)movie
 {
     if ((self = [super initWithFrame:frame])) {
-        [self _setupMovieLayer];
+        m_layer = [[SwiffLayer alloc] initWithMovie:movie];
+        [[self layer] addSublayer:m_layer];
     }
     
     return self;
@@ -92,7 +98,7 @@
 #pragma mark AppKit Implementation
 #ifndef SwiffViewUsesUIKit
 
-- (id) initWithFrame:(NSRect)frame
+- (id) initWithFrame:(NSRect)frame movie:(SwiffMovie *)movie
 {
     if ((self = [super initWithFrame:frame])) {
         CALayer *layer = [CALayer layer];
@@ -102,7 +108,9 @@
 
         [self setWantsLayer:YES];
         
-        [self _setupMovieLayer];
+        m_layer = [[SwiffLayer alloc] initWithMovie:movie];
+        [[self layer] addSublayer:m_layer];
+
         [self _layoutMovieLayer];
     }
     
@@ -123,20 +131,14 @@
 #pragma mark -
 #pragma mark Private Methods
 
-- (void) _setupMovieLayer
-{
-    m_movieLayer = [[SwiffMovieLayer alloc] init];
-    [[self layer] addSublayer:m_movieLayer];
-}
-
-
 - (void) _layoutMovieLayer
 {
-    if (![self movie]) return;
+    SwiffMovie *movie = [self movie];
+    if (!movie) return;
 
     CGFloat w = [self bounds].size.width;
     CGFloat h = [self bounds].size.height;
-    CGSize  stageSize   = [[self movie] stageRect].size;
+    CGSize  stageSize   = [movie stageRect].size;
     CGFloat aspectRatio = stageSize.width / stageSize.height;
     
     CGSize size = CGSizeMake(w, floor(w  / aspectRatio));
@@ -145,14 +147,14 @@
     }
 
     CGRect movieFrame = CGRectMake(floor((w - size.width) / 2.0), floor((h - size.height) / 2.0), size.width, size.height);
-    [m_movieLayer setFrame:movieFrame];
+    [m_layer setFrame:movieFrame];
 }
 
 
 #pragma mark -
 #pragma mark Movie Layer Delegate
 
-- (void) movieLayer:(SwiffMovieLayer *)movieLayer willDisplayFrame:(SwiffFrame *)frame
+- (void) layer:(SwiffLayer *)layer willDisplayFrame:(SwiffFrame *)frame
 {
     if (m_delegate_swiffView_willDisplayFrame) {
         [m_delegate swiffView:self willDisplayFrame:frame];
@@ -160,7 +162,7 @@
 }
 
 
-- (void) movieLayer:(SwiffMovieLayer *)movieLayer didDisplayFrame:(SwiffFrame *)frame
+- (void) layer:(SwiffLayer *)layer didDisplayFrame:(SwiffFrame *)frame
 {
     if (m_delegate_swiffView_willDisplayFrame) {
         [m_delegate swiffView:self didDisplayFrame:frame];
@@ -168,10 +170,10 @@
 }
 
 
-- (BOOL) movieLayer:(SwiffMovieLayer *)movieLayer spriteLayer:(SwiffSpriteLayer *)spriteLayer shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame
+- (BOOL) layer:(SwiffLayer *)layer shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame
 {
-    if (m_delegate_swiffView_spriteLayer_shouldInterpolateFromFrame_toFrame) {
-        return [m_delegate swiffView:self spriteLayer:spriteLayer shouldInterpolateFromFrame:fromFrame toFrame:toFrame];
+    if (m_delegate_swiffView_shouldInterpolateFromFrame_toFrame) {
+        return [m_delegate swiffView:self shouldInterpolateFromFrame:fromFrame toFrame:toFrame];
     }
         
     return NO;
@@ -184,74 +186,54 @@
 - (void) setDelegate:(id<SwiffViewDelegate>)delegate
 {
     if (m_delegate != delegate) {
-        [m_movieLayer setMovieLayerDelegate:(delegate ? self : nil)];
+        [m_layer setSwiffLayerDelegate:(delegate ? self : nil)];
 
         m_delegate = delegate;
         
         m_delegate_swiffView_willDisplayFrame = [m_delegate respondsToSelector:@selector(swiffView:willDisplayFrame:)];
         m_delegate_swiffView_didDisplayFrame  = [m_delegate respondsToSelector:@selector(swiffView:didDisplayFrame:)];
-        m_delegate_swiffView_spriteLayer_shouldInterpolateFromFrame_toFrame = [m_delegate respondsToSelector:@selector(swiffView:spriteLayer:shouldInterpolateFromFrame:toFrame:)];
+        m_delegate_swiffView_shouldInterpolateFromFrame_toFrame = [m_delegate respondsToSelector:@selector(swiffView:shouldInterpolateFromFrame:toFrame:)];
     }
 }
 
 
 - (void) setDrawsBackground:(BOOL)drawsBackground
 {
-    [m_movieLayer setDrawsBackground:drawsBackground];
+    [m_layer setDrawsBackground:drawsBackground];
 
     if (drawsBackground) {
-        [[self layer] setBackgroundColor:[m_movieLayer backgroundColor]];
+        [[self layer] setBackgroundColor:[m_layer backgroundColor]];
     } else {
         [[self layer] setBackgroundColor:NULL];
     }
 }
 
 
-- (void) setMovie:(SwiffMovie *)movie
-{
-    [m_movieLayer setMovie:movie];
-    
-    if ([self drawsBackground]) {
-        [[self layer] setBackgroundColor:[m_movieLayer backgroundColor]];
-    }
-    
-    [self _layoutMovieLayer];
-}
-
-
 - (void) setBaseAffineTransform:(CGAffineTransform)transform
 {
-    [m_movieLayer setBaseAffineTransform:transform];
+    [m_layer setBaseAffineTransform:transform];
 }
 
 
 - (void) setBaseColorTransform:(SwiffColorTransform)transform
 {
-    [m_movieLayer setBaseColorTransform:transform];
+    [m_layer setBaseColorTransform:transform];
 }
 
 
 - (void) setPostColorTransform:(SwiffColorTransform)transform
 {
-    [m_movieLayer setPostColorTransform:transform];
+    [m_layer setPostColorTransform:transform];
 }
 
 
-- (void) setUsesSublayers:(BOOL)usesSublayers
-{
-    [m_movieLayer setUsesSublayers:usesSublayers];
-}
-
-
-- (SwiffMovie    *)     movie               { return [m_movieLayer movie];               }
-- (SwiffPlayhead *)     playhead            { return [m_movieLayer playhead];            }
-- (BOOL)                drawsBackground     { return [m_movieLayer drawsBackground];     }
-- (BOOL)                usesSublayers       { return [m_movieLayer usesSublayers];       }
-- (CGAffineTransform)   baseAffineTransform { return [m_movieLayer baseAffineTransform]; }
-- (SwiffColorTransform) baseColorTransform  { return [m_movieLayer baseColorTransform];  }
-- (SwiffColorTransform) postColorTransform  { return [m_movieLayer postColorTransform];  }
+- (SwiffMovie    *)     movie               { return [m_layer movie];               }
+- (SwiffPlayhead *)     playhead            { return [m_layer playhead];            }
+- (BOOL)                drawsBackground     { return [m_layer drawsBackground];     }
+- (CGAffineTransform)   baseAffineTransform { return [m_layer baseAffineTransform]; }
+- (SwiffColorTransform) baseColorTransform  { return [m_layer baseColorTransform];  }
+- (SwiffColorTransform) postColorTransform  { return [m_layer postColorTransform];  }
 
 @synthesize delegate = m_delegate;
-@dynamic layer;
 
 @end

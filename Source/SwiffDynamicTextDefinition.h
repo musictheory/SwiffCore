@@ -33,7 +33,7 @@
 @class SwiffMovie;
 
 
-@interface SwiffDynamicTextDefinition : NSObject <SwiffPlacableDefinition> {
+@interface SwiffDynamicTextDefinition : NSObject <SwiffDefinition> {
 @private
     SwiffMovie *m_movie;
     UInt16      m_libraryID;

@@ -1,5 +1,5 @@
 /*
-    SwiffMovieLayer.h
+    SwiffSpriteLayer.m
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,44 +26,58 @@
 */
 
 #import <SwiffBase.h>
-#import <SwiffSpriteLayer.h>
+#import <SwiffImport.h>
+#import <QuartzCore/QuartzCore.h>
 #import <SwiffPlayhead.h>
 
-@protocol SwiffMovieLayerDelegate;
+@class SwiffMovie, SwiffFrame, SwiffPlacedObject, SwiffPlayhead
+;
+@protocol SwiffLayerDelegate;
 
-@class SwiffScene;
 
+@interface SwiffLayer : CALayer <SwiffPlayheadDelegate> {
+    id<SwiffLayerDelegate> m_delegate;
 
-@interface SwiffMovieLayer : SwiffSpriteLayer <SwiffPlayheadDelegate> {
-@private
-    id<SwiffMovieLayerDelegate> m_movieLayerDelegate;
-    SwiffPlayhead *m_playhead;
+    SwiffMovie            *m_movie;
+    SwiffFrame            *m_currentFrame;
+    SwiffPlayhead         *m_playhead;
+    CALayer               *m_contentLayer;
+    CFMutableDictionaryRef m_depthToSublayerMap;
 
-    CGAffineTransform   m_baseAffineTransform;
-    SwiffColorTransform m_baseColorTransform;
-    SwiffColorTransform m_postColorTransform;
+    CGAffineTransform    m_baseAffineTransform;
+    CGAffineTransform    m_scaledAffineTransform;
+    SwiffColorTransform  m_baseColorTransform;
+    SwiffColorTransform  m_postColorTransform;
 
-    BOOL        m_drawsBackground;
-    BOOL        m_movieLayerDelegate_movieLayer_willDisplayFrame;
-    BOOL        m_movieLayerDelegate_movieLayer_didDisplayFrame;
-    BOOL        m_movieLayerDelegate_movieLayer_spriteLayer_shouldInterpolateFromFrame_toFrame;
+    BOOL  m_interpolateCurrentFrame;
+    BOOL  m_drawsBackground;
+    BOOL  m_delegate_layer_willDisplayFrame;
+    BOOL  m_delegate_layer_didDisplayFrame;
+    BOOL  m_delegate_layer_shouldInterpolateFromFrame_toFrame;
 }
 
-@property (nonatomic, assign) id<SwiffMovieLayerDelegate> movieLayerDelegate;
+- (id) initWithMovie:(SwiffMovie *)movie;
 
+- (void) redisplay;
+
+@property (nonatomic, assign) id<SwiffLayerDelegate> swiffLayerDelegate;
+
+@property (nonatomic, retain, readonly) SwiffMovie *movie;
 @property (nonatomic, retain, readonly) SwiffPlayhead *playhead;
-@property (nonatomic, assign) BOOL drawsBackground;
+
+@property (nonatomic, retain) SwiffFrame *currentFrame;
 
 @property (nonatomic, assign) CGAffineTransform baseAffineTransform;
 @property (nonatomic, assign) SwiffColorTransform baseColorTransform;
 @property (nonatomic, assign) SwiffColorTransform postColorTransform;
 
+@property (nonatomic, assign) BOOL drawsBackground;
+
 @end
 
 
-@protocol SwiffMovieLayerDelegate <NSObject>
-- (void) movieLayer:(SwiffMovieLayer *)movieLayer willDisplayFrame:(SwiffFrame *)frame;
-- (void) movieLayer:(SwiffMovieLayer *)movieLayer didDisplayFrame:(SwiffFrame *)frame;
-- (BOOL) movieLayer:(SwiffMovieLayer *)movieLayer spriteLayer:(SwiffSpriteLayer *)spriteLayer shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame;
+@protocol SwiffLayerDelegate <NSObject>
+- (void) layer:(SwiffLayer *)layer willDisplayFrame:(SwiffFrame *)frame;
+- (void) layer:(SwiffLayer *)layer didDisplayFrame:(SwiffFrame *)frame;
+- (BOOL) layer:(SwiffLayer *)layer shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame;
 @end
-

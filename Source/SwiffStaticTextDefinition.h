@@ -32,7 +32,7 @@
 @class SwiffMovie;
 
 
-@interface SwiffStaticTextDefinition : NSObject <SwiffPlacableDefinition> {
+@interface SwiffStaticTextDefinition : NSObject <SwiffDefinition> {
 @private
     SwiffMovie       *m_movie;
     NSArray          *m_textRecords;

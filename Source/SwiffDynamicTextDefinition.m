@@ -155,13 +155,15 @@
 #pragma mark -
 #pragma mark Accessors
 
-- (CGRect) edgeBounds  { return CGRectZero; }
-- (BOOL) hasEdgeBounds { return NO; }
-
-
 - (SwiffColor *) colorPointer
 {
     return m_hasColor ? &m_color : NULL;
+}
+
+
+- (CGRect) renderBounds
+{
+    return m_bounds;
 }
 
 

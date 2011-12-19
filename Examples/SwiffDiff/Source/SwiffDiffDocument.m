@@ -145,7 +145,7 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 
     [[o_containerView window] setFrameAutosaveName:[[self fileURL] absoluteString]];
 
-    m_swiffView = [[SwiffView alloc] initWithFrame:[o_containerView bounds]];
+    m_swiffView = [[SwiffView alloc] initWithFrame:[o_containerView bounds] movie:m_movie];
     [m_swiffView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     [m_swiffView setDrawsBackground:YES];
 
@@ -176,8 +176,6 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
     [o_frameSlider setMinValue:1];
     [o_frameSlider setMaxValue:numberOfFrames];
     [o_totalFrameField setStringValue:[NSString stringWithFormat:@"/ %ld", (long)numberOfFrames]];
-
-    [m_swiffView setMovie:m_movie];
 
     NSDictionary *state = [[[self class] _allDocumentState] objectForKey:[[self fileURL] absoluteString]];
     [self loadState:state];
@@ -285,7 +283,12 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 
 - (IBAction) changeMode:(id)sender
 {
-    [self _setCurrentMode:[sender selectedSegment]];
+    if ([sender respondsToSelector:@selector(selectedSegment)]) {
+        [self _setCurrentMode:[sender selectedSegment]];
+    } else {
+        [self _setCurrentMode:[sender tag]];
+    }
+
     [SwiffDiffDocument saveState];
 }
 
@@ -305,6 +308,27 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
     windowFrame.size = CGSizeMake(stageSize.width + sizeDiff.width, stageSize.height + sizeDiff.height);
 
     [[o_containerView window] setFrame:windowFrame display:YES animate:YES];
+
+    [SwiffDiffDocument saveState];
+}
+
+
+- (IBAction) toggleWantsLayer:(id)sender
+{
+    BOOL yn = ([o_wantsLayer state] == NSOnState);
+
+    if (sender != o_wantsLayer) {
+        yn = !yn;
+        [o_wantsLayer setState:yn];
+    }
+
+    for (SwiffFrame *frame in [m_movie frames]) {
+        for (SwiffPlacedObject *po in [frame placedObjects]) {
+            [po setWantsLayer:yn];
+        }
+    }
+
+    [m_swiffView redisplay];
 
     [SwiffDiffDocument saveState];
 }
@@ -357,6 +381,7 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
             currentFrameField = o_currentFrameField,
             totalFrameField   = o_totalFrameField,
             frameSlider       = o_frameSlider,
-            containerView     = o_containerView;
+            containerView     = o_containerView,
+            wantsLayerButton  = o_wantsLayer;
 
 @end

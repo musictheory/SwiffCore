@@ -36,6 +36,7 @@
     NSTextField        *o_totalFrameField;
     NSSlider           *o_frameSlider;
     NSView             *o_containerView;
+    NSButton           *o_wantsLayer;
 
     NSTimer            *m_diffTimer;
     SwiffMovie         *m_movie;
@@ -52,6 +53,7 @@
 
 - (IBAction) changeMode:(id)sender;
 - (IBAction) changeCurrentFrame:(id)sender;
+- (IBAction) toggleWantsLayer:(id)sender;
 - (IBAction) viewActualSize:(id)sender;
 
 @property (retain) IBOutlet NSSegmentedControl *modeSelect;
@@ -59,5 +61,6 @@
 @property (retain) IBOutlet NSTextField *totalFrameField;
 @property (retain) IBOutlet NSSlider *frameSlider;
 @property (retain) IBOutlet NSView *containerView;
+@property (retain) IBOutlet NSButton *wantsLayerButton;
 
 @end

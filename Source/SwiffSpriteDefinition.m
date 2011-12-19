@@ -217,19 +217,14 @@
     hasClipActions = NO;
 
     SwiffPlacedObject *placedObject = nil;
-
-    id<SwiffPlacableDefinition> placableDefinition = nil;
+    id<SwiffDefinition> definition = nil;
     Class cls = [SwiffPlacedObject class];
 
     if (hasLibraryID) {
-        id<SwiffDefinition> definition = [m_movie definitionWithLibraryID:libraryID];
+        definition = [m_movie definitionWithLibraryID:libraryID];
 
-        if ([definition conformsToProtocol:@protocol(SwiffPlacableDefinition)]) {
-            placableDefinition = (id<SwiffPlacableDefinition>)definition;
-
-            if ([[placableDefinition class] respondsToSelector:@selector(placedObjectClass)]) {
-                cls = [[placableDefinition class] placedObjectClass];
-            }
+        if ([[definition class] respondsToSelector:@selector(placedObjectClass)]) {
+            cls = [[definition class] placedObjectClass];
         }
     }
 
@@ -245,7 +240,7 @@
     
     if (hasLibraryID) {
         [placedObject setLibraryID:libraryID];
-        [placedObject setupWithDefinition:placableDefinition];
+        [placedObject setupWithDefinition:definition];
     }
     
     if (hasClipDepth)      [placedObject setClipDepth:clipDepth];
@@ -461,9 +456,50 @@
 #pragma mark -
 #pragma mark Accessors
 
-- (CGRect) bounds      { return CGRectZero; }
-- (CGRect) edgeBounds  { return CGRectZero; }
-- (BOOL) hasEdgeBounds { return NO;         }
+- (void) _makeBounds
+{
+    for (SwiffFrame *frame in m_frames) {
+        for (SwiffPlacedObject *placedObject in [frame placedObjects]) {
+            id<SwiffDefinition> definition = SwiffMovieGetDefinition(m_movie, placedObject->m_libraryID);
+            
+            CGRect bounds       = CGRectApplyAffineTransform([definition bounds],       placedObject->m_affineTransform);
+            CGRect renderBounds = CGRectApplyAffineTransform([definition renderBounds], placedObject->m_affineTransform);
+            
+            if (CGRectIsEmpty(m_bounds)) {
+                m_bounds = bounds;
+            } else {
+                m_bounds = CGRectUnion(m_bounds, bounds);
+            }
+
+            if (CGRectIsEmpty(m_renderBounds)) {
+                m_renderBounds = renderBounds;
+            } else {
+                m_renderBounds = CGRectUnion(m_renderBounds, renderBounds);
+            }
+        }
+    }
+}
+
+
+- (CGRect) renderBounds
+{
+    if (CGRectIsEmpty(m_renderBounds)) {
+        [self _makeBounds];
+    }
+
+    return m_renderBounds;
+}
+
+
+- (CGRect) bounds
+{
+    if (CGRectIsEmpty(m_bounds)) {
+        [self _makeBounds];
+    }
+    
+    return m_bounds;
+}
+
 
 @synthesize movie      = m_movie,
             libraryID  = m_libraryID,

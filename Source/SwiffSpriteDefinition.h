@@ -32,11 +32,13 @@
 @class SwiffFrame, SwiffMovie, SwiffSceneAndFrameLabelData, SwiffSoundDefinition, SwiffSoundStreamData;
 
 
-@interface SwiffSpriteDefinition : NSObject <SwiffPlacableDefinition> {
+@interface SwiffSpriteDefinition : NSObject <SwiffDefinition> {
 @private
     CFMutableDictionaryRef m_depthToPlacedObjectMap;
     SwiffFrame      *m_lastFrame;
     UInt16           m_libraryID;
+    CGRect           m_bounds;
+    CGRect           m_renderBounds;
 
 @protected
     SwiffMovie      *m_movie;
