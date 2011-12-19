@@ -83,7 +83,7 @@ static NSString * const SwiffPlacedObjectKey = @"SwiffPlacedObject";
 
 
 #pragma mark -
-#pragma mark Private Methods
+#pragma mark Sublayer Logic
 
 static CGFloat sGetDistance(CGPoint p1, CGPoint p2)
 {
@@ -114,8 +114,6 @@ static CGFloat sGetScaleFactorForTransform(CGAffineTransform t)
     
     return larger.width > larger.height ? larger.width : larger.height;
 }
-
-extern NSString *NSStringFromCGRect(CGRect);
 
 
 static void sUpdateSublayerWithPlacedObject(SwiffLayer *self, CALayer *sublayer, SwiffPlacedObject *placedObject)
@@ -239,6 +237,18 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
 }
 
 
+#pragma mark -
+#pragma mark Private Methods
+
+- (void) _updateScaledTransform
+{
+    CGSize movieSize = [m_movie stageRect].size;
+    CGRect bounds    = [self bounds];
+
+    m_scaledAffineTransform = CGAffineTransformScale(self->m_baseAffineTransform, bounds.size.width /  movieSize.width, bounds.size.height / movieSize.height);
+}
+
+
 - (void) _transitionToFrame:(SwiffFrame *)newFrame
 {
     NSEnumerator *oldEnumerator = [[m_currentFrame placedObjects] objectEnumerator];
@@ -323,17 +333,8 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
 }
 
 
-- (void) _updateScaledTransform
-{
-    CGSize movieSize = [m_movie stageRect].size;
-    CGRect bounds    = [self bounds];
-
-    m_scaledAffineTransform = CGAffineTransformScale(self->m_baseAffineTransform, bounds.size.width /  movieSize.width, bounds.size.height / movieSize.height);
-}
-
-
 #pragma mark -
-#pragma mark CALayer Logic
+#pragma mark CALayer Overrides / Delegates
 
 - (void) setBounds:(CGRect)bounds
 {
@@ -445,37 +446,6 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
 }
 
 
-- (void) redisplay
-{
-    [m_contentLayer setNeedsDisplay];
-
-    if (m_depthToSublayerMap) {
-        CFIndex count = CFDictionaryGetCount(m_depthToSublayerMap);
-        CALayer **sublayers = malloc(count * sizeof(CALayer *));
-
-        CFDictionaryGetKeysAndValues(m_depthToSublayerMap, NULL, (const void **)sublayers);
-        for (CFIndex i = 0; i < count; i++) {
-            [sublayers[i] removeFromSuperlayer];
-        }
-
-        free(sublayers);
-
-        CFRelease(m_depthToSublayerMap);
-        m_depthToSublayerMap = NULL;
-    }
-
-    SwiffFrame *savedFrame = [[self currentFrame] retain];
-    id<SwiffLayerDelegate> savedDelegate = m_delegate;
-
-    m_delegate = nil;
-    [self setCurrentFrame:nil];
-    [self setCurrentFrame:savedFrame];
-    m_delegate = savedDelegate;
-    
-    [savedFrame release];
-}
-
-
 #pragma mark -
 #pragma mark Playhead Delegate
 
@@ -490,6 +460,38 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
     [[SwiffSoundPlayer sharedInstance] processMovie:m_movie frame:frame];
 
     [self setCurrentFrame:frame];
+}
+
+
+#pragma mark -
+#pragma mark Public Methods
+
+- (void) redisplay
+{
+    [m_contentLayer setNeedsDisplay];
+
+    if (m_depthToSublayerMap) {
+        CFIndex count = CFDictionaryGetCount(m_depthToSublayerMap);
+        CALayer **sublayers = alloca(count * sizeof(CALayer *));
+
+        CFDictionaryGetKeysAndValues(m_depthToSublayerMap, NULL, (const void **)sublayers);
+        for (CFIndex i = 0; i < count; i++) {
+            [sublayers[i] removeFromSuperlayer];
+        }
+
+        CFRelease(m_depthToSublayerMap);
+        m_depthToSublayerMap = NULL;
+    }
+
+    SwiffFrame *savedFrame = [[self currentFrame] retain];
+    id<SwiffLayerDelegate> savedDelegate = m_delegate;
+
+    m_delegate = nil;
+    [self setCurrentFrame:nil];
+    [self setCurrentFrame:savedFrame];
+    m_delegate = savedDelegate;
+    
+    [savedFrame release];
 }
 
 
@@ -554,7 +556,9 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
 {
     if (!CGAffineTransformEqualToTransform(baseAffineTransform, m_baseAffineTransform)) {
         m_baseAffineTransform = baseAffineTransform;
+
         [self _updateScaledTransform];
+
         [m_contentLayer setFrame:[self bounds]];
         [m_contentLayer setNeedsDisplay];
     }
