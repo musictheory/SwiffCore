@@ -68,8 +68,8 @@ void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation, const 
 - (id) initWithLineStyle:(SwiffLineStyle *)lineStyle fillStyle:(SwiffFillStyle *)fillStyle
 {
     if ((self = [super init])) {
-        m_fillStyle  = [fillStyle  retain];
-        m_lineStyle  = [lineStyle  retain];
+        m_fillStyle = [fillStyle  retain];
+        m_lineStyle = [lineStyle  retain];
     }
     
     return self;
@@ -100,6 +100,7 @@ void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation, const 
             operationsCount = m_operationsCount,
             pointsCount     = m_pointsCount,
             fillStyle       = m_fillStyle,
-            lineStyle       = m_lineStyle;
+            lineStyle       = m_lineStyle,
+            useHairlineWithFillWidth = m_useHairlineWithFillWidth;
 
 @end

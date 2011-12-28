@@ -383,20 +383,33 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
         SwiffPoint position = { NSIntegerMax, NSIntegerMax };
         SwiffPath *path = nil;
         
+        BOOL hadFillStyle = NO;
+        
         while (operation->type != _SwiffShapeOperationTypeEnd) {
             BOOL   isDuplicate    = operation->duplicate;
             UInt16 lineStyleIndex = operation->lineStyleIndex; 
+            UInt16 fillStyleIndex = operation->fillStyleIndex; 
             
-            if (!isDuplicate && (lineStyleIndex == index)) {
-                if (!path) {
-                    SwiffLineStyle *lineStyle = [m_lineStyles objectAtIndex:(index - 1)];
-                    path = [[SwiffPath alloc] initWithLineStyle:lineStyle fillStyle:nil];
-                }
+            if (lineStyleIndex == index) {
+                if (!isDuplicate) { 
+                    if (!path) {
+                        SwiffLineStyle *lineStyle = [m_lineStyles objectAtIndex:(index - 1)];
+                        path = [[SwiffPath alloc] initWithLineStyle:lineStyle fillStyle:nil];
+                    }
 
-                sPathAddShapeOperation(path, operation, &position);
+                    sPathAddShapeOperation(path, operation, &position);
+                }
+                
+                if (fillStyleIndex) {
+                    hadFillStyle = YES;
+                }
             }
             
             operation++;
+        }
+        
+        if (hadFillStyle && ([[path lineStyle] width] == SwiffLineStyleHairlineWidth)) {
+            [path setUseHairlineWithFillWidth:YES];
         }
         
         if (path) {

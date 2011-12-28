@@ -29,9 +29,9 @@
 #import <SwiffImport.h>
 #import <QuartzCore/QuartzCore.h>
 #import <SwiffPlayhead.h>
+#import <SwiffRenderer.h>
 
-@class SwiffMovie, SwiffFrame, SwiffPlacedObject, SwiffPlayhead
-;
+@class SwiffMovie, SwiffFrame, SwiffPlacedObject, SwiffPlayhead;
 @protocol SwiffLayerDelegate;
 
 
@@ -41,23 +41,22 @@
     SwiffMovie            *m_movie;
     SwiffFrame            *m_currentFrame;
     SwiffPlayhead         *m_playhead;
+    SwiffRenderer         *m_renderer;
     CALayer               *m_contentLayer;
     CFMutableDictionaryRef m_depthToSublayerMap;
 
     CGAffineTransform    m_baseAffineTransform;
     CGAffineTransform    m_scaledAffineTransform;
-    SwiffColorTransform  m_baseColorTransform;
-    SwiffColorTransform  m_postColorTransform;
 
     BOOL  m_interpolateCurrentFrame;
     BOOL  m_drawsBackground;
-    BOOL  m_delegate_layer_willDisplayFrame;
-    BOOL  m_delegate_layer_didDisplayFrame;
+    BOOL  m_delegate_layer_didUpdateCurrentFrame;
     BOOL  m_delegate_layer_shouldInterpolateFromFrame_toFrame;
 }
 
 - (id) initWithMovie:(SwiffMovie *)movie;
 
+- (void) clearWeakReferences;
 - (void) redisplay;
 
 @property (nonatomic, assign) id<SwiffLayerDelegate> swiffLayerDelegate;
@@ -67,9 +66,9 @@
 
 @property (nonatomic, retain) SwiffFrame *currentFrame;
 
-@property (nonatomic, assign) CGAffineTransform baseAffineTransform;
-@property (nonatomic, assign) SwiffColorTransform baseColorTransform;
-@property (nonatomic, assign) SwiffColorTransform postColorTransform;
+@property (nonatomic, assign) SwiffColor *tintColor;
+@property (nonatomic, assign) CGFloat hairlineWidth;
+@property (nonatomic, assign) CGFloat hairlineWithFillWidth;
 
 @property (nonatomic, assign) BOOL drawsBackground;
 
@@ -77,7 +76,6 @@
 
 
 @protocol SwiffLayerDelegate <NSObject>
-- (void) layer:(SwiffLayer *)layer willDisplayFrame:(SwiffFrame *)frame;
-- (void) layer:(SwiffLayer *)layer didDisplayFrame:(SwiffFrame *)frame;
+- (void) layer:(SwiffLayer *)layer didUpdateCurrentFrame:(SwiffFrame *)currentFrame;
 - (BOOL) layer:(SwiffLayer *)layer shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame;
 @end

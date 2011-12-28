@@ -28,13 +28,26 @@
 #import <SwiffImport.h>
 #import <SwiffBase.h>
 
-@class SwiffFrame, SwiffMovie;
+@class SwiffMovie;
 
-extern void SwiffRender(
-    CGContextRef context,
-    SwiffMovie *movie, 
-    NSArray *placedObjects,
-    CGAffineTransform baseAffineTransform,
-    const SwiffColorTransform *baseColorTransform,
-    const SwiffColorTransform *postColorTransform
-);
+typedef struct _SwiffRenderer SwiffRenderer;
+
+extern SwiffRenderer *SwiffRendererCreate(SwiffMovie *movie);
+extern void SwiffRendererFree(SwiffRenderer *renderer);
+
+extern void SwiffRendererRender(SwiffRenderer *renderer, CGContextRef context);
+
+extern void SwiffRendererSetPlacedObjects(SwiffRenderer *renderer, NSArray *placedObjects);
+extern NSArray *SwiffRendererGetPlacedObjects(SwiffRenderer *renderer);
+
+extern void SwiffRendererSetBaseAffineTransform(SwiffRenderer *renderer, CGAffineTransform *transform);
+extern CGAffineTransform *SwiffRendererGetBaseAffineTransform(SwiffRenderer *renderer);
+
+extern void SwiffRendererSetTintColor(SwiffRenderer *renderer, SwiffColor *tintColor);
+extern SwiffColor *SwiffRendererGetTintColor(SwiffRenderer *renderer);
+
+extern void SwiffRendererSetHairlineWidth(SwiffRenderer *renderer, CGFloat hairlineWidth);
+extern CGFloat SwiffRendererGetHairlineWidth(SwiffRenderer *renderer);
+
+extern void SwiffRendererSetHairlineWithFillWidth(SwiffRenderer *renderer, CGFloat hairlineWidth);
+extern CGFloat SwiffRendererGetHairlineWithFillWidth(SwiffRenderer *renderer);

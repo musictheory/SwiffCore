@@ -44,19 +44,36 @@
 #import "SwiffStaticTextRecord.h"
 #import "SwiffStaticTextDefinition.h"
 
+
+struct _SwiffRenderer {
+    SwiffMovie       *movie;
+    NSArray          *placedObjects;
+    CGFloat           hairlineWidth;
+    CGFloat           hairlineWithFillWidth;
+    CGAffineTransform baseAffineTransform;
+    SwiffColor        tintColor;
+    BOOL              hasBaseAffineTransform;
+    BOOL              hasTintColor;
+};
+
+
 typedef struct _SwiffRenderState {
     SwiffMovie       *movie;
     CGContextRef      context;
     CGRect            clipBoundingBox;
     CGAffineTransform affineTransform;
     CFMutableArrayRef colorTransforms;
-    const SwiffColorTransform *postColorTransform;
-
+    CGFloat           hairlineWidth;
+    CGFloat           hairlineWithFillWidth;
+    CGFloat           tintRed;
+    CGFloat           tintGreen;
+    CGFloat           tintBlue;
     UInt16            clipDepth;
     BOOL              isBuildingClippingPath;
     BOOL              skipUntilClipDepth;
-    
+    BOOL              hasTintColor;
 } SwiffRenderState;
+
 
 static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placedObject, BOOL applyColorTransform, BOOL applyAffineTransform);
 static void sStopClipping(SwiffRenderState *state);
@@ -85,6 +102,14 @@ static void sStopClipping(SwiffRenderState *state)
 }
 
 
+static void sApplyTintColor(SwiffRenderState *state, SwiffColor *color)
+{
+    color->red   *= state->tintRed;
+    color->green *= state->tintGreen;
+    color->blue  *= state->tintBlue;
+}
+
+
 static void sPushColorTransform(SwiffRenderState *state, const SwiffColorTransform *transform)
 {
     if (!state->colorTransforms) {
@@ -103,7 +128,7 @@ static void sPopColorTransform(SwiffRenderState *state)
 }
 
 
-static void sApplyLineStyle(SwiffRenderState *state, SwiffLineStyle *style)
+static void sApplyLineStyle(SwiffRenderState *state, SwiffLineStyle *style, CGFloat hairlineWidth)
 {
     CGContextRef context = state->context;
     
@@ -111,7 +136,7 @@ static void sApplyLineStyle(SwiffRenderState *state, SwiffLineStyle *style)
     CGLineJoin lineJoin = [style lineJoin];
 
     if (width == SwiffLineStyleHairlineWidth) {
-        CGContextSetLineWidth(context, 1);
+        CGContextSetLineWidth(context, hairlineWidth);
     } else {
         CGContextSetLineWidth(context, width);
     }
@@ -124,29 +149,43 @@ static void sApplyLineStyle(SwiffRenderState *state, SwiffLineStyle *style)
     }
 
     SwiffColor color = SwiffColorApplyColorTransformStack([style color], state->colorTransforms);
-    color = SwiffColorApplyColorTransform(color, state->postColorTransform);
+    if (state->hasTintColor) sApplyTintColor(state, &color);
     CGContextSetStrokeColor(context, (CGFloat *)&color);
 }
 
 
 static void sApplyFillStyle(SwiffRenderState *state, SwiffFillStyle *style)
 {
-     CGContextRef context = state->context;
+    CGContextRef context = state->context;
    
     SwiffFillStyleType type = [style type];
 
     if (type == SwiffFillStyleTypeColor) {
         SwiffColor color = SwiffColorApplyColorTransformStack([style color], state->colorTransforms);
-        color = SwiffColorApplyColorTransform(color, state->postColorTransform);
+        if (state->hasTintColor) sApplyTintColor(state, &color);
         CGContextSetFillColor(context, (CGFloat *)&color);
 
     } else if ((type == SwiffFillStyleTypeLinearGradient) || (type == SwiffFillStyleTypeRadialGradient)) {
         CGContextSaveGState(context);
         CGContextEOClip(context);
 
-        if (state->postColorTransform) sPushColorTransform(state, state->postColorTransform);
+        if (state->hasTintColor) {
+            SwiffColorTransform tintAsTransform = {
+                state->tintRed,
+                state->tintGreen,
+                state->tintBlue,
+                1.0,
+                0.0, 0.0, 0.0, 0.0
+            };
+
+            sPushColorTransform(state, &tintAsTransform);
+        }
+
         CGGradientRef gradient = [[style gradient] copyCGGradientWithColorTransformStack:state->colorTransforms];
-        if (state->postColorTransform) sPopColorTransform(state);
+
+        if (state->hasTintColor) {
+            sPopColorTransform(state);
+        }
 
         CGGradientDrawingOptions options = (kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
 
@@ -213,6 +252,7 @@ static void sApplyFillStyle(SwiffRenderState *state, SwiffFillStyle *style)
     }
 }
 
+
 static void sDrawSpriteDefinition(SwiffRenderState *state, SwiffSpriteDefinition *spriteDefinition)
 {
     NSArray    *frames = [spriteDefinition frames];
@@ -228,6 +268,7 @@ static void sDrawShapeDefinition(SwiffRenderState *state, SwiffShapeDefinition *
 {
     CGContextRef context = state->context;
     BOOL isBuildingClippingPath = state->isBuildingClippingPath;
+    CGFloat hairlineWidth = state->hairlineWidth;
 
     for (SwiffPath *path in [shapeDefinition paths]) {
         SwiffLineStyle *lineStyle = [path lineStyle];
@@ -270,6 +311,19 @@ static void sDrawShapeDefinition(SwiffRenderState *state, SwiffShapeDefinition *
         CGPoint  lastMove = { NAN, NAN };
         CGPoint  location = { NAN, NAN };
 
+        CGFloat  roundScale, roundOffset;
+        
+        if (shouldRound) {
+            if ([path useHairlineWithFillWidth] && state->hairlineWithFillWidth) {
+                hairlineWidth = state->hairlineWithFillWidth;
+            } else {
+                hairlineWidth = state->hairlineWidth;
+            }
+
+            roundScale  = (1.0 / hairlineWidth);
+            roundOffset = hairlineWidth / 2.0;
+        }
+
         while (!isDone) {
             CGFloat  type    = *operations++;
             CGPoint  toPoint = *points++;
@@ -279,8 +333,17 @@ static void sDrawShapeDefinition(SwiffRenderState *state, SwiffShapeDefinition *
             }
 
             if (shouldRound) {
-                toPoint.x = (state->affineTransform.a < 0) ? (ceil(toPoint.x) - 0.5) : (floor(toPoint.x) + 0.5);
-                toPoint.y = (state->affineTransform.d < 0) ? (ceil(toPoint.y) - 0.5) : (floor(toPoint.y) + 0.5);
+                if (state->affineTransform.a < 0) {
+                    toPoint.x = (ceil (toPoint.x * roundScale) / roundScale) - roundOffset;
+                } else {
+                    toPoint.x = (floor(toPoint.x * roundScale) / roundScale) + roundOffset;
+                }
+                
+                if (state->affineTransform.d < 0) {
+                    toPoint.y = (ceil (toPoint.y * roundScale) / roundScale) - roundOffset;
+                } else {
+                    toPoint.y = (floor(toPoint.y * roundScale) / roundScale) + roundOffset;
+                }
             }
 
             if (type == SwiffPathOperationMove) {
@@ -319,7 +382,7 @@ static void sDrawShapeDefinition(SwiffRenderState *state, SwiffShapeDefinition *
 
         if (!isBuildingClippingPath) {
             if (lineWidth > 0) {
-                sApplyLineStyle(state, lineStyle);
+                sApplyLineStyle(state, lineStyle, hairlineWidth);
                 hasStroke = YES;
             }
             
@@ -559,23 +622,56 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
 }
 
 
-void SwiffRender(
-    CGContextRef context,
-    SwiffMovie *movie, 
-    NSArray *placedObjects,
-    CGAffineTransform baseAffineTransform,
-    const SwiffColorTransform *baseColorTransform,
-    const SwiffColorTransform *postColorTransform
-) {
-    BOOL hasBaseColorTransform = !SwiffColorTransformIsIdentity(baseColorTransform);
+#pragma mark -
+#pragma mark Public Methods
 
-    if (SwiffColorTransformIsIdentity(postColorTransform)) {
-        postColorTransform = NULL;
+SwiffRenderer *SwiffRendererCreate(SwiffMovie *movie)
+{
+    SwiffRenderer *renderer = calloc(sizeof(SwiffRenderer), 1);
+
+    renderer->movie = [movie retain];
+    
+    return renderer;
+}
+
+
+void SwiffRendererFree(SwiffRenderer *renderer)
+{
+    [renderer->movie release];
+    renderer->movie = nil;
+
+    [renderer->placedObjects release];
+    renderer->placedObjects = nil;
+    
+    free(renderer);
+}
+
+
+void SwiffRendererRender(SwiffRenderer *renderer, CGContextRef context)
+{
+    SwiffRenderState state;
+    memset(&state, 0, sizeof(SwiffRenderState));
+
+    state.movie   = renderer->movie;
+    state.context = context;
+
+    if (renderer->hasTintColor && (renderer->tintColor.alpha > 0)) {
+        state.tintRed   = (renderer->tintColor.red   * renderer->tintColor.alpha);
+        state.tintGreen = (renderer->tintColor.green * renderer->tintColor.alpha);
+        state.tintBlue  = (renderer->tintColor.blue  * renderer->tintColor.alpha);
+        state.hasTintColor = YES;
+    }
+    
+    if (renderer->hasBaseAffineTransform) {
+        state.affineTransform = renderer->baseAffineTransform;
+    } else {
+        state.affineTransform = CGAffineTransformIdentity;
     }
 
-    CGRect clipBoundingBox = CGContextGetClipBoundingBox(context);
-
-    SwiffRenderState state = { movie, context, clipBoundingBox, baseAffineTransform, NULL, postColorTransform, 0, NO };
+    state.hairlineWidth = renderer->hairlineWidth ? renderer->hairlineWidth : 1.0;
+    state.hairlineWithFillWidth = renderer->hairlineWithFillWidth;
+    
+    state.clipBoundingBox = CGContextGetClipBoundingBox(context);
 
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 
@@ -587,18 +683,98 @@ void SwiffRender(
 
     CGColorSpaceRelease(colorSpace);
 
-    if (hasBaseColorTransform) {
-        sPushColorTransform(&state, baseColorTransform);
-    }
-
-    for (SwiffPlacedObject *object in placedObjects) {
+    for (SwiffPlacedObject *object in renderer->placedObjects) {
         sDrawPlacedObject(&state, object, YES, YES);
     }
+    
+    state.movie   = nil;
+    state.context = NULL;
     
     if (state.colorTransforms) {
         CFRelease(state.colorTransforms);
     }
 
     sStopClipping(&state);
+}
+
+
+void SwiffRendererSetPlacedObjects(SwiffRenderer *renderer, NSArray *placedObjects)
+{
+    if (placedObjects != renderer->placedObjects) {
+        [renderer->placedObjects release];
+        renderer->placedObjects = [placedObjects retain];
+    }
+}
+
+
+NSArray *SwiffRendererGetPlacedObjects(SwiffRenderer *renderer)
+{
+    return renderer->placedObjects;
+}
+
+
+void SwiffRendererSetBaseAffineTransform(SwiffRenderer *renderer, CGAffineTransform *transform)
+{
+    if (transform && !CGAffineTransformIsIdentity(*transform)) {
+        renderer->baseAffineTransform = *transform;
+        renderer->hasBaseAffineTransform = YES;
+    } else {
+        renderer->hasBaseAffineTransform = NO;
+    }
+}
+
+
+CGAffineTransform *SwiffRendererGetBaseAffineTransform(SwiffRenderer *renderer)
+{
+    if (renderer->hasBaseAffineTransform) {
+        return &renderer->baseAffineTransform;
+    } else {
+        return NULL;
+    }
+}
+
+
+void SwiffRendererSetTintColor(SwiffRenderer *renderer, SwiffColor *tintColor)
+{
+    if (tintColor && (tintColor->alpha > 0)) {
+        renderer->tintColor = *tintColor;
+        renderer->hasTintColor = YES;
+    } else {
+        renderer->hasTintColor = NO;
+    }
+}
+
+
+SwiffColor *SwiffRendererGetTintColor(SwiffRenderer *renderer)
+{
+    if (renderer->hasTintColor) {
+        return &renderer->tintColor;
+    } else {
+        return NULL;
+    }
+}
+
+
+void SwiffRendererSetHairlineWidth(SwiffRenderer *renderer, CGFloat hairlineWidth)
+{
+    renderer->hairlineWidth = hairlineWidth;
+}
+
+
+CGFloat SwiffRendererGetHairlineWidth(SwiffRenderer *renderer)
+{
+    return renderer->hairlineWidth;
+}
+
+
+void SwiffRendererSetHairlineWithFillWidth(SwiffRenderer *renderer, CGFloat hairlineWidth)
+{
+    renderer->hairlineWithFillWidth = hairlineWidth;
+}
+
+
+CGFloat SwiffRendererGetHairlineWithFillWidth(SwiffRenderer *renderer)
+{
+    return renderer->hairlineWithFillWidth;
 }
 

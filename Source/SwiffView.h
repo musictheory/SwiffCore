@@ -53,8 +53,7 @@
     id<SwiffViewDelegate> m_delegate;
     SwiffLayer           *m_layer;
     
-    BOOL m_delegate_swiffView_willDisplayFrame;
-    BOOL m_delegate_swiffView_didDisplayFrame;
+    BOOL m_delegate_swiffView_didUpdateCurrentFrame;
     BOOL m_delegate_swiffView_shouldInterpolateFromFrame_toFrame;
 }
 
@@ -65,9 +64,9 @@
 @property (nonatomic, assign) id<SwiffViewDelegate> delegate;
 @property (nonatomic, assign) BOOL drawsBackground;
 
-@property (nonatomic, assign) CGAffineTransform baseAffineTransform;
-@property (nonatomic, assign) SwiffColorTransform baseColorTransform;
-@property (nonatomic, assign) SwiffColorTransform postColorTransform;
+@property (nonatomic, assign) SwiffColor *tintColor;
+@property (nonatomic, assign) CGFloat hairlineWidth;
+@property (nonatomic, assign) CGFloat hairlineWithFillWidth;
 
 @property (nonatomic, retain, readonly) SwiffMovie *movie;
 @property (nonatomic, retain, readonly) SwiffPlayhead *playhead;
@@ -77,7 +76,6 @@
 
 @protocol SwiffViewDelegate <NSObject>
 @optional
-- (void) swiffView:(SwiffView *)swiffView willDisplayFrame:(SwiffFrame *)frame;
-- (void) swiffView:(SwiffView *)swiffView didDisplayFrame:(SwiffFrame *)frame;
+- (void) swiffView:(SwiffView *)swiffView didUpdateCurrentFrame:(SwiffFrame *)frame;
 - (BOOL) swiffView:(SwiffView *)swiffView shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame;
 @end

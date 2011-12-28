@@ -61,7 +61,7 @@
 							<string key="NSFrame">{{8, 328}, {220, 25}}</string>
 							<reference key="NSSuperview" ref="439893737"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView" ref="511108163"/>
+							<reference key="NSNextKeyView" ref="84286847"/>
 							<string key="NSReuseIdentifierKey">_NS:2177</string>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSSegmentedCell" key="NSCell" id="90834565">
@@ -227,7 +227,7 @@
 							<int key="NSTitlePosition">0</int>
 							<bool key="NSTransparent">NO</bool>
 						</object>
-						<object class="NSButton" id="511108163">
+						<object class="NSButton" id="84286847">
 							<reference key="NSNextResponder" ref="439893737"/>
 							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{236, 328}, {72, 25}}</string>
@@ -236,8 +236,8 @@
 							<reference key="NSNextKeyView" ref="740019973"/>
 							<string key="NSReuseIdentifierKey">_NS:287</string>
 							<bool key="NSEnabled">YES</bool>
-							<object class="NSButtonCell" key="NSCell" id="550625131">
-								<int key="NSCellFlags">-2080244224</int>
+							<object class="NSButtonCell" key="NSCell" id="646247602">
+								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">134217728</int>
 								<string key="NSContents">Wants Layer</string>
 								<object class="NSFont" key="NSSupport">
@@ -246,7 +246,7 @@
 									<int key="NSfFlags">3614</int>
 								</object>
 								<string key="NSCellIdentifier">_NS:287</string>
-								<reference key="NSControlView" ref="511108163"/>
+								<reference key="NSControlView" ref="84286847"/>
 								<int key="NSButtonFlags">-1232846593</int>
 								<int key="NSButtonFlags2">163</int>
 								<string key="NSAlternateContents"/>
@@ -344,7 +344,7 @@
 					<object class="IBActionConnection" key="connection">
 						<string key="label">toggleWantsLayer:</string>
 						<reference key="source" ref="1021"/>
-						<reference key="destination" ref="511108163"/>
+						<reference key="destination" ref="84286847"/>
 					</object>
 					<int key="connectionID">589</int>
 				</object>
@@ -352,7 +352,7 @@
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">wantsLayerButton</string>
 						<reference key="source" ref="1021"/>
-						<reference key="destination" ref="511108163"/>
+						<reference key="destination" ref="84286847"/>
 					</object>
 					<int key="connectionID">590</int>
 				</object>
@@ -401,7 +401,7 @@
 							<reference ref="372503740"/>
 							<reference ref="822138395"/>
 							<reference ref="372265764"/>
-							<reference ref="511108163"/>
+							<reference ref="84286847"/>
 						</array>
 						<reference key="parent" ref="972006081"/>
 					</object>
@@ -470,16 +470,16 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">587</int>
-						<reference key="object" ref="511108163"/>
+						<reference key="object" ref="84286847"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="550625131"/>
+							<reference ref="646247602"/>
 						</array>
 						<reference key="parent" ref="439893737"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">588</int>
-						<reference key="object" ref="550625131"/>
-						<reference key="parent" ref="511108163"/>
+						<reference key="object" ref="646247602"/>
+						<reference key="parent" ref="84286847"/>
 					</object>
 				</array>
 			</object>

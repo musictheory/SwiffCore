@@ -44,17 +44,20 @@ extern void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation,
 
 @interface SwiffPath : NSObject {
 @private
-    NSUInteger      m_operationsCount;
-    UInt8          *m_operations;
+    NSUInteger        m_operationsCount;
+    UInt8            *m_operations;
 
-    NSUInteger      m_pointsCount;
-    CGPoint        *m_points;
+    NSUInteger        m_pointsCount;
+    CGPoint          *m_points;
 
-    SwiffLineStyle *m_lineStyle;
-    SwiffFillStyle *m_fillStyle;
+    SwiffLineStyle   *m_lineStyle;
+    SwiffFillStyle   *m_fillStyle;
+
+    BOOL              m_useHairlineWithFillWidth;
 }
 
 - (id) initWithLineStyle:(SwiffLineStyle *)lineStyle fillStyle:(SwiffFillStyle *)fillStyle;
+
 
 /*
     operations              # points example data
@@ -73,5 +76,8 @@ extern void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation,
 
 @property (nonatomic, retain, readonly) SwiffLineStyle *lineStyle;
 @property (nonatomic, retain, readonly) SwiffFillStyle *fillStyle;
+
+// If true, the path is a hairline, but also touched a fill 
+@property (nonatomic, assign) BOOL useHairlineWithFillWidth;
 
 @end
