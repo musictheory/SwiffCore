@@ -38,6 +38,7 @@
 
 - (void) dealloc
 {
+    [m_layer clearWeakReferences];
     [m_layer setSwiffLayerDelegate:nil];
     [m_layer release];
     m_layer = nil;
@@ -56,11 +57,22 @@
 #pragma mark UIKit Implementation
 #ifdef SwiffViewUsesUIKit
 
+- (id) initWithFrame:(CGRect)frame
+{
+    return [self initWithFrame:frame movie:nil];
+}
+
+
 - (id) initWithFrame:(CGRect)frame movie:(SwiffMovie *)movie
 {
+    if (!movie) {
+        SwiffWarn(@"-[SwiffView initWithFrame:movie:] called with nil movie");
+    }
+
     if ((self = [super initWithFrame:frame])) {
         m_layer = [[SwiffLayer alloc] initWithMovie:movie];
         [[self layer] addSublayer:m_layer];
+        [self _layoutMovieLayer];
     }
     
     return self;
@@ -88,6 +100,7 @@
         if (scale < 1) scale = 1;
         [self setContentScaleFactor:scale];
         [[self layer] setContentsScale:scale];
+        [m_layer setContentsScale:scale];
     }
 }
 
@@ -100,6 +113,11 @@
 
 - (id) initWithFrame:(NSRect)frame movie:(SwiffMovie *)movie
 {
+    if (!movie) {
+        SwiffWarn(@"-[SwiffView initWithFrame:movie:] called with nil movie");
+    }
+
+
     if ((self = [super initWithFrame:frame])) {
         CALayer *layer = [CALayer layer];
 
@@ -154,18 +172,10 @@
 #pragma mark -
 #pragma mark Movie Layer Delegate
 
-- (void) layer:(SwiffLayer *)layer willDisplayFrame:(SwiffFrame *)frame
+- (void) layer:(SwiffLayer *)layer didUpdateCurrentFrame:(SwiffFrame *)currentFrame
 {
-    if (m_delegate_swiffView_willDisplayFrame) {
-        [m_delegate swiffView:self willDisplayFrame:frame];
-    }
-}
-
-
-- (void) layer:(SwiffLayer *)layer didDisplayFrame:(SwiffFrame *)frame
-{
-    if (m_delegate_swiffView_willDisplayFrame) {
-        [m_delegate swiffView:self didDisplayFrame:frame];
+    if (m_delegate_swiffView_didUpdateCurrentFrame) {
+        [m_delegate swiffView:self didUpdateCurrentFrame:currentFrame];
     }
 }
 
@@ -190,8 +200,7 @@
 
         m_delegate = delegate;
         
-        m_delegate_swiffView_willDisplayFrame = [m_delegate respondsToSelector:@selector(swiffView:willDisplayFrame:)];
-        m_delegate_swiffView_didDisplayFrame  = [m_delegate respondsToSelector:@selector(swiffView:didDisplayFrame:)];
+        m_delegate_swiffView_didUpdateCurrentFrame  = [m_delegate respondsToSelector:@selector(swiffView:didUpdateCurrentFrame:)];
         m_delegate_swiffView_shouldInterpolateFromFrame_toFrame = [m_delegate respondsToSelector:@selector(swiffView:shouldInterpolateFromFrame:toFrame:)];
     }
 }
@@ -209,30 +218,30 @@
 }
 
 
-- (void) setBaseAffineTransform:(CGAffineTransform)transform
+- (void) setTintColor:(SwiffColor *)color
 {
-    [m_layer setBaseAffineTransform:transform];
+    [m_layer setTintColor:color];
 }
 
 
-- (void) setBaseColorTransform:(SwiffColorTransform)transform
+- (void) setHairlineWidth:(CGFloat)hairlineWidth
 {
-    [m_layer setBaseColorTransform:transform];
+    [m_layer setHairlineWidth:hairlineWidth];
 }
 
 
-- (void) setPostColorTransform:(SwiffColorTransform)transform
+- (void) setHairlineWithFillWidth:(CGFloat)hairlineWidth
 {
-    [m_layer setPostColorTransform:transform];
+    [m_layer setHairlineWithFillWidth:hairlineWidth];
 }
 
 
-- (SwiffMovie    *)     movie               { return [m_layer movie];               }
-- (SwiffPlayhead *)     playhead            { return [m_layer playhead];            }
-- (BOOL)                drawsBackground     { return [m_layer drawsBackground];     }
-- (CGAffineTransform)   baseAffineTransform { return [m_layer baseAffineTransform]; }
-- (SwiffColorTransform) baseColorTransform  { return [m_layer baseColorTransform];  }
-- (SwiffColorTransform) postColorTransform  { return [m_layer postColorTransform];  }
+- (SwiffMovie    *) movie                 { return [m_layer movie];           }
+- (SwiffPlayhead *) playhead              { return [m_layer playhead];        }
+- (BOOL)            drawsBackground       { return [m_layer drawsBackground]; }
+- (SwiffColor    *) tintColor             { return [m_layer tintColor];       }
+- (CGFloat)         hairlineWidth         { return [m_layer hairlineWidth];   }
+- (CGFloat)         hairlineWithFillWidth { return [m_layer hairlineWithFillWidth]; }
 
 @synthesize delegate = m_delegate;
 

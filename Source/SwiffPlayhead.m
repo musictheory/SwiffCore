@@ -119,6 +119,8 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
             m_timerPlayStart = CACurrentMediaTime();
             m_timerPlayIndex = 0;
         }
+        
+        needsUpdate = YES;
     }
     
     if (needsUpdate) {

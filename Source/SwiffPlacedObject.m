@@ -219,7 +219,6 @@ typedef struct _SwiffPlacedObjectAdditionalStorage
 
 @synthesize libraryID        = m_libraryID,
             depth            = m_depth,
-            clipDepth        = m_clipDepth,
             affineTransform  = m_affineTransform;
 
 @end
