@@ -30,16 +30,18 @@
 @class SwiffLineStyle, SwiffFillStyle;
 
 enum {
-    SwiffPathOperationEnd   = 0,
-    SwiffPathOperationMove  = 1,  // Corresponds to 1 point  in -points : { CGPoint to }
-    SwiffPathOperationLine  = 2,  // Corresponds to 1 point  in -points : { CGPoint to }
-    SwiffPathOperationCurve = 3   // Corresponds to 2 points in -points : { CGPoint to, CGPoint control }
+    SwiffPathOperationEnd            = 0,
+    SwiffPathOperationMove           = 1,  // Corresponds to 2 floats in -floats : { CGFloat toX, CGFloat toY }
+    SwiffPathOperationLine           = 2,  // Corresponds to 2 floats in -floats : { CGFloat toX, CGFloat toY }
+    SwiffPathOperationHorizontalLine = 3,  // Corresponds to 1 float  in -floats : { CGFloat toX }
+    SwiffPathOperationVerticalLine   = 4,  // Corresponds to 1 float  in -floats : { CGFloat toY }
+    SwiffPathOperationCurve          = 5   // Corresponds to 4 floats in -floats : { CGFloat toX, CGFloat toY, CGFloat controlX, CGFloat controlY }
 };
 typedef UInt8 SwiffPathOperation;
 
 
 @class SwiffPath;
-extern void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation, const CGPoint *toPoint, const CGPoint *controlPoint);
+extern void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation, ...);
 
 
 @interface SwiffPath : NSObject {
@@ -47,8 +49,8 @@ extern void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation,
     NSUInteger        m_operationsCount;
     UInt8            *m_operations;
 
-    NSUInteger        m_pointsCount;
-    CGPoint          *m_points;
+    NSUInteger        m_floatsCount;
+    CGFloat          *m_floats;
 
     SwiffLineStyle   *m_lineStyle;
     SwiffFillStyle   *m_fillStyle;
@@ -64,15 +66,14 @@ extern void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation,
     ----------------------- -------- -------------
     SwiffPathOperationMove  1        { 2.0, 3.0 }
     SwiffPathOperationLine  1        { 3.0, 3.0 }
-    SwiffPathOperationCurve 2        { 4.0, 3.0 }
-                                     { 4.0, 4.0 }
+    SwiffPathOperationCurve 2        { 4.0, 3.0, 4.0, 4.0 }
     SwiffPathOperationEnd   0
 */
 @property (nonatomic, assign, readonly) NSUInteger operationsCount;
 @property (nonatomic, assign, readonly) NSUInteger pointsCount;
 
 @property (nonatomic, assign, readonly) UInt8   *operations; // Inside pointer, valid for lifetime of the SwiffPath
-@property (nonatomic, assign, readonly) CGPoint *points;     // Inside pointer, valid for lifetime of the SwiffPath
+@property (nonatomic, assign, readonly) CGFloat *floats;     // Inside pointer, valid for lifetime of the SwiffPath
 
 @property (nonatomic, retain, readonly) SwiffLineStyle *lineStyle;
 @property (nonatomic, retain, readonly) SwiffFillStyle *fillStyle;
