@@ -217,7 +217,7 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, _SwiffFontM
         
     } else {
         // Tweak for mapping indirect font to Helvetica or Times
-        minimumLineHeight = maximumLineHeight = round(fontPointSize * 1.125);
+        minimumLineHeight = maximumLineHeight = floor(fontPointSize * 1.15);
     }
 
     if (font) {

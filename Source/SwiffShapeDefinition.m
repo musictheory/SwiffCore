@@ -57,30 +57,22 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
     if ((op->fromPoint.x != position->x) ||
         (op->fromPoint.y != position->y))
     {
-        CGPoint toPoint = {
-            SwiffFloatFromTwips(op->fromPoint.x),
-            SwiffFloatFromTwips(op->fromPoint.y)
-        };
-    
-        SwiffPathAddOperation(path, SwiffPathOperationMove, toPoint.x, toPoint.y);
+        SwiffPathAddOperationAndTwips(path, SwiffPathOperationMove, op->fromPoint.x, op->fromPoint.y);
     }
     
     if (op->type == _SwiffShapeOperationTypeLine) {
         if (op->fromPoint.x == op->toPoint.x) {
-            SwiffPathAddOperation(path, SwiffPathOperationVerticalLine, SwiffFloatFromTwips(op->toPoint.y));
+            SwiffPathAddOperationAndTwips(path, SwiffPathOperationVerticalLine, op->toPoint.y);
             
         } else if (op->fromPoint.y == op->toPoint.y) {
-            SwiffPathAddOperation(path, SwiffPathOperationHorizontalLine, SwiffFloatFromTwips(op->toPoint.x));
+            SwiffPathAddOperationAndTwips(path, SwiffPathOperationHorizontalLine, op->toPoint.x);
         
         } else {
-            CGPoint toPoint = CGPointMake(SwiffFloatFromTwips(op->toPoint.x), SwiffFloatFromTwips(op->toPoint.y));
-            SwiffPathAddOperation(path, SwiffPathOperationLine, toPoint.x, toPoint.y);
+            SwiffPathAddOperationAndTwips(path, SwiffPathOperationLine, op->toPoint.x, op->toPoint.y);
         }
     
     } else if (op->type == _SwiffShapeOperationTypeCurve) {
-        CGPoint toPoint      = CGPointMake(SwiffFloatFromTwips(op->toPoint.x),      SwiffFloatFromTwips(op->toPoint.y));
-        CGPoint controlPoint = CGPointMake(SwiffFloatFromTwips(op->controlPoint.x), SwiffFloatFromTwips(op->controlPoint.y));
-        SwiffPathAddOperation(path, SwiffPathOperationCurve, toPoint.x, toPoint.y, controlPoint.x, controlPoint.y);
+        SwiffPathAddOperationAndTwips(path, SwiffPathOperationCurve, op->toPoint.x, op->toPoint.y, op->controlPoint.x, op->controlPoint.y);
     }
     
     *position = op->toPoint;
@@ -421,7 +413,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
         }
         
         if (path) {
-            SwiffPathAddOperation(path, SwiffPathOperationEnd);
+            SwiffPathAddOperationAndTwips(path, SwiffPathOperationEnd);
 
             [result addObject:path];
             [path release];
@@ -539,7 +531,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
                     sPathAddShapeOperation(path, op, &position);
                 }
 
-                SwiffPathAddOperation(path, SwiffPathOperationEnd);
+                SwiffPathAddOperationAndTwips(path, SwiffPathOperationEnd);
 
                 [results addObject:path];
                 [path release];

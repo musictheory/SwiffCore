@@ -305,7 +305,7 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
         windowFrame.size.height - containerFrame.size.height
     );
     
-    windowFrame.size = CGSizeMake(stageSize.width + sizeDiff.width, stageSize.height + sizeDiff.height);
+    windowFrame.size = NSMakeSize(stageSize.width + sizeDiff.width, stageSize.height + sizeDiff.height);
 
     [[o_containerView window] setFrame:windowFrame display:YES animate:YES];
 

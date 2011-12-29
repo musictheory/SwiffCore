@@ -41,7 +41,7 @@ typedef UInt8 SwiffPathOperation;
 
 
 @class SwiffPath;
-extern void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation, ...);
+extern void SwiffPathAddOperationAndTwips(SwiffPath *path, SwiffPathOperation operation, /*SwiffTwips*/ ...);
 
 
 @interface SwiffPath : NSObject {
@@ -70,7 +70,7 @@ extern void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation,
     SwiffPathOperationEnd   0
 */
 @property (nonatomic, assign, readonly) NSUInteger operationsCount;
-@property (nonatomic, assign, readonly) NSUInteger pointsCount;
+@property (nonatomic, assign, readonly) NSUInteger floatsCount;
 
 @property (nonatomic, assign, readonly) UInt8   *operations; // Inside pointer, valid for lifetime of the SwiffPath
 @property (nonatomic, assign, readonly) CGFloat *floats;     // Inside pointer, valid for lifetime of the SwiffPath

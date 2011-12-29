@@ -334,7 +334,7 @@ static void sStrokePath(SwiffRenderState *state, SwiffPath *path)
         if (isHairline) {
             lineWidth = state->hairlineWidth;
 
-            if (state->hairlineWithFillWidth && [path useHairlineWithFillWidth]) {
+            if ((state->hairlineWithFillWidth != 0) && [path useHairlineWithFillWidth]) {
                 lineWidth = state->hairlineWithFillWidth;
             }
         }

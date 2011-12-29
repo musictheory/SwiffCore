@@ -27,7 +27,7 @@
 
 
 #import "SwiffPath.h"
-
+#import "SwiffBase.h"
 
 static const NSUInteger sGrowthForOperations = 64;
 static const NSUInteger sGrowthForFloats     = 256;
@@ -35,18 +35,18 @@ static const NSUInteger sGrowthForFloats     = 256;
 
 @implementation SwiffPath
 
-static void SwiffPathAddFloat(SwiffPath *path, const CGFloat value)
+static void SwiffPathAddTwipsToFloats(SwiffPath *path, const SwiffTwips twips)
 {
     if ((path->m_floatsCount % sGrowthForFloats) == 0) {
         NSUInteger capacity = (path->m_floatsCount + sGrowthForFloats);
         path->m_floats = realloc(path->m_floats, sizeof(CGFloat) * capacity);
     }
 
-    path->m_floats[path->m_floatsCount++] = value;
+    path->m_floats[path->m_floatsCount++] = SwiffGetCGFloatFromTwips(twips);
 }
 
 
-void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation, ...)
+void SwiffPathAddOperationAndTwips(SwiffPath *path, SwiffPathOperation operation, ...)
 {
     if ((path->m_operationsCount % sGrowthForOperations) == 0) {
         NSUInteger capacity = (path->m_operationsCount + sGrowthForOperations);
@@ -59,17 +59,17 @@ void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation, ...)
     path->m_operations[path->m_operationsCount++] = operation;
     
     if (operation == SwiffPathOperationCurve) {
-        SwiffPathAddFloat(path, va_arg(v, CGFloat));
-        SwiffPathAddFloat(path, va_arg(v, CGFloat));
-        SwiffPathAddFloat(path, va_arg(v, CGFloat));
-        SwiffPathAddFloat(path, va_arg(v, CGFloat));
+        SwiffPathAddTwipsToFloats(path, va_arg(v, SwiffTwips));
+        SwiffPathAddTwipsToFloats(path, va_arg(v, SwiffTwips));
+        SwiffPathAddTwipsToFloats(path, va_arg(v, SwiffTwips));
+        SwiffPathAddTwipsToFloats(path, va_arg(v, SwiffTwips));
 
     } else if (operation == SwiffPathOperationMove || operation == SwiffPathOperationLine) {
-        SwiffPathAddFloat(path, va_arg(v, CGFloat));
-        SwiffPathAddFloat(path, va_arg(v, CGFloat));
+        SwiffPathAddTwipsToFloats(path, va_arg(v, SwiffTwips));
+        SwiffPathAddTwipsToFloats(path, va_arg(v, SwiffTwips));
     
     } else if (operation == SwiffPathOperationHorizontalLine || operation == SwiffPathOperationVerticalLine) {
-        SwiffPathAddFloat(path, va_arg(v, CGFloat));
+        SwiffPathAddTwipsToFloats(path, va_arg(v, SwiffTwips));
     }
     
     va_end(v);
@@ -109,7 +109,7 @@ void SwiffPathAddOperation(SwiffPath *path, SwiffPathOperation operation, ...)
 @synthesize operations      = m_operations,
             floats          = m_floats,
             operationsCount = m_operationsCount,
-            pointsCount     = m_pointsCount,
+            floatsCount     = m_floatsCount,
             fillStyle       = m_fillStyle,
             lineStyle       = m_lineStyle,
             useHairlineWithFillWidth = m_useHairlineWithFillWidth;
