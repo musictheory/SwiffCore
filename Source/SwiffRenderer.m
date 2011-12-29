@@ -128,45 +128,277 @@ static void sPopColorTransform(SwiffRenderState *state)
 }
 
 
-static void sApplyLineStyle(SwiffRenderState *state, SwiffLineStyle *style, CGFloat hairlineWidth)
-{
+static void sTracePathAdvanced(
+    SwiffRenderState *state,
+    SwiffPathOperation *operations,
+    CGFloat *floats,
+    CGFloat width,
+    CGAffineTransform pointTransform,
+    BOOL isHairline,
+    BOOL shouldRound,
+    BOOL shouldClose
+) {
     CGContextRef context = state->context;
-    
-    CGFloat    width    = [style width];
-    CGLineJoin lineJoin = [style lineJoin];
 
-    if (width == SwiffLineStyleHairlineWidth) {
-        CGContextSetLineWidth(context, hairlineWidth);
-    } else {
-        CGContextSetLineWidth(context, width);
-    }
-    
-    CGContextSetLineCap(context, [style startLineCap]);
-    CGContextSetLineJoin(context, lineJoin);
-    
-    if (lineJoin == kCGLineJoinMiter) {
-        CGContextSetMiterLimit(context, [style miterLimit]);
+    CGFloat roundScale  = (1.0 / width);
+    CGFloat roundOffset = width / 2.0;
+
+    CGFloat x = NAN, y = NAN, controlX = NAN, controlY = NAN, moveX = NAN, moveY = NAN;
+
+
+nextOperation:
+    switch (*operations++) {
+    case SwiffPathOperationMove:
+        if (shouldClose && (x == moveX) && (y == moveY)) {
+            CGContextClosePath(context);
+        }
+
+        moveX = x = *floats++;
+        moveY = y = *floats++;
+        
+        {
+            CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
+            CGContextMoveToPoint(context, to.x, to.y);
+        }
+
+        if (!shouldClose) moveX = NAN;
+
+        goto nextOperation;
+
+    case SwiffPathOperationCurve:
+        x        = *floats++;  y        = *floats++;
+        controlX = *floats++;  controlY = *floats++;
+        
+        {
+            CGPoint to      = CGPointApplyAffineTransform(CGPointMake(x,        y),        pointTransform);
+            CGPoint control = CGPointApplyAffineTransform(CGPointMake(controlX, controlY), pointTransform);
+            CGContextAddQuadCurveToPoint(context, control.x, control.y, to.x, to.y);
+        }
+
+        goto nextOperation;
+
+    case SwiffPathOperationLine:
+        x = *floats++;  y = *floats++;
+        
+        {
+            CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
+            CGContextAddLineToPoint(context, to.x, to.y);
+        }
+
+        goto nextOperation;
+
+    case SwiffPathOperationHorizontalLine:
+        {
+            // Special hairline case, each horizontal or vertical line is a move followed by a lineTo
+            // This corrects fuzzy line caps
+            if (isHairline) {
+                moveX = x; moveY = y;
+                CGPoint from = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
+                x = *floats++;
+                CGPoint to   = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
+
+                CGFloat roundedY = (floor(to.y * roundScale) / roundScale) + roundOffset;
+                CGContextMoveToPoint(context, from.x, roundedY);
+                CGContextAddLineToPoint(context, to.x, roundedY);
+
+            } else {
+                x = *floats++;
+
+                CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
+                if (shouldRound) {
+                    to.x = floor(to.x) + 0.5;
+                    to.y = floor(to.y) + 0.5;
+                }
+                CGContextAddLineToPoint(context, to.x, to.y);
+            }
+        }
+
+        goto nextOperation;
+
+    case SwiffPathOperationVerticalLine:
+        {
+            // Special hairline case, each horizontal or vertical line is a move followed by a lineTo
+            // This corrects fuzzy line caps
+            if (isHairline) {
+                moveX = x; moveY = y;
+                CGPoint from = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
+                y = *floats++;
+                CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
+
+                CGFloat roundedX = (floor(to.x * roundScale) / roundScale) + roundOffset;
+                CGContextMoveToPoint(context, roundedX, from.y);
+                CGContextAddLineToPoint(context, roundedX, to.y);
+
+            } else {
+                y = *floats++;
+            
+                CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
+                if (shouldRound) {
+                    to.x = floor(to.x) + 0.5;
+                    to.y = floor(to.y) + 0.5;
+                }
+                CGContextAddLineToPoint(context, to.x, to.y);
+            }
+        }
+
+        goto nextOperation;
     }
 
-    SwiffColor color = SwiffColorApplyColorTransformStack([style color], state->colorTransforms);
-    if (state->hasTintColor) sApplyTintColor(state, &color);
-    CGContextSetStrokeColor(context, (CGFloat *)&color);
+    if (shouldClose && (x == moveX) && (y == moveY)) {
+        CGContextClosePath(context);
+    }
 }
 
 
-static void sApplyFillStyle(SwiffRenderState *state, SwiffFillStyle *style)
+static void sTracePath(SwiffRenderState *state, SwiffPathOperation *operations, CGFloat *floats, BOOL shouldClose)
 {
     CGContextRef context = state->context;
-   
-    SwiffFillStyleType type = [style type];
+    CGFloat toX = NAN, toY = NAN, controlX = NAN, controlY = NAN, moveX = NAN, moveY = NAN;
+
+nextOperation:
+    switch (*operations++) {
+    case SwiffPathOperationMove:
+        if ((toX == moveX) && (toY == moveY)) {
+            CGContextClosePath(context);
+        }
+
+        moveX = toX = *floats++;
+        moveY = toY = *floats++;
+        CGContextMoveToPoint(context, toX, toY);
+
+        if (!shouldClose) moveX = NAN;
+
+        goto nextOperation;
+
+    case SwiffPathOperationCurve:
+        toX      = *floats++;  toY      = *floats++;
+        controlX = *floats++;  controlY = *floats++;
+        CGContextAddQuadCurveToPoint(context, controlX, controlY, toX, toY);
+
+        goto nextOperation;
+
+    case SwiffPathOperationLine:
+        toX = *floats++;  toY = *floats++;
+        CGContextAddLineToPoint(context, toX, toY);
+
+        goto nextOperation;
+
+    case SwiffPathOperationHorizontalLine:
+        toX = *floats++;
+        CGContextAddLineToPoint(context, toX, toY);
+
+        goto nextOperation;
+
+    case SwiffPathOperationVerticalLine:
+        toY = *floats++;
+        CGContextAddLineToPoint(context, toX, toY);
+
+        goto nextOperation;
+    }
+
+    if ((toX == moveX) && (toY == moveY)) {
+        CGContextClosePath(context);
+    }
+}
+
+
+static void sStrokePath(SwiffRenderState *state, SwiffPath *path)
+{
+    SwiffPathOperation *operations = [path operations];
+    CGFloat *floats = [path floats];
+    if (!operations || !floats) return;
+
+    SwiffLineStyle *lineStyle = [path lineStyle];
+    CGFloat lineWidth = [lineStyle width];
+
+    // Prevent blurry lines when a/d are 1/-1 
+    BOOL isHairline  = (lineWidth == SwiffLineStyleHairlineWidth);
+    BOOL shouldRound = NO;
+    BOOL noScale     = NO;
+
+    if ((lround(lineWidth) % 2) == 1 &&
+        ((state->affineTransform.a == 1.0) || (state->affineTransform.a == -1.0)) &&
+        ((state->affineTransform.d == 1.0) || (state->affineTransform.d == -1.0)))
+    {
+        shouldRound = YES;
+    }
+
+    if (![lineStyle scalesHorizontally] && ![lineStyle scalesVertically]) {
+        noScale = YES;
+    }
+
+    CGContextRef context = state->context;
+    CGContextSaveGState(context);
+
+    if (isHairline || shouldRound || noScale) {
+        if (isHairline) {
+            lineWidth = state->hairlineWidth;
+
+            if (state->hairlineWithFillWidth && [path useHairlineWithFillWidth]) {
+                lineWidth = state->hairlineWithFillWidth;
+            }
+        }
+        
+        sTracePathAdvanced(state, operations, floats, lineWidth, state->affineTransform, isHairline, shouldRound, [lineStyle closesStroke]);
+
+    } else {
+        CGContextConcatCTM(context, state->affineTransform);
+        sTracePath(state, operations, floats, [lineStyle closesStroke]);
+    }
+
+    CGContextSetLineWidth(context, lineWidth);
+
+    if (isHairline) {
+        CGContextSetLineCap(context,  kCGLineCapButt);
+        CGContextSetLineJoin(context, kCGLineJoinMiter);
+
+    } else {
+        CGLineJoin lineJoin = [lineStyle lineJoin];
+        CGLineCap  lineCap  = [lineStyle startLineCap];
+
+        CGContextSetLineCap(context, lineCap);
+        CGContextSetLineJoin(context, lineJoin);
+
+        if (lineJoin == kCGLineJoinMiter) {
+            CGFloat miterLimit = [lineStyle miterLimit];
+            CGContextSetMiterLimit(context, miterLimit);
+        }
+    }
+
+    SwiffColor color = SwiffColorApplyColorTransformStack([lineStyle color], state->colorTransforms);
+    if (state->hasTintColor) sApplyTintColor(state, &color);
+
+    CGContextSetStrokeColor(context, (CGFloat *)&color);
+    CGContextDrawPath(context, kCGPathStroke);
+
+    CGContextRestoreGState(context);
+}
+
+
+static void sFillPath(SwiffRenderState *state, SwiffPath *path)
+{
+    SwiffPathOperation *operations = [path operations];
+    CGFloat *floats = [path floats];
+
+    if (!operations || !floats) return;
+
+    SwiffFillStyle    *style = [path fillStyle];
+    SwiffFillStyleType type  = [style type];
+
+    CGContextRef context = state->context;
+
+    CGContextSaveGState(context);
+    CGContextConcatCTM(context, state->affineTransform);
+
+    sTracePath(state, operations, floats, YES);
 
     if (type == SwiffFillStyleTypeColor) {
         SwiffColor color = SwiffColorApplyColorTransformStack([style color], state->colorTransforms);
         if (state->hasTintColor) sApplyTintColor(state, &color);
         CGContextSetFillColor(context, (CGFloat *)&color);
+        CGContextDrawPath(context, kCGPathFill);
 
     } else if ((type == SwiffFillStyleTypeLinearGradient) || (type == SwiffFillStyleTypeRadialGradient)) {
-        CGContextSaveGState(context);
         CGContextEOClip(context);
 
         if (state->hasTintColor) {
@@ -215,7 +447,6 @@ static void sApplyFillStyle(SwiffRenderState *state, SwiffFillStyle *style)
         }
         
         CGGradientRelease(gradient);
-        CGContextRestoreGState(context);
 
     } else if ((type >= SwiffFillStyleTypeRepeatingBitmap) && (type <= SwiffFillStyleTypeNonSmoothedClippedBitmap)) {
         SwiffBitmapDefinition *bitmapDefinition = [state->movie bitmapDefinitionWithLibraryID:[style bitmapID]];
@@ -229,7 +460,6 @@ static void sApplyFillStyle(SwiffRenderState *state, SwiffFillStyle *style)
 
         CGImageRef image = [bitmapDefinition CGImage];
         if (image) {
-            CGContextSaveGState(context);
             CGContextConcatCTM(context, transform);
             
             CGContextClip(context);
@@ -247,9 +477,10 @@ static void sApplyFillStyle(SwiffRenderState *state, SwiffFillStyle *style)
             CGContextSetAlpha(context, color.alpha);
     
             CGContextDrawImage(context, rect, image);
-            CGContextRestoreGState(context);
         }   
     }
+
+    CGContextRestoreGState(context);
 }
 
 
@@ -267,142 +498,21 @@ static void sDrawSpriteDefinition(SwiffRenderState *state, SwiffSpriteDefinition
 static void sDrawShapeDefinition(SwiffRenderState *state, SwiffShapeDefinition *shapeDefinition)
 {
     CGContextRef context = state->context;
-    BOOL isBuildingClippingPath = state->isBuildingClippingPath;
-    CGFloat hairlineWidth = state->hairlineWidth;
 
     for (SwiffPath *path in [shapeDefinition paths]) {
         SwiffLineStyle *lineStyle = [path lineStyle];
-        SwiffFillStyle *fillStyle = [path fillStyle];
 
-        if (isBuildingClippingPath) {
-            if (!fillStyle) {
-                continue;
-            }
-
+        if (state->isBuildingClippingPath) {
+            if (lineStyle) continue;
         } else {
             CGContextBeginPath(context);
         }
 
-        CGFloat lineWidth = [lineStyle width];
-        BOOL shouldRound  = (lineWidth == SwiffLineStyleHairlineWidth);
-        BOOL shouldClose  = !lineStyle || [lineStyle closesStroke];
-
-        // Prevent blurry lines when a/d are 1/-1 
-        if ((lround(lineWidth) % 2) == 1 &&
-            ((state->affineTransform.a == 1.0) || (state->affineTransform.a == -1.0)) &&
-            ((state->affineTransform.d == 1.0) || (state->affineTransform.d == -1.0)))
-        {
-            shouldRound = YES;
-        }
-
-        BOOL hasPointTransform = NO;
-
-        CGContextSaveGState(context);
-
-        if (!lineStyle || [lineStyle scalesHorizontally] || [lineStyle scalesVertically]) {
-            CGContextConcatCTM(context, state->affineTransform);
+        if (lineStyle) {
+            sStrokePath(state, path);
         } else {
-            hasPointTransform = YES;
+            sFillPath(state, path);
         }
-
-        SwiffPathOperation *operations = [path operations];
-        CGPoint *points   = [path points];
-        BOOL     isDone   = (operations == nil);
-        CGPoint  lastMove = { NAN, NAN };
-        CGPoint  location = { NAN, NAN };
-
-        CGFloat  roundScale, roundOffset;
-        
-        if (shouldRound) {
-            if ([path useHairlineWithFillWidth] && state->hairlineWithFillWidth) {
-                hairlineWidth = state->hairlineWithFillWidth;
-            } else {
-                hairlineWidth = state->hairlineWidth;
-            }
-
-            roundScale  = (1.0 / hairlineWidth);
-            roundOffset = hairlineWidth / 2.0;
-        }
-
-        while (!isDone) {
-            CGFloat  type    = *operations++;
-            CGPoint  toPoint = *points++;
-
-            if (hasPointTransform) {
-                toPoint = CGPointApplyAffineTransform(toPoint, state->affineTransform);
-            }
-
-            if (shouldRound) {
-                if (state->affineTransform.a < 0) {
-                    toPoint.x = (ceil (toPoint.x * roundScale) / roundScale) - roundOffset;
-                } else {
-                    toPoint.x = (floor(toPoint.x * roundScale) / roundScale) + roundOffset;
-                }
-                
-                if (state->affineTransform.d < 0) {
-                    toPoint.y = (ceil (toPoint.y * roundScale) / roundScale) - roundOffset;
-                } else {
-                    toPoint.y = (floor(toPoint.y * roundScale) / roundScale) + roundOffset;
-                }
-            }
-
-            if (type == SwiffPathOperationMove) {
-                if (shouldClose && (lastMove.x == location.x) && (lastMove.y == location.y)) {
-                    CGContextClosePath(context);
-                }
-
-                CGContextMoveToPoint(context, toPoint.x, toPoint.y);
-                lastMove = toPoint;
-                
-            } else if (type == SwiffPathOperationLine) {
-                CGContextAddLineToPoint(context, toPoint.x, toPoint.y);
-            
-            } else if (type == SwiffPathOperationCurve) {
-                CGPoint controlPoint = *points++;
-                
-                if (hasPointTransform) {
-                    controlPoint = CGPointApplyAffineTransform(controlPoint, state->affineTransform);
-                }
-
-                CGContextAddQuadCurveToPoint(context, controlPoint.x, controlPoint.y, toPoint.x, toPoint.y);
-            
-            } else {
-                isDone = YES;
-            }
-
-            location = toPoint;
-        }
-
-        if (shouldClose && (lastMove.x == location.x) && (lastMove.y == location.y)) {
-            CGContextClosePath(context);
-        }
-
-        BOOL hasStroke = NO;
-        BOOL hasFill   = NO;
-
-        if (!isBuildingClippingPath) {
-            if (lineWidth > 0) {
-                sApplyLineStyle(state, lineStyle, hairlineWidth);
-                hasStroke = YES;
-            }
-            
-            if (fillStyle) {
-                sApplyFillStyle(state, fillStyle);
-                hasFill = ([fillStyle type] == SwiffFillStyleTypeColor);
-            }
-            
-            if (hasStroke || hasFill) {
-                CGPathDrawingMode mode;
-                
-                if      (hasStroke && hasFill) mode = kCGPathFillStroke;
-                else if (hasStroke)            mode = kCGPathStroke;
-                else                           mode = kCGPathFill;
-                
-                CGContextDrawPath(context, mode);
-            }
-        }
-
-        CGContextRestoreGState(context);
     }
 }
 

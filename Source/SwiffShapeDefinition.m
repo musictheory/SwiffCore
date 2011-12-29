@@ -62,17 +62,25 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
             SwiffFloatFromTwips(op->fromPoint.y)
         };
     
-        SwiffPathAddOperation(path, SwiffPathOperationMove, &toPoint, NULL);
+        SwiffPathAddOperation(path, SwiffPathOperationMove, toPoint.x, toPoint.y);
     }
     
     if (op->type == _SwiffShapeOperationTypeLine) {
-        CGPoint toPoint = CGPointMake(SwiffFloatFromTwips(op->toPoint.x), SwiffFloatFromTwips(op->toPoint.y));
-        SwiffPathAddOperation(path, SwiffPathOperationLine, &toPoint, NULL);
+        if (op->fromPoint.x == op->toPoint.x) {
+            SwiffPathAddOperation(path, SwiffPathOperationVerticalLine, SwiffFloatFromTwips(op->toPoint.y));
+            
+        } else if (op->fromPoint.y == op->toPoint.y) {
+            SwiffPathAddOperation(path, SwiffPathOperationHorizontalLine, SwiffFloatFromTwips(op->toPoint.x));
+        
+        } else {
+            CGPoint toPoint = CGPointMake(SwiffFloatFromTwips(op->toPoint.x), SwiffFloatFromTwips(op->toPoint.y));
+            SwiffPathAddOperation(path, SwiffPathOperationLine, toPoint.x, toPoint.y);
+        }
     
     } else if (op->type == _SwiffShapeOperationTypeCurve) {
         CGPoint toPoint      = CGPointMake(SwiffFloatFromTwips(op->toPoint.x),      SwiffFloatFromTwips(op->toPoint.y));
         CGPoint controlPoint = CGPointMake(SwiffFloatFromTwips(op->controlPoint.x), SwiffFloatFromTwips(op->controlPoint.y));
-        SwiffPathAddOperation(path, SwiffPathOperationCurve, &toPoint, &controlPoint);
+        SwiffPathAddOperation(path, SwiffPathOperationCurve, toPoint.x, toPoint.y, controlPoint.x, controlPoint.y);
     }
     
     *position = op->toPoint;
@@ -413,8 +421,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
         }
         
         if (path) {
-            CGPoint nanPoint = { NAN, NAN };
-            SwiffPathAddOperation(path, SwiffPathOperationEnd, &nanPoint, NULL);
+            SwiffPathAddOperation(path, SwiffPathOperationEnd);
 
             [result addObject:path];
             [path release];
@@ -532,8 +539,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
                     sPathAddShapeOperation(path, op, &position);
                 }
 
-                CGPoint nanPoint = { NAN, NAN };
-                SwiffPathAddOperation(path, SwiffPathOperationEnd, &nanPoint, NULL);
+                SwiffPathAddOperation(path, SwiffPathOperationEnd);
 
                 [results addObject:path];
                 [path release];
