@@ -360,8 +360,12 @@ static void sStrokePath(SwiffRenderState *state, SwiffPath *path)
         CGContextSetLineJoin(context, lineJoin);
 
         if (lineJoin == kCGLineJoinMiter) {
-            CGFloat miterLimit = [lineStyle miterLimit];
-            CGContextSetMiterLimit(context, miterLimit);
+            //nyi: Better miter limits
+            //     When the miter limit is hit, Quartz and Flash render it differently -
+            //     Quartz converts it to a bezel that extends to 1/2 the line width
+            //     Flash converts it to a bezel that extends to: MiterLimitFactor * LineWidth
+            //  
+            CGContextSetMiterLimit(context, [lineStyle miterLimit]);
         }
     }
 
@@ -455,9 +459,12 @@ static void sFillPath(SwiffRenderState *state, SwiffPath *path)
         BOOL shouldInterpolate = (type == SwiffFillStyleTypeRepeatingBitmap) || (type == SwiffFillStyleTypeClippedBitmap);
         BOOL shouldTile        = (type == SwiffFillStyleTypeRepeatingBitmap) || (type == SwiffFillStyleTypeNonSmoothedRepeatingBitmap);
         
-        //!nyi: implement tiling
+        //!nyi: Repeating bitmaps
         (void)shouldTile;
 
+        //!nyi: Clipped bitmaps are currently cropped when drawn.  According to
+        //      the spec, they should be affine clamped 
+        
         CGImageRef image = [bitmapDefinition CGImage];
         if (image) {
             CGContextConcatCTM(context, transform);
@@ -602,11 +609,13 @@ static void sDrawPlacedDynamicText(SwiffRenderState *state, SwiffPlacedDynamicTe
         if (frame) {
             CGContextSaveGState(context);
 
-            CGContextTranslateCTM(context, rect.origin.x, rect.origin.y);
-
             CGContextConcatCTM(context, state->affineTransform);
-            CGContextTranslateCTM(context, 0, rect.size.height);
+            CGContextTranslateCTM(context, rect.origin.x, CGRectGetMaxY(rect));
             CGContextScaleCTM(context, 1, -1);
+
+            CGContextSetShouldSubpixelQuantizeFonts(context, NO);
+            CGContextSetShouldSubpixelPositionFonts(context, NO);
+            CGContextSetShouldSmoothFonts(context, NO);
             
             NSInteger i;
             CFArrayRef lines = CTFrameGetLines(frame);
@@ -629,7 +638,7 @@ static void sDrawPlacedDynamicText(SwiffRenderState *state, SwiffPlacedDynamicTe
             }
             
             free(origins);
-            
+
             CGContextFlush(context);
             CGContextRestoreGState(context);
 
