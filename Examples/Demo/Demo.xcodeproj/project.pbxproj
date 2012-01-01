@@ -15,35 +15,34 @@
 		550B60201446B35600F8C138 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B601F1446B35600F8C138 /* CoreGraphics.framework */; };
 		550B60421446B4B500F8C138 /* DemoMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 550B60411446B4B500F8C138 /* DemoMain.m */; };
 		550B60471446B5C200F8C138 /* DemoApp.m in Sources */ = {isa = PBXBuildFile; fileRef = 550B60461446B5C200F8C138 /* DemoApp.m */; };
-		550B604F1446B93900F8C138 /* libSwiftCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B603E1446B42900F8C138 /* libSwiftCore.a */; };
 		550B60531446B95100F8C138 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B60521446B95100F8C138 /* QuartzCore.framework */; };
 		5574A09B145BFAAD00DA4FB7 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5574A09A145BFAAD00DA4FB7 /* AudioToolbox.framework */; };
+		558CE76F14B123FE001C8669 /* libSwiffCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 558CE76E14B123FE001C8669 /* libSwiffCore.a */; };
 		55BA68E9144B9C4B00D83AA8 /* DemoMovies.plist in Resources */ = {isa = PBXBuildFile; fileRef = 55BA68E8144B9C4B00D83AA8 /* DemoMovies.plist */; };
 		55BA68EC144BA50100D83AA8 /* DemoMovieController.m in Sources */ = {isa = PBXBuildFile; fileRef = 55BA68EB144BA50100D83AA8 /* DemoMovieController.m */; };
-		55BA68EF144BACA600D83AA8 /* TestSuite.swf in Resources */ = {isa = PBXBuildFile; fileRef = 55BA68EE144BACA600D83AA8 /* TestSuite.swf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		550B603D1446B42900F8C138 /* PBXContainerItemProxy */ = {
+		558CE77B14B125BB001C8669 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 550B60361446B42900F8C138 /* SwiftCore.xcodeproj */;
+			containerPortal = 550B60361446B42900F8C138 /* SwiffCore.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 5595A5E91442BFFA00DECD41;
-			remoteInfo = SwiftCore;
+			remoteInfo = SwiffCore;
 		};
-		550B604D1446B93300F8C138 /* PBXContainerItemProxy */ = {
+		558CE77D14B125BB001C8669 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 550B60361446B42900F8C138 /* SwiftCore.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 5595A5E81442BFFA00DECD41;
-			remoteInfo = SwiftCore;
-		};
-		55BA68DB144A492C00D83AA8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 550B60361446B42900F8C138 /* SwiftCore.xcodeproj */;
+			containerPortal = 550B60361446B42900F8C138 /* SwiffCore.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 5516B4C41446D0EA00231D67;
-			remoteInfo = SwiftCoreMac;
+			remoteInfo = SwiffCoreMac;
+		};
+		558CE78014B125F8001C8669 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 550B60361446B42900F8C138 /* SwiffCore.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 5595A5E81442BFFA00DECD41;
+			remoteInfo = SwiffCore;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -55,7 +54,7 @@
 		550B601B1446B35600F8C138 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		550B601D1446B35600F8C138 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		550B601F1446B35600F8C138 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		550B60361446B42900F8C138 /* SwiftCore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SwiftCore.xcodeproj; sourceTree = "<group>"; };
+		550B60361446B42900F8C138 /* SwiffCore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiffCore.xcodeproj; path = ../../SwiffCore.xcodeproj; sourceTree = SOURCE_ROOT; };
 		550B60411446B4B500F8C138 /* DemoMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DemoMain.m; path = Source/DemoMain.m; sourceTree = SOURCE_ROOT; };
 		550B60451446B5C200F8C138 /* DemoApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DemoApp.h; path = Source/DemoApp.h; sourceTree = SOURCE_ROOT; };
 		550B60461446B5C200F8C138 /* DemoApp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DemoApp.m; path = Source/DemoApp.m; sourceTree = SOURCE_ROOT; };
@@ -64,10 +63,10 @@
 		5574A09A145BFAAD00DA4FB7 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		558B13DE1446BB230054AF76 /* DemoPrefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DemoPrefix.pch; path = Source/DemoPrefix.pch; sourceTree = SOURCE_ROOT; };
 		558B13DF1446BB2C0054AF76 /* DemoInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = DemoInfo.plist; path = Resources/DemoInfo.plist; sourceTree = SOURCE_ROOT; };
+		558CE76E14B123FE001C8669 /* libSwiffCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libSwiffCore.a; path = "../../../build/Release-iphoneos/libSwiffCore.a"; sourceTree = "<group>"; };
 		55BA68E8144B9C4B00D83AA8 /* DemoMovies.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = DemoMovies.plist; path = Resources/DemoMovies.plist; sourceTree = SOURCE_ROOT; };
 		55BA68EA144BA50100D83AA8 /* DemoMovieController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DemoMovieController.h; path = Source/DemoMovieController.h; sourceTree = SOURCE_ROOT; };
 		55BA68EB144BA50100D83AA8 /* DemoMovieController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DemoMovieController.m; path = Source/DemoMovieController.m; sourceTree = SOURCE_ROOT; };
-		55BA68EE144BACA600D83AA8 /* TestSuite.swf */ = {isa = PBXFileReference; lastKnownFileType = file; name = TestSuite.swf; path = Tests/TestSuite.swf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,12 +74,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				558CE76F14B123FE001C8669 /* libSwiffCore.a in Frameworks */,
 				55038DEB144E5C6400EA5841 /* libz.dylib in Frameworks */,
 				55038DE9144E5C5C00EA5841 /* libxml2.dylib in Frameworks */,
 				5574A09B145BFAAD00DA4FB7 /* AudioToolbox.framework in Frameworks */,
 				55038DF4144ECBD400EA5841 /* CoreText.framework in Frameworks */,
 				550B60531446B95100F8C138 /* QuartzCore.framework in Frameworks */,
-				550B604F1446B93900F8C138 /* libSwiftCore.a in Frameworks */,
 				550B601C1446B35600F8C138 /* UIKit.framework in Frameworks */,
 				550B601E1446B35600F8C138 /* Foundation.framework in Frameworks */,
 				550B60201446B35600F8C138 /* CoreGraphics.framework in Frameworks */,
@@ -93,7 +92,7 @@
 		550B600C1446B35600F8C138 = {
 			isa = PBXGroup;
 			children = (
-				550B60361446B42900F8C138 /* SwiftCore.xcodeproj */,
+				550B60361446B42900F8C138 /* SwiffCore.xcodeproj */,
 				550B60211446B35600F8C138 /* Demo */,
 				55BA68ED144BAC8A00D83AA8 /* Resources */,
 				550B601A1446B35600F8C138 /* Frameworks */,
@@ -112,6 +111,7 @@
 		550B601A1446B35600F8C138 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				558CE76E14B123FE001C8669 /* libSwiffCore.a */,
 				5574A09A145BFAAD00DA4FB7 /* AudioToolbox.framework */,
 				55038DEA144E5C6400EA5841 /* libz.dylib */,
 				55038DE8144E5C5C00EA5841 /* libxml2.dylib */,
@@ -138,11 +138,11 @@
 			path = Demo;
 			sourceTree = "<group>";
 		};
-		550B60371446B42900F8C138 /* Products */ = {
+		558CE77714B125BB001C8669 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				550B603E1446B42900F8C138 /* libSwiftCore.a */,
-				55BA68DC144A492C00D83AA8 /* libSwiftCoreMac.a */,
+				558CE77C14B125BB001C8669 /* lib.a */,
+				558CE77E14B125BB001C8669 /* lib.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -150,7 +150,6 @@
 		55BA68ED144BAC8A00D83AA8 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				55BA68EE144BACA600D83AA8 /* TestSuite.swf */,
 				558B13DF1446BB2C0054AF76 /* DemoInfo.plist */,
 				55BA68E8144B9C4B00D83AA8 /* DemoMovies.plist */,
 			);
@@ -171,7 +170,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				550B604E1446B93300F8C138 /* PBXTargetDependency */,
+				558CE78114B125F8001C8669 /* PBXTargetDependency */,
 			);
 			name = Demo;
 			productName = Demo;
@@ -198,8 +197,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 550B60371446B42900F8C138 /* Products */;
-					ProjectRef = 550B60361446B42900F8C138 /* SwiftCore.xcodeproj */;
+					ProductGroup = 558CE77714B125BB001C8669 /* Products */;
+					ProjectRef = 550B60361446B42900F8C138 /* SwiffCore.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -210,18 +209,20 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		550B603E1446B42900F8C138 /* libSwiftCore.a */ = {
+		558CE77C14B125BB001C8669 /* lib.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libSwiftCore.a;
-			remoteRef = 550B603D1446B42900F8C138 /* PBXContainerItemProxy */;
+			name = lib.a;
+			path = libSwiffCore.a;
+			remoteRef = 558CE77B14B125BB001C8669 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		55BA68DC144A492C00D83AA8 /* libSwiftCoreMac.a */ = {
+		558CE77E14B125BB001C8669 /* lib.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libSwiftCoreMac.a;
-			remoteRef = 55BA68DB144A492C00D83AA8 /* PBXContainerItemProxy */;
+			name = lib.a;
+			path = libSwiffCoreMac.a;
+			remoteRef = 558CE77D14B125BB001C8669 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -232,7 +233,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				55BA68E9144B9C4B00D83AA8 /* DemoMovies.plist in Resources */,
-				55BA68EF144BACA600D83AA8 /* TestSuite.swf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -252,10 +252,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		550B604E1446B93300F8C138 /* PBXTargetDependency */ = {
+		558CE78114B125F8001C8669 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = SwiftCore;
-			targetProxy = 550B604D1446B93300F8C138 /* PBXContainerItemProxy */;
+			name = SwiffCore;
+			targetProxy = 558CE78014B125F8001C8669 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -278,6 +278,7 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../Source";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -295,6 +296,7 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../Source";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;

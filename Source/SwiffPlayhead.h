@@ -63,6 +63,7 @@
 
 - (void) gotoFrame:(SwiffFrame *)frame play:(BOOL)play;
 
+- (void) play;
 - (void) stop;
 - (void) step;
 
