@@ -33,13 +33,12 @@
 
 @interface SwiffPlacedObject : NSObject {
 @package
-    UInt16               m_libraryID;
-    UInt16               m_depth;
-    CGAffineTransform    m_affineTransform;
-    void                *m_additional;      // Keep less commonly used ivars here
+    UInt16             m_libraryID;
+    UInt16             m_depth;
+    CGAffineTransform  m_affineTransform;
+    void              *m_additional;      // Keep less commonly used ivars here
 }
 
-- (id) initWithDepth:(NSInteger)depth;
 - (id) initWithPlacedObject:(SwiffPlacedObject *)placedObject;
 
 // Called after libraryID has changed, allows subclasses to setup variables based on definition
@@ -52,8 +51,16 @@
 @property (nonatomic, assign) CGFloat ratio;
 @property (nonatomic, assign) CGAffineTransform affineTransform;
 @property (nonatomic, assign) SwiffColorTransform colorTransform;
+
+@property (nonatomic, retain) NSString *className;
+@property (nonatomic, assign) SwiffBlendMode blendMode;
+@property (nonatomic, assign) CGBlendMode CGBlendMode;
+@property (nonatomic, retain) NSArray *filters;
+
 @property (nonatomic, assign, getter=isHidden) BOOL hidden;
 @property (nonatomic, assign) BOOL wantsLayer;
+@property (nonatomic, assign) BOOL placesImage;
+@property (nonatomic, assign) BOOL cachesAsBitmap;
 
 // Inside pointers, valid for lifetime of the SwiffPlacedObject
 @property (nonatomic, assign, readonly) CGAffineTransform   *affineTransformPointer;
@@ -63,3 +70,7 @@
 @property (nonatomic, assign, readonly) BOOL hasColorTransform;
 
 @end
+
+
+extern SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, SwiffPlacedObject *existingPlacedObject);
+

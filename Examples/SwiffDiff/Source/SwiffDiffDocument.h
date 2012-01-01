@@ -38,6 +38,14 @@
     NSView             *o_containerView;
     NSButton           *o_wantsLayer;
 
+    NSWindow           *o_optionsWindow;
+    NSButton           *o_antialias;
+    NSButton           *o_smoothFonts;
+    NSButton           *o_subpixelPositionFonts;
+    NSButton           *o_subpixelQuantizeFonts;
+    NSTextField        *o_hairlineWidth;
+    NSTextField        *o_fillHairlineWidth;
+    
     NSTimer            *m_diffTimer;
     SwiffMovie         *m_movie;
     SwiffView          *m_swiffView;
@@ -52,15 +60,28 @@
 - (void) loadState:(NSDictionary *)state;
 
 - (IBAction) changeMode:(id)sender;
+- (IBAction) changeOptions:(id)sender;
 - (IBAction) changeCurrentFrame:(id)sender;
 - (IBAction) toggleWantsLayer:(id)sender;
-- (IBAction) viewActualSize:(id)sender;
 
-@property (retain) IBOutlet NSSegmentedControl *modeSelect;
-@property (retain) IBOutlet NSTextField *currentFrameField;
-@property (retain) IBOutlet NSTextField *totalFrameField;
-@property (retain) IBOutlet NSSlider *frameSlider;
-@property (retain) IBOutlet NSView *containerView;
-@property (retain) IBOutlet NSButton *wantsLayerButton;
+- (IBAction) viewActualSize:(id)sender;
+- (IBAction) viewZoomIn:(id)sender;
+- (IBAction) viewZoomOut:(id)sender;
+- (IBAction) showOptions:(id)sender;
+
+@property (assign) IBOutlet NSSegmentedControl *modeSelect;
+@property (assign) IBOutlet NSTextField *currentFrameField;
+@property (assign) IBOutlet NSTextField *totalFrameField;
+@property (assign) IBOutlet NSSlider *frameSlider;
+@property (assign) IBOutlet NSView *containerView;
+@property (assign) IBOutlet NSButton *wantsLayerButton;
+
+@property (retain) IBOutlet NSWindow    *optionsWindow;
+@property (assign) IBOutlet NSButton    *antialias;
+@property (assign) IBOutlet NSButton    *smoothFonts;
+@property (assign) IBOutlet NSButton    *subpixelPositionFonts;
+@property (assign) IBOutlet NSButton    *subpixelQuantizeFonts;
+@property (assign) IBOutlet NSTextField *hairlineWidth;
+@property (assign) IBOutlet NSTextField *fillHairlineWidth;
 
 @end

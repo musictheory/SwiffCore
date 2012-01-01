@@ -89,7 +89,7 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
                 if (changeLineStyle)  SwiffParserReadUBits(parser, lineBits, &unused);
 
                 if (newStyles) {
-                    SwiffWarn(@"STYLECHANGERECORD.newStyles = YES for a DefineFont tag");
+                    SwiffWarn(@"Font", @"STYLECHANGERECORD.newStyles = YES for a DefineFont tag");
                 }
             }
             

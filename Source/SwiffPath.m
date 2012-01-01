@@ -106,12 +106,12 @@ void SwiffPathAddOperationAndTwips(SwiffPath *path, SwiffPathOperation operation
 }
 
 
-@synthesize operations      = m_operations,
-            floats          = m_floats,
-            operationsCount = m_operationsCount,
-            floatsCount     = m_floatsCount,
-            fillStyle       = m_fillStyle,
-            lineStyle       = m_lineStyle,
-            useHairlineWithFillWidth = m_useHairlineWithFillWidth;
+@synthesize operations            = m_operations,
+            floats                = m_floats,
+            operationsCount       = m_operationsCount,
+            floatsCount           = m_floatsCount,
+            fillStyle             = m_fillStyle,
+            lineStyle             = m_lineStyle,
+            usesFillHairlineWidth = m_usesFillHairlineWidth;
 
 @end

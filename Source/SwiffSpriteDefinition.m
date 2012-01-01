@@ -35,6 +35,7 @@
 #import "SwiffSceneAndFrameLabelData.h"
 #import "SwiffSoundDefinition.h"
 #import "SwiffSoundEvent.h"
+#import "SwiffFilter.h"
 
 @interface SwiffPlacedObject (FriendMethods)
 @property (nonatomic, retain) NSString *instanceName;
@@ -59,13 +60,13 @@
 - (void) _parser:(SwiffParser *)parser didFindTag:(SwiffTag)tag version:(NSInteger)version;
 @end
 
+
 @implementation SwiffSpriteDefinition
 
 - (id) init
 {
     if ((self = [super init])) {
         m_frames = [[NSMutableArray alloc] init];
-        m_depthToPlacedObjectMap = CFDictionaryCreateMutable(NULL, 0, NULL, &kCFTypeDictionaryValueCallBacks);
     }
     
     return self;
@@ -85,7 +86,7 @@
         SwiffParser *subparser = SwiffParserCreate(SwiffParserGetCurrentBytePointer(parser), SwiffParserGetBytesRemainingInCurrentTag(parser));
         SwiffParserSetStringEncoding(subparser, SwiffParserGetStringEncoding(parser));
 
-        SwiffLog(@"DEFINESPRITE defines id %ld", (long)m_libraryID);
+        SwiffLog(@"Sprite", @"DEFINESPRITE defines id %ld", (long)m_libraryID);
 
         while (SwiffParserIsValid(subparser)) {
             SwiffParserAdvanceToNextTag(subparser);
@@ -105,14 +106,12 @@
             m_sceneAndFrameLabelData = nil;
         }
 
-        if (m_depthToPlacedObjectMap) {
-            CFRelease(m_depthToPlacedObjectMap);
-            m_depthToPlacedObjectMap = NULL;
-        }
+        SwiffSparseArrayEnumerateValues(&m_placedObjects, ^(void *v) { [(id)v release]; });
+        SwiffSparseArrayFree(&m_placedObjects);
 
         SwiffParserFree(subparser);
 
-        SwiffLog(@"END");
+        SwiffLog(@"Sprite", @"END");
     
         if (!SwiffParserIsValid(parser)) {
             [self release];
@@ -126,10 +125,8 @@
 
 - (void) dealloc
 {
-    if (m_depthToPlacedObjectMap) {
-        CFRelease(m_depthToPlacedObjectMap);
-        m_depthToPlacedObjectMap = NULL;
-    }
+    SwiffSparseArrayEnumerateValues(&m_placedObjects, ^(void *v) { [(id)v release]; });
+    SwiffSparseArrayFree(&m_placedObjects);
 
     [m_frames          release];  m_frames          = nil;
     [m_labelToFrameMap release];  m_labelToFrameMap = nil;
@@ -161,31 +158,53 @@
 - (void) _parser:(SwiffParser *)parser didFindPlaceObjectTag:(SwiffTag)tag version:(NSInteger)version
 {
     NSString *name = nil;
-    UInt32    hasClipActions, hasClipDepth, hasName, hasRatio, hasColorTransform, hasMatrix, hasLibraryID, move;
+    BOOL      hasClipActions = NO, hasClipDepth = NO, hasName = NO, hasRatio = NO, hasColorTransform = NO, hasMatrix = NO, hasLibraryID = NO, move = NO;
+    BOOL      hasImage = NO, hasClassName = NO, hasCacheAsBitmap = NO, hasBlendMode = NO, hasFilterList = NO;
     UInt16    depth;
     UInt16    libraryID;
     UInt16    ratio;
     UInt16    clipDepth;
-    
-    CGAffineTransform matrix = CGAffineTransformIdentity;
+
+    CGAffineTransform matrix     = CGAffineTransformIdentity;
+    SwiffBlendMode    blendMode  = SwiffBlendModeNormal;
+    NSArray          *filterList = nil;
+    NSString         *className  = nil;
     SwiffColorTransform colorTransform;
 
     if (version == 2 || version == 3) {
-        SwiffParserReadUBits(parser, 1, &hasClipActions);
-        SwiffParserReadUBits(parser, 1, &hasClipDepth);
-        SwiffParserReadUBits(parser, 1, &hasName);
-        SwiffParserReadUBits(parser, 1, &hasRatio);
-        SwiffParserReadUBits(parser, 1, &hasColorTransform);
-        SwiffParserReadUBits(parser, 1, &hasMatrix);
-        SwiffParserReadUBits(parser, 1, &hasLibraryID);
-        SwiffParserReadUBits(parser, 1, &move);
+        UInt32 tmp;
+
+        SwiffParserReadUBits(parser, 1, &tmp);  hasClipActions    = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  hasClipDepth      = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  hasName           = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  hasRatio          = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  hasColorTransform = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  hasMatrix         = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  hasLibraryID      = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  move              = tmp;
 
         if (version == 3) {
-            UInt32 unused;
-            SwiffParserReadUBits(parser, 8, &unused);
+            SwiffParserReadUBits(parser, 3, &tmp);
+            SwiffParserReadUBits(parser, 1, &tmp);  hasImage         = tmp;
+            SwiffParserReadUBits(parser, 1, &tmp);  hasClassName     = tmp;
+            SwiffParserReadUBits(parser, 1, &tmp);  hasCacheAsBitmap = tmp;
+            SwiffParserReadUBits(parser, 1, &tmp);  hasBlendMode     = tmp;
+            SwiffParserReadUBits(parser, 1, &tmp);  hasFilterList    = tmp;
+
+        } else {
+            hasImage         = NO;
+            hasClassName     = NO;
+            hasCacheAsBitmap = NO;
+            hasBlendMode     = NO;
+            hasFilterList    = NO;
         }
 
         SwiffParserReadUInt16(parser, &depth);
+
+        if (hasClassName || (hasImage && hasLibraryID)) {
+            SwiffParserReadString(parser, &className);
+        }
+
         if (hasLibraryID)       SwiffParserReadUInt16(parser, &libraryID);
         if (hasMatrix)          SwiffParserReadMatrix(parser, &matrix);
         if (hasColorTransform)  SwiffParserReadColorTransformWithAlpha(parser, &colorTransform);
@@ -193,13 +212,30 @@
         if (hasName)            SwiffParserReadString(parser, &name);
         if (hasClipDepth)       SwiffParserReadUInt16(parser, &clipDepth);
 
+        if (hasFilterList) {
+            filterList = [SwiffFilter filterListWithParser:parser];
+        }
+        
+        if (hasBlendMode) {
+            UInt8 tmp8;
+            SwiffParserReadUInt8(parser, &tmp8);
+            blendMode = tmp8;
+        }
+        
+        if (hasCacheAsBitmap) {
+            UInt8 rawCacheAsBitmap;
+            SwiffParserReadUInt8(parser, &rawCacheAsBitmap);
+            hasCacheAsBitmap = (rawCacheAsBitmap > 0);
+        }
+
+        if (hasClipActions) {
+            //!nyi: Clip actions
+        }
+
     } else {
         move         = YES;
         hasMatrix    = YES;
         hasLibraryID = YES;
-        hasClipDepth = NO;
-        hasName      = NO;
-        hasRatio     = NO;
 
         SwiffParserReadUInt16(parser, &libraryID);
         SwiffParserReadUInt16(parser, &depth);
@@ -213,57 +249,40 @@
         }
     }
 
-    // Not supported yet
-    hasClipActions = NO;
+    SwiffPlacedObject *existingPlacedObject = SwiffSparseArrayGetValueAtIndex(&m_placedObjects, depth);
+    SwiffPlacedObject *placedObject = SwiffPlacedObjectCreate(m_movie, hasLibraryID ? libraryID : 0, move ? existingPlacedObject : nil);
 
-    SwiffPlacedObject *placedObject = nil;
-    id<SwiffDefinition> definition = nil;
-    Class cls = [SwiffPlacedObject class];
+    [placedObject setDepth:depth];
 
-    if (hasLibraryID) {
-        definition = [m_movie definitionWithLibraryID:libraryID];
-
-        if ([[definition class] respondsToSelector:@selector(placedObjectClass)]) {
-            cls = [[definition class] placedObjectClass];
-        }
+    if (hasImage) {
+        [placedObject setPlacesImage:YES];
+        [placedObject setClassName:className];
     }
 
-    if (move) {
-        SwiffPlacedObject *existingPlacedObject = (SwiffPlacedObject *)CFDictionaryGetValue(m_depthToPlacedObjectMap, (const void *)depth);
-        if (!hasLibraryID) cls = [existingPlacedObject class];
-        placedObject = existingPlacedObject ? [[cls alloc] initWithPlacedObject:existingPlacedObject] : nil;
-    }
-
-    if (!placedObject) {
-        placedObject = [[cls alloc] initWithDepth:depth];
-    }
-    
-    if (hasLibraryID) {
-        [placedObject setLibraryID:libraryID];
-        [placedObject setupWithDefinition:definition];
-    }
-    
+    if (hasClassName)      [placedObject setClassName:className];
     if (hasClipDepth)      [placedObject setClipDepth:clipDepth];
     if (hasName)           [placedObject setName:name];
     if (hasRatio)          [placedObject setRatio:ratio];
     if (hasColorTransform) [placedObject setColorTransform:colorTransform];
+    if (hasBlendMode)      [placedObject setBlendMode:blendMode];
+    if (hasFilterList)     [placedObject setFilters:filterList];
+    if (hasCacheAsBitmap)  [placedObject setCachesAsBitmap:YES];
+
     if (hasMatrix) {
         [placedObject setAffineTransform:matrix];
     }
 
-
-    if (SwiffShouldLog()) {
+    if (SwiffLogIsCategoryEnabled(@"Sprite")) {
         if (move) {
-            SwiffLog(@"PLACEOBJECT%ld moves object at depth %ld", (long)version, (long)depth);
+            SwiffLog(@"Sprite", @"PLACEOBJECT%ld moves object at depth %ld", (long)version, (long)depth);
         } else {
-            SwiffLog(@"PLACEOBJECT%ld places object %ld at depth %ld", (long)version, (long)[placedObject libraryID], (long)depth);
+            SwiffLog(@"Sprite", @"PLACEOBJECT%ld places object %ld at depth %ld", (long)version, (long)[placedObject libraryID], (long)depth);
         }
     }
 
-    CFDictionarySetValue(m_depthToPlacedObjectMap, (void *)depth, placedObject);
+    [existingPlacedObject release];
+    SwiffSparseArraySetConsumedObjectAtIndex(&m_placedObjects, depth, placedObject);
     m_lastFrame = nil;
-
-    [placedObject release];
 }
 
 
@@ -278,15 +297,18 @@
 
     SwiffParserReadUInt16(parser, &depth);
 
-    if (SwiffShouldLog()) {
+    if (SwiffLogIsCategoryEnabled(@"Sprite")) {
         if (version == 1) {
-            SwiffLog(@"REMOVEOBJECT removes object %d from depth %d", characterID, depth);
+            SwiffLog(@"Sprite", @"REMOVEOBJECT removes object %d from depth %d", characterID, depth);
         } else {
-            SwiffLog(@"REMOVEOBJECT2 removes object from depth %d", depth);
+            SwiffLog(@"Sprite", @"REMOVEOBJECT2 removes object from depth %d", depth);
         }
     }
 
-    CFDictionaryRemoveValue(m_depthToPlacedObjectMap, (void *)depth);
+    SwiffPlacedObject *placedObject = SwiffSparseArrayGetValueAtIndex(&m_placedObjects, depth);
+    [placedObject release];
+
+    SwiffSparseArraySetValueAtIndex(&m_placedObjects, depth, nil);
     m_lastFrame = nil;
 }
 
@@ -303,30 +325,21 @@
         placedObjectsWithNames = [[m_lastFrame placedObjectsWithNames] retain];
 
     } else {
-        CFIndex count = CFDictionaryGetCount(m_depthToPlacedObjectMap);
+        NSMutableArray *sortedPlacedObjects = [[NSMutableArray alloc] init];
+        NSMutableArray *sortedPlacedObjectsWithNames = [[NSMutableArray alloc] init];         
+        
+        SwiffSparseArrayEnumerateValues(&m_placedObjects, ^(void *value) {
+            SwiffPlacedObject *po = value;
+            [sortedPlacedObjects addObject:po];
+            if ([po name]) [sortedPlacedObjectsWithNames addObject:po];
+        });
 
-        if (count > 0) {
-            void **values = (void **)calloc(count, sizeof(void *));
-            CFDictionaryGetKeysAndValues(m_depthToPlacedObjectMap, NULL, (const void **)values);
-            
-            NSMutableArray *sortedPlacedObjects = [[NSMutableArray alloc] initWithObjects:(const id *)values count:count];
-            [sortedPlacedObjects sortUsingComparator:^(id a, id b) {
-                NSInteger aDepth = [((SwiffPlacedObject *)a) depth];
-                NSInteger bDepth = [((SwiffPlacedObject *)b) depth];
-                return aDepth - bDepth;
-            }];
-            
-            NSMutableArray *sortedPlacedObjectsWithNames = [[NSMutableArray alloc] initWithCapacity:[sortedPlacedObjects count]];
-            for (SwiffPlacedObject *po in sortedPlacedObjects) {
-                if ([po name]) {
-                    [sortedPlacedObjectsWithNames addObject:po];
-                }
-            }
-            
+        if ([sortedPlacedObjects count]) {
             placedObjects          = sortedPlacedObjects;
             placedObjectsWithNames = sortedPlacedObjectsWithNames;
-            
-            free(values);
+        } else {
+            [sortedPlacedObjects release];
+            [sortedPlacedObjectsWithNames release];
         }
     }
 
@@ -346,9 +359,7 @@
     [placedObjects release];
     [placedObjectsWithNames release];
 
-    if (SwiffShouldLog()) {
-        SwiffLog(@"SHOWFRAME");
-    }
+    SwiffLog(@"Sprite", @"SHOWFRAME");
 }
 
 

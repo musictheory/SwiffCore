@@ -117,7 +117,7 @@ static BOOL sInflate(const UInt8 *inBuffer, UInt32 inLength, UInt8 *outBuffer, U
 
 void _SwiffParserEnsureBufferError(SwiffParser *parser)
 {
-    SwiffWarn(@"SwiffParser %p is no longer valid.  Break on _SwiffParserEnsureBufferError to debug.", parser);
+    SwiffWarn(@"Parser", @"SwiffParser %p is no longer valid.  Break on _SwiffParserEnsureBufferError to debug.", parser);
 }
 
 
@@ -434,6 +434,28 @@ void SwiffParserReadUInt32(SwiffParser *parser, UInt32 *i)
     if (i) *i = *((UInt32 *)parser->b);
     parser->b += sizeof(UInt32);
     SwiffParserByteAlign(parser);
+}
+
+
+void SwiffParserReadFloat(SwiffParser *parser, float *outValue)
+{
+    UInt32 i = 0;
+    SwiffParserReadUInt32(parser, &i);
+    
+    if (outValue) {
+        *outValue = *((float *)&i);
+    }
+}
+
+
+void SwiffParserReadFixed(SwiffParser *parser, CGFloat *outValue)
+{
+    UInt32 i = 0;
+    SwiffParserReadUInt32(parser, &i);
+    
+    if (outValue) {
+        *outValue = (i >> 16) + ((i & 0xffff) / 65535.0);
+    }
 }
 
 

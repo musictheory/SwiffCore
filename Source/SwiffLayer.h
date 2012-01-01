@@ -43,13 +43,15 @@
     SwiffPlayhead         *m_playhead;
     SwiffRenderer         *m_renderer;
     CALayer               *m_contentLayer;
-    CFMutableDictionaryRef m_depthToSublayerMap;
+    NSUInteger             m_sublayerCount;
+    SwiffSparseArray       m_sublayers;
 
     CGAffineTransform    m_baseAffineTransform;
     CGAffineTransform    m_scaledAffineTransform;
 
     BOOL  m_interpolateCurrentFrame;
     BOOL  m_drawsBackground;
+    BOOL  m_shouldFlattenSublayersWhenStopped;
     BOOL  m_delegate_layer_didUpdateCurrentFrame;
     BOOL  m_delegate_layer_shouldInterpolateFromFrame_toFrame;
 }
@@ -64,13 +66,19 @@
 @property (nonatomic, retain, readonly) SwiffMovie *movie;
 @property (nonatomic, retain, readonly) SwiffPlayhead *playhead;
 
-@property (nonatomic, retain) SwiffFrame *currentFrame;
+@property (nonatomic, retain, readonly) SwiffFrame *currentFrame;
+
+@property (nonatomic, assign) BOOL drawsBackground;
 
 @property (nonatomic, assign) SwiffColor *tintColor;
 @property (nonatomic, assign) CGFloat hairlineWidth;
-@property (nonatomic, assign) CGFloat hairlineWithFillWidth;
+@property (nonatomic, assign) CGFloat fillHairlineWidth;
 
-@property (nonatomic, assign) BOOL drawsBackground;
+@property (nonatomic, assign) BOOL shouldAntialias;
+@property (nonatomic, assign) BOOL shouldSmoothFonts;
+@property (nonatomic, assign) BOOL shouldSubpixelPositionFonts;
+@property (nonatomic, assign) BOOL shouldSubpixelQuantizeFonts;
+@property (nonatomic, assign) BOOL shouldFlattenSublayersWhenStopped;
 
 @end
 

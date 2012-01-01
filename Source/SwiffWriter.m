@@ -121,7 +121,7 @@ NSData *SwiffWriterGetDataWithHeader(SwiffWriter *writer, SwiffHeader header)
             
         // Fallback to uncompressed
         } else {
-            SwiffWarn(@"SwiffWriterGetDataWithHeader(): falling back to uncompressed");
+            SwiffWarn(@"Writer", @"SwiffWriterGetDataWithHeader(): falling back to uncompressed");
 
             [result replaceBytesInRange:NSMakeRange(0, 1) withBytes:"F"];
             [result appendData:(__bridge NSData *)subwriter->data];
@@ -157,7 +157,7 @@ void SwiffWriterStartTag(SwiffWriter *writer, SwiffTag tag, NSInteger version)
         }
 
     } else {
-        SwiffWarn(@"SwiffWriterStartTag() called without ending previous tag with SwiffWriterEnd()");
+        SwiffWarn(@"Writer", @"SwiffWriterStartTag() called without ending previous tag with SwiffWriterEnd()");
     }
 }
 
@@ -185,7 +185,7 @@ void SwiffWriterEndTag(SwiffWriter *writer)
         CFRelease(tagData);
 
     } else {
-        SwiffWarn(@"SwiffWriterEnd() called without previous SwiffWriterStartTag()");
+        SwiffWarn(@"Writer", @"SwiffWriterEnd() called without previous SwiffWriterStartTag()");
     }
 }
 

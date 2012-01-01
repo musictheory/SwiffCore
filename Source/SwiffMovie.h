@@ -37,10 +37,10 @@
 
 @interface SwiffMovie : SwiffSpriteDefinition {
 @private
-    NSArray                *m_scenes;
-    NSDictionary           *m_sceneNameToSceneMap;
-    CFMutableDictionaryRef  m_definitionMap;
-
+    NSArray          *m_scenes;
+    NSDictionary     *m_sceneNameToSceneMap;
+    SwiffSparseArray  m_definitions;
+    
     NSInteger   m_version;
     CGRect      m_stageRect;
     CGFloat     m_frameRate;

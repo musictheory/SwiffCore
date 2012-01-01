@@ -37,6 +37,7 @@
 
     SwiffMovie    *m_movie;
     NSInteger      m_frameIndex;
+    NSInteger      m_frameIndexForNextStep;
 
     NSTimer       *m_timer;
     CFTimeInterval m_timerPlayStart;
@@ -44,7 +45,7 @@
 
     BOOL           m_loopsMovie;
     BOOL           m_loopsScene;
-    BOOL           m_delegate_playheadDidUpdate;
+    BOOL           m_hasFrameIndexForNextStep;
 }
 
 - (id) initWithMovie:(SwiffMovie *)movie delegate:(id<SwiffPlayheadDelegate>)delegate;
@@ -78,6 +79,5 @@
 
 
 @protocol SwiffPlayheadDelegate <NSObject>
-@optional
 - (void) playheadDidUpdate:(SwiffPlayhead *)playhead;
 @end

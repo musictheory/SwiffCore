@@ -137,7 +137,7 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
 
     OSStatus err = AudioQueueEnqueueBuffer(inAQ, inBuffer, framesWritten, aspd);
     if (err != noErr) {
-        SwiffWarn(@"AudioQueueEnqueueBuffer() returned 0x%x", err);
+        SwiffWarn(@"Sound", @"AudioQueueEnqueueBuffer() returned 0x%x", err);
     }
 
     channel->m_frameIndex += framesWritten; 
@@ -158,7 +158,7 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
         if (err == noErr) {
             err = AudioQueueNewOutput(&inFormat, sAudioQueueCallback, self, CFRunLoopGetMain(), kCFRunLoopCommonModes, 0, &m_queue);
             if (err != noErr) {
-                SwiffWarn(@"AudioQueueNewOutput() returned 0x%x", err);
+                SwiffWarn(@"Sound", @"AudioQueueNewOutput() returned 0x%x", err);
             }
         }
 
@@ -170,7 +170,7 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
                 m_buffer[i]->mUserData = (void *)&m_packetDescription[i][0];
                 
                 if (err != noErr) {
-                    SwiffWarn(@"AudioQueueAllocateBuffer() returned 0x%x", err);
+                    SwiffWarn(@"Sound", @"AudioQueueAllocateBuffer() returned 0x%x", err);
                 } else {
                     sAudioQueueCallback(self, m_queue, m_buffer[i]);
                 }
@@ -180,7 +180,7 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
         if (err == noErr) {
             err = AudioQueueStart(m_queue, NULL);
             if (err != noErr) {
-                SwiffWarn(@"AudioQueueStart() returned 0x%x", err);
+                SwiffWarn(@"Sound", @"AudioQueueStart() returned 0x%x", err);
             }
         }
 
