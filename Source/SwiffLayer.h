@@ -52,8 +52,6 @@
     BOOL  m_interpolateCurrentFrame;
     BOOL  m_drawsBackground;
     BOOL  m_shouldFlattenSublayersWhenStopped;
-    BOOL  m_delegate_layer_didUpdateCurrentFrame;
-    BOOL  m_delegate_layer_shouldInterpolateFromFrame_toFrame;
 }
 
 - (id) initWithMovie:(SwiffMovie *)movie;
@@ -84,6 +82,7 @@
 
 
 @protocol SwiffLayerDelegate <NSObject>
+- (void) layer:(SwiffLayer *)layer willUpdateCurrentFrame:(SwiffFrame *)currentFrame;
 - (void) layer:(SwiffLayer *)layer didUpdateCurrentFrame:(SwiffFrame *)currentFrame;
 - (BOOL) layer:(SwiffLayer *)layer shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame;
 @end

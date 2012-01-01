@@ -35,7 +35,7 @@
 #import "SwiffSoundPlayer.h"
 #import "SwiffView.h"
 
-#define DEBUG_SUBLAYERS 1
+#define DEBUG_SUBLAYERS 0
 
 static NSString * const SwiffLibraryIDKey    = @"SwiffLibraryID";
 static NSString * const SwiffPlacedObjectKey = @"SwiffPlacedObject";
@@ -600,13 +600,9 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
     }
 
     if (frame != m_currentFrame) {
-        BOOL shouldInterpolate = NO;
+        [m_delegate layer:self willUpdateCurrentFrame:frame];
 
-        if (m_delegate_layer_shouldInterpolateFromFrame_toFrame) {
-            shouldInterpolate = [m_delegate layer:self shouldInterpolateFromFrame:m_currentFrame toFrame:frame];
-        }
-
-        m_interpolateCurrentFrame = shouldInterpolate;
+        m_interpolateCurrentFrame = [m_delegate layer:self shouldInterpolateFromFrame:m_currentFrame toFrame:frame];
 
         SwiffFrame *oldFrame = m_currentFrame;
         m_currentFrame = [frame retain];
@@ -614,9 +610,7 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
         [self _transitionToFrame:frame fromFrame:oldFrame];
         [oldFrame release];
 
-        if (m_delegate_layer_didUpdateCurrentFrame) {
-            [m_delegate layer:self didUpdateCurrentFrame:m_currentFrame];
-        }
+        [m_delegate layer:self didUpdateCurrentFrame:m_currentFrame];
 
     } else {
         m_interpolateCurrentFrame = NO;
@@ -652,9 +646,6 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
 {
     if (m_delegate != delegate) {
         m_delegate = delegate;
-
-        m_delegate_layer_didUpdateCurrentFrame = [m_delegate respondsToSelector:@selector(layer:didUpdateCurrentFrame:)];
-        m_delegate_layer_shouldInterpolateFromFrame_toFrame = [m_delegate respondsToSelector:@selector(layer:shouldInterpolateFromFrame:toFrame:)];
     }
 }
 

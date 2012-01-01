@@ -53,6 +53,7 @@
     id<SwiffViewDelegate> m_delegate;
     SwiffLayer           *m_layer;
     
+    BOOL m_delegate_swiffView_willUpdateCurrentFrame;
     BOOL m_delegate_swiffView_didUpdateCurrentFrame;
     BOOL m_delegate_swiffView_shouldInterpolateFromFrame_toFrame;
 }
@@ -84,6 +85,7 @@
 
 @protocol SwiffViewDelegate <NSObject>
 @optional
+- (void) swiffView:(SwiffView *)swiffView willUpdateCurrentFrame:(SwiffFrame *)frame;
 - (void) swiffView:(SwiffView *)swiffView didUpdateCurrentFrame:(SwiffFrame *)frame;
 - (BOOL) swiffView:(SwiffView *)swiffView shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame;
 @end
