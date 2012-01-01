@@ -248,9 +248,19 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 }
 
 
+- (void) play
+{
+    if (![self isPlaying]) {
+        [self _gotoFrameWithIndex:m_frameIndex play:YES];
+    }
+}
+
+
 - (void) stop
 {
-    [self _gotoFrameWithIndex:m_frameIndex play:NO];
+    if ([self isPlaying]) {
+        [self _gotoFrameWithIndex:m_frameIndex play:NO];
+    }
 }
 
 
