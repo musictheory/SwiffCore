@@ -217,9 +217,9 @@
     }
 }
 
-- (void) setTintColor:(SwiffColor *)color              { [m_layer setTintColor:color];                      }
+- (void) setMultiplyColor:(SwiffColor *)color          { [m_layer setMultiplyColor:color];                  }
 - (void) setHairlineWidth:(CGFloat)width               { [m_layer setHairlineWidth:width];                  }
-- (void) setFillHairlineWidth:(CGFloat)width           { [m_layer setFillHairlineWidth:width];               }
+- (void) setFillHairlineWidth:(CGFloat)width           { [m_layer setFillHairlineWidth:width];              }
 - (void) setShouldAntialias:(BOOL)yn                   { [m_layer setShouldAntialias:yn];                   }
 - (void) setShouldSmoothFonts:(BOOL)yn                 { [m_layer setShouldSmoothFonts:yn];                 }
 - (void) setShouldSubpixelPositionFonts:(BOOL)yn       { [m_layer setShouldSubpixelPositionFonts:yn];       }
@@ -229,7 +229,7 @@
 - (SwiffMovie    *) movie                             { return [m_layer movie];                             }
 - (SwiffPlayhead *) playhead                          { return [m_layer playhead];                          }
 - (BOOL)            drawsBackground                   { return [m_layer drawsBackground];                   }
-- (SwiffColor    *) tintColor                         { return [m_layer tintColor];                         }
+- (SwiffColor    *) multiplyColor                     { return [m_layer multiplyColor];                     }
 - (CGFloat)         hairlineWidth                     { return [m_layer hairlineWidth];                     }
 - (CGFloat)         fillHairlineWidth                 { return [m_layer fillHairlineWidth];                 }       
 - (BOOL)            shouldAntialias                   { return [m_layer shouldAntialias];                   }

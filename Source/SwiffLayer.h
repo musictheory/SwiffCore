@@ -70,7 +70,7 @@
 
 @property (nonatomic, assign) BOOL drawsBackground;
 
-@property (nonatomic, assign) SwiffColor *tintColor;
+@property (nonatomic, assign) SwiffColor *multiplyColor;
 @property (nonatomic, assign) CGFloat hairlineWidth;
 @property (nonatomic, assign) CGFloat fillHairlineWidth;
 

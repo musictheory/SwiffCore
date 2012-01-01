@@ -640,6 +640,24 @@
 									<reference key="NSOnImage" ref="35465992"/>
 									<reference key="NSMixedImage" ref="502551668"/>
 								</object>
+								<object class="NSMenuItem" id="216424083">
+									<reference key="NSMenu" ref="126994606"/>
+									<string key="NSTitle">Zoom In</string>
+									<string key="NSKeyEquiv">+</string>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="35465992"/>
+									<reference key="NSMixedImage" ref="502551668"/>
+								</object>
+								<object class="NSMenuItem" id="122441578">
+									<reference key="NSMenu" ref="126994606"/>
+									<string key="NSTitle">Zoom Out</string>
+									<string key="NSKeyEquiv">-</string>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="35465992"/>
+									<reference key="NSMixedImage" ref="502551668"/>
+								</object>
 								<object class="NSMenuItem" id="726909040">
 									<reference key="NSMenu" ref="126994606"/>
 									<bool key="NSIsDisabled">YES</bool>
@@ -679,6 +697,15 @@
 									<reference key="NSMixedImage" ref="502551668"/>
 									<int key="NSTag">2</int>
 								</object>
+								<object class="NSMenuItem" id="692266512">
+									<reference key="NSMenu" ref="126994606"/>
+									<string key="NSTitle">Toggle Wants Layer</string>
+									<string key="NSKeyEquiv">4</string>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="35465992"/>
+									<reference key="NSMixedImage" ref="502551668"/>
+								</object>
 								<object class="NSMenuItem" id="761989778">
 									<reference key="NSMenu" ref="126994606"/>
 									<bool key="NSIsDisabled">YES</bool>
@@ -689,10 +716,10 @@
 									<reference key="NSOnImage" ref="35465992"/>
 									<reference key="NSMixedImage" ref="502551668"/>
 								</object>
-								<object class="NSMenuItem" id="692266512">
+								<object class="NSMenuItem" id="417411257">
 									<reference key="NSMenu" ref="126994606"/>
-									<string key="NSTitle">Toggle Wants Layer</string>
-									<string key="NSKeyEquiv">4</string>
+									<string key="NSTitle">Show Options</string>
+									<string key="NSKeyEquiv">i</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="35465992"/>
@@ -1156,6 +1183,30 @@
 						<reference key="destination" ref="215860145"/>
 					</object>
 					<int key="connectionID">582</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">viewZoomIn:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="216424083"/>
+					</object>
+					<int key="connectionID">596</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">viewZoomOut:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="122441578"/>
+					</object>
+					<int key="connectionID">597</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">showOptions:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="417411257"/>
+					</object>
+					<int key="connectionID">599</int>
 				</object>
 			</array>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1703,8 +1754,11 @@
 							<reference ref="215860145"/>
 							<reference ref="871325997"/>
 							<reference ref="282250132"/>
-							<reference ref="692266512"/>
 							<reference ref="761989778"/>
+							<reference ref="216424083"/>
+							<reference ref="122441578"/>
+							<reference ref="692266512"/>
+							<reference ref="417411257"/>
 						</array>
 						<reference key="parent" ref="904626368"/>
 					</object>
@@ -1746,6 +1800,21 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">577</int>
 						<reference key="object" ref="761989778"/>
+						<reference key="parent" ref="126994606"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">593</int>
+						<reference key="object" ref="216424083"/>
+						<reference key="parent" ref="126994606"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">594</int>
+						<reference key="object" ref="122441578"/>
+						<reference key="parent" ref="126994606"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">598</int>
+						<reference key="object" ref="417411257"/>
 						<reference key="parent" ref="126994606"/>
 					</object>
 				</array>
@@ -1834,6 +1903,9 @@
 				<string key="576.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="577.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="58.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="593.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="594.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="598.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="72.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="73.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="79.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1845,7 +1917,7 @@
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">582</int>
+			<int key="maxID">599</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1904,8 +1976,12 @@
 					<dictionary class="NSMutableDictionary" key="actions">
 						<string key="changeCurrentFrame:">id</string>
 						<string key="changeMode:">id</string>
+						<string key="changeOptions:">id</string>
+						<string key="showOptions:">id</string>
 						<string key="toggleWantsLayer:">id</string>
 						<string key="viewActualSize:">id</string>
+						<string key="viewZoomIn:">id</string>
+						<string key="viewZoomOut:">id</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="actionInfosByName">
 						<object class="IBActionInfo" key="changeCurrentFrame:">
@@ -1916,6 +1992,14 @@
 							<string key="name">changeMode:</string>
 							<string key="candidateClassName">id</string>
 						</object>
+						<object class="IBActionInfo" key="changeOptions:">
+							<string key="name">changeOptions:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showOptions:">
+							<string key="name">showOptions:</string>
+							<string key="candidateClassName">id</string>
+						</object>
 						<object class="IBActionInfo" key="toggleWantsLayer:">
 							<string key="name">toggleWantsLayer:</string>
 							<string key="candidateClassName">id</string>
@@ -1924,16 +2008,35 @@
 							<string key="name">viewActualSize:</string>
 							<string key="candidateClassName">id</string>
 						</object>
+						<object class="IBActionInfo" key="viewZoomIn:">
+							<string key="name">viewZoomIn:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewZoomOut:">
+							<string key="name">viewZoomOut:</string>
+							<string key="candidateClassName">id</string>
+						</object>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="antialias">NSButton</string>
 						<string key="containerView">NSView</string>
 						<string key="currentFrameField">NSTextField</string>
+						<string key="fillHairlineWidth">NSTextField</string>
 						<string key="frameSlider">NSSlider</string>
+						<string key="hairlineWidth">NSTextField</string>
 						<string key="modeSelect">NSSegmentedControl</string>
+						<string key="optionsWindow">NSWindow</string>
+						<string key="smoothFonts">NSButton</string>
+						<string key="subpixelPositionFonts">NSButton</string>
+						<string key="subpixelQuantizeFonts">NSButton</string>
 						<string key="totalFrameField">NSTextField</string>
 						<string key="wantsLayerButton">NSButton</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="antialias">
+							<string key="name">antialias</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
 						<object class="IBToOneOutletInfo" key="containerView">
 							<string key="name">containerView</string>
 							<string key="candidateClassName">NSView</string>
@@ -1942,13 +2045,37 @@
 							<string key="name">currentFrameField</string>
 							<string key="candidateClassName">NSTextField</string>
 						</object>
+						<object class="IBToOneOutletInfo" key="fillHairlineWidth">
+							<string key="name">fillHairlineWidth</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
 						<object class="IBToOneOutletInfo" key="frameSlider">
 							<string key="name">frameSlider</string>
 							<string key="candidateClassName">NSSlider</string>
 						</object>
+						<object class="IBToOneOutletInfo" key="hairlineWidth">
+							<string key="name">hairlineWidth</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
 						<object class="IBToOneOutletInfo" key="modeSelect">
 							<string key="name">modeSelect</string>
 							<string key="candidateClassName">NSSegmentedControl</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="optionsWindow">
+							<string key="name">optionsWindow</string>
+							<string key="candidateClassName">NSWindow</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="smoothFonts">
+							<string key="name">smoothFonts</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="subpixelPositionFonts">
+							<string key="name">subpixelPositionFonts</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="subpixelQuantizeFonts">
+							<string key="name">subpixelQuantizeFonts</string>
+							<string key="candidateClassName">NSButton</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="totalFrameField">
 							<string key="name">totalFrameField</string>

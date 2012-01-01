@@ -229,7 +229,7 @@
         }
 
         if (hasClipActions) {
-            //!nyi: Clip actions
+            //!issue4: Clip actions
         }
 
     } else {

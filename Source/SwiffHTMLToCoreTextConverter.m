@@ -265,7 +265,7 @@ static void sStartTextFormatElement(SwiffHTMLToCoreTextConverter *self, xmlEleme
 static void sStartElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr element, SwiffHTMLToCoreTextConverterTag tag)
 {
     if (tag == SwiffHTMLToCoreTextConverterTag_A) {
-        //!nyi: Dynamic Text HTML <a> support
+        //!issue5: Dynamic Text HTML <a> support
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_B) {
         [self _flush];  self->m_boldCount++;
@@ -311,7 +311,7 @@ static void sStartElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr elem
 static void sEndElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr element, SwiffHTMLToCoreTextConverterTag tag)
 {
     if (tag == SwiffHTMLToCoreTextConverterTag_A) {
-        //!nyi: Dynamic Text HTML <a> support
+        //!issue5: Dynamic Text HTML <a> support
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_B) {
         self->m_boldCount--;  [self _flush];
