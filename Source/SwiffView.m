@@ -172,10 +172,17 @@
 #pragma mark -
 #pragma mark Movie Layer Delegate
 
-- (void) layer:(SwiffLayer *)layer didUpdateCurrentFrame:(SwiffFrame *)currentFrame
+- (void) layer:(SwiffLayer *)layer willUpdateCurrentFrame:(SwiffFrame *)frame
+{
+    if (m_delegate_swiffView_willUpdateCurrentFrame) {
+        [m_delegate swiffView:self willUpdateCurrentFrame:frame];
+    }
+}
+
+- (void) layer:(SwiffLayer *)layer didUpdateCurrentFrame:(SwiffFrame *)frame
 {
     if (m_delegate_swiffView_didUpdateCurrentFrame) {
-        [m_delegate swiffView:self didUpdateCurrentFrame:currentFrame];
+        [m_delegate swiffView:self didUpdateCurrentFrame:frame];
     }
 }
 
@@ -199,7 +206,8 @@
         [m_layer setSwiffLayerDelegate:(delegate ? self : nil)];
 
         m_delegate = delegate;
-        
+
+        m_delegate_swiffView_willUpdateCurrentFrame = [m_delegate respondsToSelector:@selector(swiffView:willUpdateCurrentFrame:)];
         m_delegate_swiffView_didUpdateCurrentFrame  = [m_delegate respondsToSelector:@selector(swiffView:didUpdateCurrentFrame:)];
         m_delegate_swiffView_shouldInterpolateFromFrame_toFrame = [m_delegate respondsToSelector:@selector(swiffView:shouldInterpolateFromFrame:toFrame:)];
     }
