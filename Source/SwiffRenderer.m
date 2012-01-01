@@ -51,9 +51,9 @@ struct _SwiffRenderer {
     CGFloat           hairlineWidth;
     CGFloat           fillHairlineWidth;
     CGAffineTransform baseAffineTransform;
-    SwiffColor        tintColor;
+    SwiffColor        multiplyColor;
     BOOL              hasBaseAffineTransform;
-    BOOL              hasTintColor;
+    BOOL              hasMultiplyColor;
     BOOL              shouldAntialias;
     BOOL              shouldSmoothFonts;
     BOOL              shouldSubpixelPositionFonts;
@@ -69,15 +69,15 @@ typedef struct _SwiffRenderState {
     CFMutableArrayRef colorTransforms;
     CGFloat           hairlineWidth;
     CGFloat           fillHairlineWidth;
-    CGFloat           tintRed;
-    CGFloat           tintGreen;
-    CGFloat           tintBlue;
+    CGFloat           multiplyRed;
+    CGFloat           multiplyGreen;
+    CGFloat           multiplyBlue;
     UInt16            clipDepth;
     BOOL              isBuildingClippingPath;
     BOOL              ceilX;
     BOOL              ceilY;
     BOOL              skipUntilClipDepth;
-    BOOL              hasTintColor;
+    BOOL              hasMultiplyColor;
 } SwiffRenderState;
 
 
@@ -108,11 +108,11 @@ static void sStopClipping(SwiffRenderState *state)
 }
 
 
-static void sApplyTintColor(SwiffRenderState *state, SwiffColor *color)
+static void sApplyMultiplyColor(SwiffRenderState *state, SwiffColor *color)
 {
-    color->red   *= state->tintRed;
-    color->green *= state->tintGreen;
-    color->blue  *= state->tintBlue;
+    color->red   *= state->multiplyRed;
+    color->green *= state->multiplyGreen;
+    color->blue  *= state->multiplyBlue;
 }
 
 
@@ -372,23 +372,25 @@ static void sStrokePath(SwiffRenderState *state, SwiffPath *path)
 
     } else {
         CGLineJoin lineJoin = [lineStyle lineJoin];
-        CGLineCap  lineCap  = [lineStyle startLineCap];
+        
+        //!issue10: Use endLineCap at some point
+        CGLineCap lineCap = [lineStyle startLineCap];
 
         CGContextSetLineCap(context, lineCap);
         CGContextSetLineJoin(context, lineJoin);
 
         if (lineJoin == kCGLineJoinMiter) {
-            //nyi: Better miter limits
-            //     When the miter limit is hit, Quartz and Flash render it differently -
-            //     Quartz converts it to a bezel that extends to 1/2 the line width
-            //     Flash converts it to a bezel that extends to: MiterLimitFactor * LineWidth
+            //!issue9: Better miter limits
+            //    When the miter limit is hit, Quartz and Flash render it differently -
+            //    Quartz converts it to a bezel that extends to 1/2 the line width
+            //    Flash converts it to a bezel that extends to: MiterLimitFactor * LineWidth
             //  
             CGContextSetMiterLimit(context, [lineStyle miterLimit]);
         }
     }
 
     SwiffColor color = SwiffColorApplyColorTransformStack([lineStyle color], state->colorTransforms);
-    if (state->hasTintColor) sApplyTintColor(state, &color);
+    if (state->hasMultiplyColor) sApplyMultiplyColor(state, &color);
 
     CGContextSetStrokeColor(context, (CGFloat *)&color);
     CGContextDrawPath(context, kCGPathStroke);
@@ -416,18 +418,18 @@ static void sFillPath(SwiffRenderState *state, SwiffPath *path)
 
     if (type == SwiffFillStyleTypeColor) {
         SwiffColor color = SwiffColorApplyColorTransformStack([style color], state->colorTransforms);
-        if (state->hasTintColor) sApplyTintColor(state, &color);
+        if (state->hasMultiplyColor) sApplyMultiplyColor(state, &color);
         CGContextSetFillColor(context, (CGFloat *)&color);
         CGContextDrawPath(context, kCGPathFill);
 
     } else if ((type == SwiffFillStyleTypeLinearGradient) || (type == SwiffFillStyleTypeRadialGradient)) {
         CGContextEOClip(context);
 
-        if (state->hasTintColor) {
+        if (state->hasMultiplyColor) {
             SwiffColorTransform tintAsTransform = {
-                state->tintRed,
-                state->tintGreen,
-                state->tintBlue,
+                state->multiplyRed,
+                state->multiplyGreen,
+                state->multiplyBlue,
                 1.0,
                 0.0, 0.0, 0.0, 0.0
             };
@@ -437,7 +439,7 @@ static void sFillPath(SwiffRenderState *state, SwiffPath *path)
 
         CGGradientRef gradient = [[style gradient] copyCGGradientWithColorTransformStack:state->colorTransforms];
 
-        if (state->hasTintColor) {
+        if (state->hasMultiplyColor) {
             sPopColorTransform(state);
         }
 
@@ -477,11 +479,12 @@ static void sFillPath(SwiffRenderState *state, SwiffPath *path)
         BOOL shouldInterpolate = (type == SwiffFillStyleTypeRepeatingBitmap) || (type == SwiffFillStyleTypeClippedBitmap);
         BOOL shouldTile        = (type == SwiffFillStyleTypeRepeatingBitmap) || (type == SwiffFillStyleTypeNonSmoothedRepeatingBitmap);
         
-        //!nyi: Repeating bitmaps
+        //!issue14: Repeating bitmaps
         (void)shouldTile;
 
-        //!nyi: Clipped bitmaps are currently cropped when drawn.  According to
-        //      the spec, they should be affine clamped 
+        //!issue11: Affine clamp bitmaps
+        //    Clipped bitmaps are currently cropped when drawn.  According to
+        //    the spec, they should be affine clamped - See issue #11
         
         CGImageRef image = [bitmapDefinition CGImage];
         if (image) {
@@ -715,7 +718,7 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
         sPushColorTransform(state, [placedObject colorTransformPointer]);
     }
 
-    //!nyi: non-CG blend modes
+    //!issue7: non-CG blend modes
     if (blendMode != kCGBlendModeNormal) {
         CGContextSaveGState(state->context);
         CGContextSetBlendMode(state->context, blendMode);
@@ -788,11 +791,11 @@ void SwiffRendererRender(SwiffRenderer *renderer, CGContextRef context)
     state.movie   = renderer->movie;
     state.context = context;
 
-    if (renderer->hasTintColor && (renderer->tintColor.alpha > 0)) {
-        state.tintRed   = (renderer->tintColor.red   * renderer->tintColor.alpha);
-        state.tintGreen = (renderer->tintColor.green * renderer->tintColor.alpha);
-        state.tintBlue  = (renderer->tintColor.blue  * renderer->tintColor.alpha);
-        state.hasTintColor = YES;
+    if (renderer->hasMultiplyColor && (renderer->multiplyColor.alpha > 0)) {
+        state.multiplyRed   = (renderer->multiplyColor.red   * renderer->multiplyColor.alpha);
+        state.multiplyGreen = (renderer->multiplyColor.green * renderer->multiplyColor.alpha);
+        state.multiplyBlue  = (renderer->multiplyColor.blue  * renderer->multiplyColor.alpha);
+        state.hasMultiplyColor = YES;
     }
     
     if (renderer->hasBaseAffineTransform) {
@@ -875,21 +878,21 @@ CGAffineTransform *SwiffRendererGetBaseAffineTransform(SwiffRenderer *renderer)
 }
 
 
-void SwiffRendererSetTintColor(SwiffRenderer *renderer, SwiffColor *tintColor)
+void SwiffRendererSetMultiplyColor(SwiffRenderer *renderer, SwiffColor *color)
 {
-    if (tintColor && (tintColor->alpha > 0)) {
-        renderer->tintColor = *tintColor;
-        renderer->hasTintColor = YES;
+    if (color && (color->alpha > 0)) {
+        renderer->multiplyColor = *color;
+        renderer->hasMultiplyColor = YES;
     } else {
-        renderer->hasTintColor = NO;
+        renderer->hasMultiplyColor = NO;
     }
 }
 
 
-SwiffColor *SwiffRendererGetTintColor(SwiffRenderer *renderer)
+SwiffColor *SwiffRendererGetMultiplyColor(SwiffRenderer *renderer)
 {
-    if (renderer->hasTintColor) {
-        return &renderer->tintColor;
+    if (renderer->hasMultiplyColor) {
+        return &renderer->multiplyColor;
     } else {
         return NULL;
     }

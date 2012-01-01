@@ -352,7 +352,7 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
         }
 
     } else if (version == 4) {
-        //!nyi: DefineFont4 tag
+        //!issue6: DefineFont4 support
     }
 }
 
@@ -413,7 +413,7 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 
 - (void) readDefineFontAlignZonesFromParser:(SwiffParser *)parser
 {
-    //!nyi: DefineFontAlignZones tag
+    //!issue8: DefineFontAlignZones tag
 }
 
 

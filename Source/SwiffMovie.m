@@ -157,10 +157,10 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
         definitionToAdd = [[SwiffShapeDefinition alloc] initWithParser:parser movie:self];
 
     } else if (tag == SwiffTagDefineButton) {
-        //!nyi: Button Support.
+        //!issue2: Button Support
     
     } else if (tag == SwiffTagDefineMorphShape) {
-        //!nyi: MorphShape Support
+        //!issue1: MorphShape Support
 
     } else if (tag == SwiffTagJPEGTables) {
         UInt32 remaining = SwiffParserGetBytesRemainingInCurrentTag(parser);
@@ -189,8 +189,8 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
         definitionToAdd = bitmap;
 
     } else if (tag == SwiffTagDefineVideoStream) {
-        //!nyi: Video Support
-
+        //!issue3: Video Support
+    
     } else if (tag == SwiffTagDefineSound) {
         definitionToAdd = [[SwiffSoundDefinition alloc] initWithParser:parser movie:self];
 

@@ -449,6 +449,7 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
             m_CGImage = sCreateImage_Indexed(width, height, bytes[5] + 1, alpha, imageData);
 
         } else if (format == 4) {
+            //!issue: Untested code path, see issue #12
             m_CGImage = sCreateImage_RGB_555(width, height, imageData);
 
         } else if (format == 5) {

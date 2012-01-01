@@ -682,9 +682,9 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
 }
 
 
-- (void) setTintColor:(SwiffColor *)tintColor
+- (void) setMultiplyColor:(SwiffColor *)color
 {
-    SwiffRendererSetTintColor(m_renderer, tintColor);
+    SwiffRendererSetMultiplyColor(m_renderer, color);
 }
 
 
@@ -743,7 +743,7 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
 }
 
 
-- (SwiffColor *) tintColor              { return SwiffRendererGetTintColor(m_renderer);                   }
+- (SwiffColor *) multiplyColor          { return SwiffRendererGetMultiplyColor(m_renderer);               }
 - (CGFloat) hairlineWidth               { return SwiffRendererGetHairlineWidth(m_renderer);               }
 - (CGFloat) fillHairlineWidth           { return SwiffRendererGetFillHairlineWidth(m_renderer);           }
 - (BOOL)    shouldAntialias             { return SwiffRendererGetShouldAntialias(m_renderer);             }

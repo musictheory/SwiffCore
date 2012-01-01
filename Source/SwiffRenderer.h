@@ -43,8 +43,8 @@ extern NSArray *SwiffRendererGetPlacedObjects(SwiffRenderer *renderer);
 extern void SwiffRendererSetBaseAffineTransform(SwiffRenderer *renderer, CGAffineTransform *transform);
 extern CGAffineTransform *SwiffRendererGetBaseAffineTransform(SwiffRenderer *renderer);
 
-extern void SwiffRendererSetTintColor(SwiffRenderer *renderer, SwiffColor *tintColor);
-extern SwiffColor *SwiffRendererGetTintColor(SwiffRenderer *renderer);
+extern void SwiffRendererSetMultiplyColor(SwiffRenderer *renderer, SwiffColor *color);
+extern SwiffColor *SwiffRendererGetMultiplyColor(SwiffRenderer *renderer);
 
 extern void SwiffRendererSetHairlineWidth(SwiffRenderer *renderer, CGFloat hairlineWidth);
 extern CGFloat SwiffRendererGetHairlineWidth(SwiffRenderer *renderer);
