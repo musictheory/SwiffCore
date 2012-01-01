@@ -38,8 +38,14 @@ static NSMutableArray *sInstances = nil;
 
 static NSString * const sDocumentStateKey = @"SwiffDiffDocumentState";
 
-static NSString * const sCurrentFrameKey = @"CurrentFrame";
-static NSString * const sCurrentModeKey  = @"CurrentMode";
+static NSString * const sCurrentFrameKey          = @"CurrentFrame";
+static NSString * const sCurrentModeKey           = @"CurrentMode";
+static NSString * const sAntialiasKey             = @"Antialias";
+static NSString * const sSmoothFontsKey           = @"SmoothFonts";
+static NSString * const sSubpixelPositionFontsKey = @"SubpixelPositionFonts";
+static NSString * const sSubpixelQuantizeFontsKey = @"SubpixelQuantizeFonts";
+static NSString * const sHairlineWidthKey         = @"HairlineWidth";
+static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
 
 
 @implementation SwiffDiffDocument
@@ -116,12 +122,35 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 
     [o_frameSlider setTarget:nil];
     [o_frameSlider setAction:NULL];
-    
-    [o_modeSelect        release];  o_modeSelect        = nil;
-    [o_currentFrameField release];  o_currentFrameField = nil;
-    [o_totalFrameField   release];  o_totalFrameField   = nil;
-    [o_frameSlider       release];  o_frameSlider       = nil;
-    [o_containerView     release];  o_containerView     = nil;
+
+    [o_smoothFonts setTarget:nil];
+    [o_smoothFonts setAction:NULL];
+
+    [o_subpixelPositionFonts setTarget:nil];
+    [o_subpixelPositionFonts setAction:NULL];
+
+    [o_subpixelQuantizeFonts setTarget:nil];
+    [o_subpixelQuantizeFonts setAction:NULL];
+
+    [o_hairlineWidth setTarget:nil];
+    [o_hairlineWidth setAction:NULL];
+
+    [o_fillHairlineWidth setTarget:nil];
+    [o_fillHairlineWidth setAction:NULL];
+
+    o_modeSelect            = nil;
+    o_currentFrameField     = nil;
+    o_totalFrameField       = nil;
+    o_frameSlider           = nil;
+    o_containerView         = nil;
+    o_smoothFonts           = nil;
+    o_subpixelPositionFonts = nil;
+    o_subpixelQuantizeFonts = nil;
+    o_hairlineWidth         = nil;
+    o_fillHairlineWidth     = nil;
+
+    [o_optionsWindow release];
+    o_optionsWindow = nil;
 
     [m_swiffView release]; m_swiffView = nil;
     [m_movie     release]; m_movie = nil;
@@ -144,6 +173,7 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
     [super windowControllerDidLoadNib:aController];
 
     [[o_containerView window] setFrameAutosaveName:[[self fileURL] absoluteString]];
+    [o_optionsWindow setFrameAutosaveName:[NSString stringWithFormat:@"_Options%@", [[self fileURL] absoluteString]]];
 
     m_swiffView = [[SwiffView alloc] initWithFrame:[o_containerView bounds] movie:m_movie];
     [m_swiffView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
@@ -199,11 +229,35 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 
     [state setObject:[NSNumber numberWithInteger:frameIndex] forKey:sCurrentFrameKey];
     [state setObject:[NSNumber numberWithInteger:[o_modeSelect selectedSegment]] forKey:sCurrentModeKey];
+
+    [state setObject:[NSNumber numberWithInteger:[o_antialias state]]   forKey:sAntialiasKey];
+    [state setObject:[NSNumber numberWithInteger:[o_smoothFonts state]] forKey:sSmoothFontsKey];
+    [state setObject:[NSNumber numberWithInteger:[o_subpixelPositionFonts state]] forKey:sSubpixelPositionFontsKey];
+    [state setObject:[NSNumber numberWithInteger:[o_subpixelQuantizeFonts state]] forKey:sSubpixelQuantizeFontsKey];
+
+    [state setObject:[NSNumber numberWithDouble:[o_hairlineWidth     doubleValue]] forKey:sHairlineWidthKey];
+    [state setObject:[NSNumber numberWithDouble:[o_fillHairlineWidth doubleValue]] forKey:sFillHairlineWidthKey];
+    
 }
 
 
 - (void) loadState:(NSDictionary *)state
-{
+{ 
+    double hairlineWidth     = [[state objectForKey:sHairlineWidthKey] doubleValue];
+    double fillHairlineWidth = [[state objectForKey:sFillHairlineWidthKey] doubleValue]; 
+
+    if (hairlineWidth == 0) hairlineWidth = 1.0;
+    [o_hairlineWidth setDoubleValue:hairlineWidth];
+    [o_fillHairlineWidth setDoubleValue:fillHairlineWidth];
+    
+    NSNumber *antialiasNumber = [state objectForKey:sAntialiasKey];
+    BOOL antialias = antialiasNumber ? [antialiasNumber boolValue] : YES;
+
+    [o_antialias             setState: antialias];
+    [o_smoothFonts           setState: [[state objectForKey:sSmoothFontsKey] boolValue]];
+    [o_subpixelPositionFonts setState: [[state objectForKey:sSubpixelPositionFontsKey] boolValue]];
+    [o_subpixelQuantizeFonts setState: [[state objectForKey:sSubpixelQuantizeFontsKey] boolValue]];
+
     NSNumber *currentFrame = [state objectForKey:sCurrentFrameKey];
     if (currentFrame) {
         [self _setCurrentFrame:[currentFrame integerValue]];
@@ -213,6 +267,8 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
     if (currentMode) {
         [self _setCurrentMode:[currentMode integerValue]];
     }
+
+    [self changeOptions:nil];
 }
 
 
@@ -278,6 +334,41 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 }
 
 
+- (void) _setZoomLevel:(CGFloat)level
+{
+    NSRect windowFrame    = [[o_containerView window] frame];
+    NSRect containerFrame = [o_containerView frame];
+
+    CGSize sizeDiff = CGSizeMake(
+        windowFrame.size.width  - containerFrame.size.width,
+        windowFrame.size.height - containerFrame.size.height
+    );
+    
+    CGSize sizeToUse = [m_movie stageRect].size;
+    sizeToUse.width  *= level;
+    sizeToUse.height *= level;
+    
+    windowFrame.size = NSMakeSize(sizeToUse.width + sizeDiff.width, sizeToUse.height + sizeDiff.height);
+
+    [[o_containerView window] setFrame:windowFrame display:YES animate:YES];
+
+    [SwiffDiffDocument saveState];
+}
+
+
+- (CGFloat) _zoomLevel
+{
+    NSRect containerFrame = [o_containerView frame];
+    CGSize movieSize      = [m_movie stageRect].size;
+
+    CGFloat widthRatio  = containerFrame.size.width / movieSize.width;
+    CGFloat heightRatio = containerFrame.size.width / movieSize.width;
+
+    CGFloat ratio = (widthRatio < heightRatio) ? widthRatio : heightRatio;
+    return round(ratio * 2) / 2;
+}
+
+
 #pragma mark -
 #pragma mark IBActions
 
@@ -293,23 +384,41 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
 }
 
 
-- (IBAction) viewActualSize:(id)sender
+- (IBAction) changeOptions:(id)sender
 {
-    CGSize stageSize = [m_movie stageRect].size;
-    
-    NSRect windowFrame    = [[o_containerView window] frame];
-    NSRect containerFrame = [o_containerView frame];
-
-    CGSize sizeDiff = CGSizeMake(
-        windowFrame.size.width  - containerFrame.size.width,
-        windowFrame.size.height - containerFrame.size.height
-    );
-    
-    windowFrame.size = NSMakeSize(stageSize.width + sizeDiff.width, stageSize.height + sizeDiff.height);
-
-    [[o_containerView window] setFrame:windowFrame display:YES animate:YES];
+    [m_swiffView setShouldAntialias:[o_antialias state]];
+    [m_swiffView setShouldSmoothFonts:[o_smoothFonts state]];
+    [m_swiffView setShouldSubpixelPositionFonts:[o_subpixelPositionFonts state]];
+    [m_swiffView setShouldSubpixelQuantizeFonts:[o_subpixelQuantizeFonts state]];
+    [m_swiffView setHairlineWidth:[o_hairlineWidth doubleValue]];
+    [m_swiffView setFillHairlineWidth:[o_fillHairlineWidth doubleValue]];
 
     [SwiffDiffDocument saveState];
+}
+
+
+- (IBAction) viewActualSize:(id)sender
+{
+    [self _setZoomLevel:1.0];
+}
+
+
+- (IBAction) viewZoomIn:(id)sender
+{
+    [self _setZoomLevel:[self _zoomLevel] + 0.5];
+}
+
+
+- (IBAction) viewZoomOut:(id)sender
+{
+    CGFloat zoomLevel = [self _zoomLevel];
+    zoomLevel -= 0.5;
+
+    if (zoomLevel < 0.5) {
+        zoomLevel = 0.5;
+    }
+
+    [self _setZoomLevel:zoomLevel];
 }
 
 
@@ -343,6 +452,12 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
     }
 
     [SwiffDiffDocument saveState];
+}
+
+
+- (IBAction) showOptions:(id)sender
+{
+    [o_optionsWindow makeKeyAndOrderFront:self];
 }
 
 
@@ -383,5 +498,13 @@ static NSString * const sCurrentModeKey  = @"CurrentMode";
             frameSlider       = o_frameSlider,
             containerView     = o_containerView,
             wantsLayerButton  = o_wantsLayer;
+
+@synthesize optionsWindow         = o_optionsWindow,
+            antialias             = o_antialias,
+            smoothFonts           = o_smoothFonts,
+            subpixelPositionFonts = o_subpixelPositionFonts,
+            subpixelQuantizeFonts = o_subpixelQuantizeFonts,
+            hairlineWidth         = o_hairlineWidth,
+            fillHairlineWidth     = o_fillHairlineWidth;
 
 @end

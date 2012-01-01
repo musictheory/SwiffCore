@@ -46,8 +46,6 @@ static NSString * const SwiffMovieJPEGTablesDataKey = @"SwiffMovieJPEGTablesData
 // Associated value for parser - NSArray of SwiffBitmapDefinition objects that need JPEG tables
 static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEGTablesData";
 
-static void SwiffMovieSetDefinition(SwiffMovie *movie, UInt16 libraryID, id<SwiffDefinition> definition);
-
 
 @interface SwiffBitmapDefinition (Friend)
 - (void) _setJPEGTablesData:(NSData *)data;
@@ -64,8 +62,6 @@ static void SwiffMovieSetDefinition(SwiffMovie *movie, UInt16 libraryID, id<Swif
 - (id) initWithData:(NSData *)data
 {
     if ((self = [self init])) {
-        m_definitionMap = CFDictionaryCreateMutable(NULL, 0, NULL, &kCFTypeDictionaryValueCallBacks);
-
         SwiffColor white = { 1.0, 1.0, 1.0, 1.0 };
         m_backgroundColor = white;
         
@@ -78,12 +74,8 @@ static void SwiffMovieSetDefinition(SwiffMovie *movie, UInt16 libraryID, id<Swif
 
 - (void) dealloc
 {
-    if (m_definitionMap) {
-        [[(NSDictionary *)m_definitionMap allValues] makeObjectsPerformSelector:@selector(clearWeakReferences)];
-
-        CFRelease(m_definitionMap);
-        m_definitionMap = NULL;
-    }
+    SwiffSparseArrayEnumerateValues(&m_definitions, ^(void *v) { [(id)v release]; });
+    SwiffSparseArrayFree(&m_definitions);
 
     [m_scenes              release];  m_scenes              = nil;
     [m_sceneNameToSceneMap release];  m_sceneNameToSceneMap = nil;
@@ -159,10 +151,10 @@ static void SwiffMovieSetDefinition(SwiffMovie *movie, UInt16 libraryID, id<Swif
 
 - (void) _parser:(SwiffParser *)parser didFindTag:(SwiffTag)tag version:(NSInteger)version
 {
+    id<SwiffDefinition> definitionToAdd = nil;
+
     if (tag == SwiffTagDefineShape) {
-        SwiffShapeDefinition *shape = [[SwiffShapeDefinition alloc] initWithParser:parser movie:self];
-        SwiffMovieSetDefinition(self, [shape libraryID], shape);
-        [shape release];
+        definitionToAdd = [[SwiffShapeDefinition alloc] initWithParser:parser movie:self];
 
     } else if (tag == SwiffTagDefineButton) {
         //!nyi: Button Support.
@@ -181,7 +173,6 @@ static void SwiffMovieSetDefinition(SwiffMovie *movie, UInt16 libraryID, id<Swif
 
     } else if (tag == SwiffTagDefineBits || tag == SwiffTagDefineBitsLossless) {
         SwiffBitmapDefinition *bitmap = [[SwiffBitmapDefinition alloc] initWithParser:parser movie:self];
-        SwiffMovieSetDefinition(self, [bitmap libraryID], bitmap);
 
         if (tag == SwiffTagDefineBits) {
             NSMutableArray *needsTables = SwiffParserGetAssociatedValue(parser, SwiffMovieNeedsJPEGTablesDataKey);
@@ -195,20 +186,16 @@ static void SwiffMovieSetDefinition(SwiffMovie *movie, UInt16 libraryID, id<Swif
             [needsTables addObject:bitmap];
         }
 
-        [bitmap release];
+        definitionToAdd = bitmap;
 
     } else if (tag == SwiffTagDefineVideoStream) {
         //!nyi: Video Support
 
     } else if (tag == SwiffTagDefineSound) {
-        SwiffSoundDefinition *sound = [[SwiffSoundDefinition alloc] initWithParser:parser movie:self];
-        SwiffMovieSetDefinition(self, [sound libraryID], sound);
-        [sound release];
+        definitionToAdd = [[SwiffSoundDefinition alloc] initWithParser:parser movie:self];
 
     } else if (tag == SwiffTagDefineSprite) {
-        SwiffSpriteDefinition *sprite = [[SwiffSpriteDefinition alloc] initWithParser:parser movie:self];
-        SwiffMovieSetDefinition(self, [sprite libraryID], sprite);
-        [sprite release];
+        definitionToAdd = [[SwiffSpriteDefinition alloc] initWithParser:parser movie:self];
 
     } else if ((tag == SwiffTagDefineFont)     ||
                (tag == SwiffTagDefineFontInfo) ||
@@ -222,9 +209,7 @@ static void SwiffMovieSetDefinition(SwiffMovie *movie, UInt16 libraryID, id<Swif
         SwiffFontDefinition *font = SwiffMovieGetDefinition(self, fontID);
         
         if (![font isKindOfClass:[SwiffFontDefinition class]]) {
-            font = [[SwiffFontDefinition alloc] initWithLibraryID:fontID movie:self];
-            SwiffMovieSetDefinition(self, [font libraryID], font);
-            [font release];
+            definitionToAdd = font = [[SwiffFontDefinition alloc] initWithLibraryID:fontID movie:self];
         }
         
         if (tag == SwiffTagDefineFont) {
@@ -240,20 +225,25 @@ static void SwiffMovieSetDefinition(SwiffMovie *movie, UInt16 libraryID, id<Swif
         [key release];
     
     } else if (tag == SwiffTagDefineText) {
-        SwiffStaticTextDefinition *text = [[SwiffStaticTextDefinition alloc] initWithParser:parser movie:self];
-        SwiffMovieSetDefinition(self, [text libraryID], text);
-        [text release];
+        definitionToAdd = [[SwiffStaticTextDefinition alloc] initWithParser:parser movie:self];
     
     } else if (tag == SwiffTagDefineEditText) {
-        SwiffDynamicTextDefinition *text = [[SwiffDynamicTextDefinition alloc] initWithParser:parser movie:self];
-        SwiffMovieSetDefinition(self, [text libraryID], text);
-        [text release];
+        definitionToAdd = [[SwiffDynamicTextDefinition alloc] initWithParser:parser movie:self];
 
     } else if (tag == SwiffTagSetBackgroundColor) {
         SwiffParserReadColorRGB(parser, &m_backgroundColor);
 
     } else {
         [super _parser:parser didFindTag:tag version:version];
+    }
+
+    if (definitionToAdd) {
+        UInt16 libraryID = [definitionToAdd libraryID];
+
+        id existingValue = SwiffSparseArrayGetValueAtIndex(&m_definitions, libraryID);
+        if (existingValue) [existingValue release];
+
+        SwiffSparseArraySetConsumedObjectAtIndex(&m_definitions, libraryID, definitionToAdd);
     }
 }
 
@@ -263,16 +253,7 @@ static void SwiffMovieSetDefinition(SwiffMovie *movie, UInt16 libraryID, id<Swif
 
 id<SwiffDefinition> SwiffMovieGetDefinition(SwiffMovie *movie, UInt16 libraryID)
 {
-    UInt32 hash = (libraryID << 16) | libraryID;
-    return CFDictionaryGetValue(movie->m_definitionMap, (const void *)hash);
-}
-
-
-static void SwiffMovieSetDefinition(SwiffMovie *movie, UInt16 libraryID, id<SwiffDefinition> definition)
-{
-    if (!definition) return;
-    UInt32 hash = (libraryID << 16) | libraryID;
-    CFDictionarySetValue(movie->m_definitionMap, (const void *)hash, definition);
+    return SwiffSparseArrayGetValueAtIndex(&movie->m_definitions, libraryID);
 }
 
 

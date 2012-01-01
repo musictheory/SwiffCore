@@ -43,7 +43,7 @@ extern void SwiffPlayheadWarnForInvalidGotoArguments(void);
 
 void SwiffPlayheadWarnForInvalidGotoArguments()
 {
-    SwiffWarn(@"Invalid arguments sent to -[SwiffPlayhead goto...].  Break on SwiffPlayheadWarnForInvalidGotoArguments to debug");
+    SwiffWarn(@"View", @"Invalid arguments sent to -[SwiffPlayhead goto...].  Break on SwiffPlayheadWarnForInvalidGotoArguments to debug");
 }
 
 
@@ -52,6 +52,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 - (id) initWithMovie:(SwiffMovie *)movie delegate:(id<SwiffPlayheadDelegate>)delegate
 {
     if ((self = [super init])) {
+        m_frameIndex = -1;
         m_movie = [movie retain];
         m_delegate = delegate;
     }
@@ -98,14 +99,22 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (void) _gotoFrameWithIndex:(NSUInteger)frameIndex play:(BOOL)play
 {
+    BOOL isPlaying   = [self isPlaying];
     BOOL needsUpdate = NO;
+    
+    if (play && isPlaying) {
+        m_frameIndexForNextStep = frameIndex;
+        m_hasFrameIndexForNextStep = YES;
+
+        return;
+    }
     
     if (m_frameIndex != frameIndex) {
         m_frameIndex = frameIndex;
         needsUpdate = YES;
     }
 
-    if ([self isPlaying] != play) {
+    if (isPlaying != play) {
         [self _cleanupTimer];
 
         if (play) {
@@ -248,7 +257,14 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 - (void) step
 {
     SwiffScene *lastScene = [self scene];
-    m_frameIndex++;
+
+    if (m_hasFrameIndexForNextStep) {
+        m_frameIndex = m_frameIndexForNextStep;
+        m_hasFrameIndexForNextStep = NO;
+    } else {
+        m_frameIndex++;
+    }
+
     SwiffScene *currentScene = [self scene];
     BOOL atEnd = NO;
 
@@ -294,15 +310,6 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 - (SwiffScene *) scene
 {
     return [[self frame] scene];
-}
-
-
-- (void) setDelegate:(id<SwiffPlayheadDelegate>)delegate
-{
-    if (m_delegate != delegate) {
-        m_delegate = delegate;
-        m_delegate_playheadDidUpdate = [m_delegate respondsToSelector:@selector(playheadDidUpdate:)];
-    }
 }
 
 

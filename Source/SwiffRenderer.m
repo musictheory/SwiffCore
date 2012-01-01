@@ -49,11 +49,15 @@ struct _SwiffRenderer {
     SwiffMovie       *movie;
     NSArray          *placedObjects;
     CGFloat           hairlineWidth;
-    CGFloat           hairlineWithFillWidth;
+    CGFloat           fillHairlineWidth;
     CGAffineTransform baseAffineTransform;
     SwiffColor        tintColor;
     BOOL              hasBaseAffineTransform;
     BOOL              hasTintColor;
+    BOOL              shouldAntialias;
+    BOOL              shouldSmoothFonts;
+    BOOL              shouldSubpixelPositionFonts;
+    BOOL              shouldSubpixelQuantizeFonts;
 };
 
 
@@ -64,18 +68,20 @@ typedef struct _SwiffRenderState {
     CGAffineTransform affineTransform;
     CFMutableArrayRef colorTransforms;
     CGFloat           hairlineWidth;
-    CGFloat           hairlineWithFillWidth;
+    CGFloat           fillHairlineWidth;
     CGFloat           tintRed;
     CGFloat           tintGreen;
     CGFloat           tintBlue;
     UInt16            clipDepth;
     BOOL              isBuildingClippingPath;
+    BOOL              ceilX;
+    BOOL              ceilY;
     BOOL              skipUntilClipDepth;
     BOOL              hasTintColor;
 } SwiffRenderState;
 
 
-static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placedObject, BOOL applyColorTransform, BOOL applyAffineTransform);
+static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placedObject);
 static void sStopClipping(SwiffRenderState *state);
 
 
@@ -197,7 +203,13 @@ nextOperation:
                 x = *floats++;
                 CGPoint to   = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
 
-                CGFloat roundedY = (floor(to.y * roundScale) / roundScale) + roundOffset;
+                CGFloat roundedY;
+                if (state->ceilY) {
+                    roundedY = (ceil (to.y * roundScale) / roundScale) - roundOffset;
+                } else {
+                    roundedY = (floor(to.y * roundScale) / roundScale) + roundOffset;
+                }
+
                 CGContextMoveToPoint(context, from.x, roundedY);
                 CGContextAddLineToPoint(context, to.x, roundedY);
 
@@ -206,8 +218,8 @@ nextOperation:
 
                 CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
                 if (shouldRound) {
-                    to.x = floor(to.x) + 0.5;
-                    to.y = floor(to.y) + 0.5;
+                    to.x = (state->ceilX) ? (ceil(to.x) - 0.5) : (floor(to.x) + 0.5);
+                    to.y = (state->ceilY) ? (ceil(to.y) - 0.5) : (floor(to.y) + 0.5);
                 }
                 CGContextAddLineToPoint(context, to.x, to.y);
             }
@@ -225,7 +237,13 @@ nextOperation:
                 y = *floats++;
                 CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
 
-                CGFloat roundedX = (floor(to.x * roundScale) / roundScale) + roundOffset;
+                CGFloat roundedX;
+                if (state->ceilX) {
+                    roundedX = (ceil (to.x * roundScale) / roundScale) - roundOffset;
+                } else {
+                    roundedX = (floor(to.x * roundScale) / roundScale) + roundOffset;
+                }
+
                 CGContextMoveToPoint(context, roundedX, from.y);
                 CGContextAddLineToPoint(context, roundedX, to.y);
 
@@ -234,8 +252,8 @@ nextOperation:
             
                 CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
                 if (shouldRound) {
-                    to.x = floor(to.x) + 0.5;
-                    to.y = floor(to.y) + 0.5;
+                    to.x = (state->ceilX) ? (ceil(to.x) - 0.5) : (floor(to.x) + 0.5);
+                    to.y = (state->ceilY) ? (ceil(to.y) - 0.5) : (floor(to.y) + 0.5);
                 }
                 CGContextAddLineToPoint(context, to.x, to.y);
             }
@@ -334,8 +352,8 @@ static void sStrokePath(SwiffRenderState *state, SwiffPath *path)
         if (isHairline) {
             lineWidth = state->hairlineWidth;
 
-            if ((state->hairlineWithFillWidth != 0) && [path useHairlineWithFillWidth]) {
-                lineWidth = state->hairlineWithFillWidth;
+            if ((state->fillHairlineWidth != 0) && [path usesFillHairlineWidth]) {
+                lineWidth = state->fillHairlineWidth;
             }
         }
         
@@ -497,7 +515,7 @@ static void sDrawSpriteDefinition(SwiffRenderState *state, SwiffSpriteDefinition
     SwiffFrame *frame  = [frames count] ? [frames objectAtIndex:0] : nil;
     
     for (SwiffPlacedObject *po in [frame placedObjects]) {
-        sDrawPlacedObject(state, po, YES, YES);
+        sDrawPlacedObject(state, po);
     }
 }
 
@@ -612,10 +630,6 @@ static void sDrawPlacedDynamicText(SwiffRenderState *state, SwiffPlacedDynamicTe
             CGContextConcatCTM(context, state->affineTransform);
             CGContextTranslateCTM(context, rect.origin.x, CGRectGetMaxY(rect));
             CGContextScaleCTM(context, 1, -1);
-
-            CGContextSetShouldSubpixelQuantizeFonts(context, NO);
-            CGContextSetShouldSubpixelPositionFonts(context, NO);
-            CGContextSetShouldSmoothFonts(context, NO);
             
             NSInteger i;
             CFArrayRef lines = CTFrameGetLines(frame);
@@ -651,11 +665,13 @@ static void sDrawPlacedDynamicText(SwiffRenderState *state, SwiffPlacedDynamicTe
 }
 
 
-static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placedObject, BOOL applyColorTransform, BOOL applyAffineTransform)
+static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placedObject)
 {
-    UInt16 placedObjectClipDepth = placedObject->m_additional ? [placedObject clipDepth] : 0;
-    UInt16 placedObjectDepth     = placedObject->m_depth;
-    BOOL   placedObjectIsHidden  = placedObject->m_additional ? [placedObject isHidden] : NO;
+    UInt16      placedObjectClipDepth = placedObject->m_additional ? [placedObject clipDepth] : 0;
+    UInt16      placedObjectDepth     = placedObject->m_depth;
+    BOOL        placedObjectIsHidden  = placedObject->m_additional ? [placedObject isHidden] : NO;
+    BOOL        hasColorTransform     = placedObject->m_additional ? [placedObject hasColorTransform] : NO;
+    CGBlendMode blendMode             = placedObject->m_additional ? [placedObject CGBlendMode] : kCGBlendModeNormal;
 
     // If we are in a clipping mask...
     if (state->clipDepth) {
@@ -692,22 +708,17 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
         return;
     }
 
-    CGAffineTransform savedTransform;
+    CGAffineTransform savedTransform = state->affineTransform;
+    state->affineTransform = newTransform;
 
-    if (applyAffineTransform) {
-        savedTransform = state->affineTransform;
-        state->affineTransform = newTransform;
+    if (hasColorTransform) {
+        sPushColorTransform(state, [placedObject colorTransformPointer]);
     }
 
-    BOOL needsColorTransformPop = NO;
-
-    if (applyColorTransform) {
-        BOOL hasColorTransform = [placedObject hasColorTransform];
-
-        if (hasColorTransform) {
-            sPushColorTransform(state, [placedObject colorTransformPointer]);
-            needsColorTransformPop = YES;
-        }
+    //!nyi: non-CG blend modes
+    if (blendMode != kCGBlendModeNormal) {
+        CGContextSaveGState(state->context);
+        CGContextSetBlendMode(state->context, blendMode);
     }
 
     if ([definition isKindOfClass:[SwiffDynamicTextDefinition class]]) {
@@ -725,13 +736,15 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
         sDrawStaticTextDefinition(state, (SwiffStaticTextDefinition *)definition);
     }
 
-    if (needsColorTransformPop) {
+    if (hasColorTransform) {
         sPopColorTransform(state);
     }
-
-    if (applyAffineTransform) {
-        state->affineTransform = savedTransform;
+    
+    if (blendMode != kCGBlendModeNormal) {
+        CGContextRestoreGState(state->context);
     }
+
+    state->affineTransform = savedTransform;
 
     if (placedObjectClipDepth) {
         sStartClipping(state, placedObjectClipDepth);
@@ -749,6 +762,7 @@ SwiffRenderer *SwiffRendererCreate(SwiffMovie *movie)
     SwiffRenderer *renderer = calloc(sizeof(SwiffRenderer), 1);
 
     renderer->movie = [movie retain];
+    renderer->shouldAntialias = YES;
     
     return renderer;
 }
@@ -787,14 +801,22 @@ void SwiffRendererRender(SwiffRenderer *renderer, CGContextRef context)
         state.affineTransform = CGAffineTransformIdentity;
     }
 
+    state.ceilX = CGContextGetCTM(context).a < 0;
+    state.ceilY = CGContextGetCTM(context).d > 0;
     state.hairlineWidth = renderer->hairlineWidth ? renderer->hairlineWidth : 1.0;
-    state.hairlineWithFillWidth = renderer->hairlineWithFillWidth;
+    state.fillHairlineWidth = renderer->fillHairlineWidth;
     
     state.clipBoundingBox = CGContextGetClipBoundingBox(context);
 
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 
-    CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
+    CGContextSetInterpolationQuality(context, kCGInterpolationDefault);
+
+    CGContextSetShouldAntialias(context, renderer->shouldAntialias);
+    CGContextSetShouldSmoothFonts(context, renderer->shouldSmoothFonts);
+    CGContextSetShouldSubpixelPositionFonts(context, renderer->shouldSubpixelPositionFonts);
+    CGContextSetShouldSubpixelQuantizeFonts(context, renderer->shouldSubpixelQuantizeFonts);
+
     CGContextSetLineCap(context, kCGLineCapRound);
     CGContextSetLineJoin(context, kCGLineJoinRound);
     CGContextSetFillColorSpace(context, colorSpace);
@@ -803,7 +825,7 @@ void SwiffRendererRender(SwiffRenderer *renderer, CGContextRef context)
     CGColorSpaceRelease(colorSpace);
 
     for (SwiffPlacedObject *object in renderer->placedObjects) {
-        sDrawPlacedObject(&state, object, YES, YES);
+        sDrawPlacedObject(&state, object);
     }
     
     state.movie   = nil;
@@ -886,14 +908,62 @@ CGFloat SwiffRendererGetHairlineWidth(SwiffRenderer *renderer)
 }
 
 
-void SwiffRendererSetHairlineWithFillWidth(SwiffRenderer *renderer, CGFloat hairlineWidth)
+void SwiffRendererSetFillHairlineWidth(SwiffRenderer *renderer, CGFloat hairlineWidth)
 {
-    renderer->hairlineWithFillWidth = hairlineWidth;
+    renderer->fillHairlineWidth = hairlineWidth;
 }
 
 
-CGFloat SwiffRendererGetHairlineWithFillWidth(SwiffRenderer *renderer)
+CGFloat SwiffRendererGetFillHairlineWidth(SwiffRenderer *renderer)
 {
-    return renderer->hairlineWithFillWidth;
+    return renderer->fillHairlineWidth;
 }
+
+
+void SwiffRendererSetShouldAntialias(SwiffRenderer *renderer, BOOL yn)
+{
+    renderer->shouldAntialias = yn;
+}
+
+
+BOOL SwiffRendererGetShouldAntialias(SwiffRenderer *renderer)
+{
+    return renderer->shouldAntialias;
+}
+
+
+void SwiffRendererSetShouldSmoothFonts(SwiffRenderer *renderer, BOOL yn)
+{
+    renderer->shouldSmoothFonts = yn;
+}
+
+
+BOOL SwiffRendererGetShouldSmoothFonts(SwiffRenderer *renderer)
+{
+    return renderer->shouldSmoothFonts;
+}
+
+void SwiffRendererSetShouldSubpixelPositionFonts(SwiffRenderer *renderer, BOOL yn)
+{
+    renderer->shouldSubpixelPositionFonts = yn;
+}
+
+
+BOOL SwiffRendererGetShouldSubpixelPositionFonts(SwiffRenderer *renderer)
+{
+    return renderer->shouldSubpixelPositionFonts;
+}
+
+
+void SwiffRendererSetShouldSubpixelQuantizeFonts(SwiffRenderer *renderer, BOOL yn)
+{
+    renderer->shouldSubpixelQuantizeFonts = yn;
+}
+
+
+BOOL SwiffRendererGetShouldSubpixelQuantizeFonts(SwiffRenderer *renderer)
+{
+    return renderer->shouldSubpixelQuantizeFonts;
+}
+
 

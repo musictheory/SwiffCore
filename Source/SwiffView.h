@@ -62,14 +62,22 @@
 - (void) redisplay;
 
 @property (nonatomic, assign) id<SwiffViewDelegate> delegate;
+
+@property (nonatomic, retain, readonly) SwiffMovie *movie;
+@property (nonatomic, retain, readonly) SwiffPlayhead *playhead;
+
 @property (nonatomic, assign) BOOL drawsBackground;
 
 @property (nonatomic, assign) SwiffColor *tintColor;
 @property (nonatomic, assign) CGFloat hairlineWidth;
-@property (nonatomic, assign) CGFloat hairlineWithFillWidth;
+@property (nonatomic, assign) CGFloat fillHairlineWidth;
 
-@property (nonatomic, retain, readonly) SwiffMovie *movie;
-@property (nonatomic, retain, readonly) SwiffPlayhead *playhead;
+@property (nonatomic, assign) BOOL shouldAntialias;
+@property (nonatomic, assign) BOOL shouldSmoothFonts;
+@property (nonatomic, assign) BOOL shouldSubpixelPositionFonts;
+@property (nonatomic, assign) BOOL shouldSubpixelQuantizeFonts;
+@property (nonatomic, assign) BOOL shouldFlattenSublayersWhenStopped;
+
 
 @end
 

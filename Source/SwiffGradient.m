@@ -38,38 +38,60 @@
     if ((self = [super init])) {
         SwiffTag  tag     = SwiffParserGetCurrentTag(parser);
         NSInteger version = SwiffParserGetCurrentTagVersion(parser);
-    
-        BOOL usesAlphaColors = (tag == SwiffTagDefineShape) && (version >= 3);
 
         UInt32 spreadMode, interpolationMode, count, i;
 
-        SwiffParserByteAlign(parser);
+        // 
+        if ((tag == SwiffTagPlaceObject) && (version >= 3)) {
+            UInt8 tmp;
+            SwiffParserReadUInt8(parser, &tmp);
+            count = tmp;
+            interpolationMode = 0;
+            spreadMode = 0;
 
-        SwiffParserReadUBits(parser, 2, &spreadMode);
-        SwiffParserReadUBits(parser, 2, &interpolationMode);
-        SwiffParserReadUBits(parser, 4, &count);
+            if (count > 16) count = 16;
+
+            for (i = 0; i < count; i++) {
+                SwiffParserReadColorRGBA(parser, &m_colors[i]);
+            }
+            
+            for (i = 0; i < count; i++) {
+                UInt8 ratio;
+                SwiffParserReadUInt8(parser, &ratio);
+                m_ratios[i] = ratio / 255.0;
+            }
+
+        } else {
+            SwiffParserByteAlign(parser);
+
+            SwiffParserReadUBits(parser, 2, &spreadMode);
+            SwiffParserReadUBits(parser, 2, &interpolationMode);
+            SwiffParserReadUBits(parser, 4, &count);
+
+            BOOL usesAlphaColors = ((tag == SwiffTagDefineShape) && (version >= 3));
+
+            for (i = 0; i < count; i++) {
+                UInt8 ratio;
+                SwiffParserReadUInt8(parser, &ratio);
+                m_ratios[i] = ratio / 255.0;
+                
+                if (usesAlphaColors) {
+                    SwiffParserReadColorRGBA(parser, &m_colors[i]);
+                } else {
+                    SwiffParserReadColorRGB(parser,  &m_colors[i]);
+                }
+            }
+            
+            if (isFocalGradient) {
+                SwiffParserReadFixed8(parser, &m_focalPoint);
+            }
+
+            SwiffParserByteAlign(parser);
+        }
         
         m_spreadMode        = spreadMode;
         m_interpolationMode = interpolationMode;
         m_recordCount       = count;
-        
-        for (i = 0; i < count; i++) {
-            UInt8 ratio;
-            SwiffParserReadUInt8(parser, &ratio);
-            m_ratios[i] = ratio / 255.0;
-            
-            if (usesAlphaColors) {
-                SwiffParserReadColorRGBA(parser, &m_colors[i]);
-            } else {
-                SwiffParserReadColorRGB(parser,  &m_colors[i]);
-            }
-        }
-        
-        if (isFocalGradient) {
-            SwiffParserReadFixed8(parser, &m_focalPoint);
-        }
-
-        SwiffParserByteAlign(parser);
 
         if (!SwiffParserIsValid(parser)) {
             [self release];

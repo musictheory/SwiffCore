@@ -35,12 +35,14 @@
 #import "SwiffSoundPlayer.h"
 #import "SwiffView.h"
 
-#define DEBUG_SUBLAYERS 0
+#define DEBUG_SUBLAYERS 1
 
 static NSString * const SwiffLibraryIDKey    = @"SwiffLibraryID";
 static NSString * const SwiffPlacedObjectKey = @"SwiffPlacedObject";
 static NSString * const SwiffScaleFactorXKey = @"SwiffScaleFactorX";
 static NSString * const SwiffScaleFactorYKey = @"SwiffScaleFactorY";
+static NSString * const SwiffTranslateXKey   = @"SwiffTranslateX";
+static NSString * const SwiffTranslateYKey   = @"SwiffTranslateY";
 
 
 @implementation SwiffLayer
@@ -58,7 +60,8 @@ static NSString * const SwiffScaleFactorYKey = @"SwiffScaleFactorY";
 
         m_playhead = [[SwiffPlayhead alloc] initWithMovie:movie delegate:self];
         [m_playhead gotoFrameWithIndex:0 play:NO];
-        [self setCurrentFrame:[m_playhead frame]];
+        
+        [m_contentLayer setNeedsDisplay];
     }
     
     return self;
@@ -77,10 +80,8 @@ static NSString * const SwiffScaleFactorYKey = @"SwiffScaleFactorY";
     [m_playhead     release];  m_playhead     = nil;
     [m_contentLayer release];  m_contentLayer = nil;
 
-    if (m_depthToSublayerMap) {
-        CFRelease(m_depthToSublayerMap);
-        m_depthToSublayerMap = NULL;
-    }
+    SwiffSparseArrayEnumerateValues(&m_sublayers, ^(void *v) { [(id)v release]; });
+    SwiffSparseArrayFree(&m_sublayers);
 
     [super dealloc];
 }
@@ -165,15 +166,46 @@ static void sUpdateSublayerWithPlacedObject(SwiffLayer *self, CALayer *sublayer,
         transform = CGAffineTransformConcat(transform, self->m_scaledAffineTransform);
 
         CGSize scaleFactor = sGetNeededScaleForTransform(transform);
+        scaleFactor.width  = ceil(scaleFactor.width);
+        scaleFactor.height = ceil(scaleFactor.height);
+
         CGAffineTransform scaleFactorTransform = CGAffineTransformMakeScale(scaleFactor.width, scaleFactor.height);
 
-        CGRect renderBounds = sExpandRect(CGRectApplyAffineTransform([definition renderBounds], scaleFactorTransform));
+        CGRect renderBounds = [definition renderBounds];
+        renderBounds = sExpandRect(CGRectApplyAffineTransform(renderBounds, scaleFactorTransform));
         transform = CGAffineTransformConcat(CGAffineTransformInvert(scaleFactorTransform), transform);
+
+        // If we aren't skewing/rotating, use additional tweak to draw crisp lines
+        //
+        if (transform.b == 0 && transform.c == 0) {
+            CGFloat tx = transform.tx;
+            CGFloat ty = transform.ty;
+
+            transform.tx = floor(transform.tx);
+            transform.ty = floor(transform.ty);
+
+            [sublayer setValue:[NSNumber numberWithDouble:(tx - transform.tx)] forKey:SwiffTranslateXKey];
+            [sublayer setValue:[NSNumber numberWithDouble:(ty - transform.ty)] forKey:SwiffTranslateYKey];
+        }
 
         CGPoint anchorPoint = CGPointMake(
             -renderBounds.origin.x / renderBounds.size.width,
             -renderBounds.origin.y / renderBounds.size.height
         );
+
+        if (SwiffShouldLog(@"View")) {
+            SwiffLog(@"View",
+                @"Sublayer %d:\n"
+                @"      bounds: %lf,%lf, %lf,%lf\n"
+                @"   transform: %lf,%lf,%lf,%lf %lf,%lf\n"
+                @"      anchor: %lf,%lf\n"
+                @"scale factor: %lf,%lf\n ",
+                (int)[placedObject depth],
+                (double)renderBounds.origin.x, (double)renderBounds.origin.y, (double)renderBounds.size.width, (double)renderBounds.size.height,
+                (double)transform.a, (double)transform.b, (double)transform.c, (double)transform.d, (double)transform.tx, (double)transform.ty,     
+                (double)anchorPoint.x,     (double)anchorPoint.y,
+                (double)scaleFactor.width, (double)scaleFactor.height);
+        }
 
         [sublayer setValue:[NSNumber numberWithDouble:scaleFactor.width]  forKey:SwiffScaleFactorXKey];
         [sublayer setValue:[NSNumber numberWithDouble:scaleFactor.height] forKey:SwiffScaleFactorYKey];
@@ -211,14 +243,6 @@ static void sUpdateSublayerWithPlacedObject(SwiffLayer *self, CALayer *sublayer,
 
 static void sAddSublayerAtDepth(SwiffLayer *self, UInt16 depth, SwiffPlacedObject *placedObject)
 {
-
-    CFMutableDictionaryRef map = self->m_depthToSublayerMap;
-    const void *key = (const void *)((depth << 16) | depth);
-
-    if (!map) {
-        map = self->m_depthToSublayerMap = CFDictionaryCreateMutable(NULL, 0, NULL, &kCFTypeDictionaryValueCallBacks);
-    }
-    
     CALayer *sublayer = [[CALayer alloc] init];
 
     [sublayer setContentsScale:[self contentsScale]];
@@ -229,21 +253,18 @@ static void sAddSublayerAtDepth(SwiffLayer *self, UInt16 depth, SwiffPlacedObjec
 
     sUpdateSublayerWithPlacedObject(self, sublayer, placedObject);
 
+    SwiffLog(@"View", @"adding sublayer at depth %d", (int)depth);
     [self addSublayer:sublayer];
-    
-    CFDictionarySetValue(map, key, sublayer);
-    
-    [sublayer release];
+
+    SwiffSparseArraySetConsumedObjectAtIndex(&self->m_sublayers, depth, sublayer);
+    self->m_sublayerCount++;
 }
 
 
 static void sUpdateSublayerAtDepth(SwiffLayer *self, UInt16 depth, SwiffPlacedObject *placedObject)
 {
-    CFMutableDictionaryRef map = self->m_depthToSublayerMap;
-    const void *key = (const void *)((depth << 16) | depth);
-    if (!map) return;
+    CALayer *sublayer = SwiffSparseArrayGetValueAtIndex(&self->m_sublayers, depth);
 
-    CALayer *sublayer = (CALayer *)CFDictionaryGetValue(map, key);
     if (sublayer) {
         sUpdateSublayerWithPlacedObject(self, sublayer, placedObject);
     }
@@ -252,20 +273,15 @@ static void sUpdateSublayerAtDepth(SwiffLayer *self, UInt16 depth, SwiffPlacedOb
 
 static void sRemoveSublayerAtDepth(SwiffLayer *self, UInt16 depth)
 {
-    CFMutableDictionaryRef map = self->m_depthToSublayerMap;
-    const void *key = (const void *)((depth << 16) | depth);
-    if (!map) return;
-    
-    CALayer *sublayer = (CALayer *)CFDictionaryGetValue(map, key);
+    CALayer *sublayer = SwiffSparseArrayGetValueAtIndex(&self->m_sublayers, depth);
     if (!sublayer) return;
 
+    SwiffLog(@"View", @"removing sublayer at depth %d", (int)depth);
     [sublayer removeFromSuperlayer];
-    
-    CFDictionaryRemoveValue(map, key);
-    if (CFDictionaryGetCount(map) == 0) {
-        CFRelease(self->m_depthToSublayerMap);
-        self->m_depthToSublayerMap = NULL;
-    }
+    [sublayer release];
+
+    SwiffSparseArraySetValueAtIndex(&self->m_sublayers, depth, nil);
+    self->m_sublayerCount--;
 }
 
 
@@ -291,6 +307,8 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
 
 - (void) _transitionToFrame:(SwiffFrame *)newFrame fromFrame:(SwiffFrame *)oldFrame
 {
+    SwiffLog(@"View", @"%@ -> %@", oldFrame, newFrame);
+
     NSEnumerator *oldEnumerator = [[oldFrame placedObjects] objectEnumerator];
     NSEnumerator *newEnumerator = [[newFrame placedObjects] objectEnumerator];
     
@@ -311,26 +329,38 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
 
     SwiffMovie *movie = [self movie];
     BOOL didAddOrRemoveLayers = NO;
+    BOOL shouldFlatten = m_shouldFlattenSublayersWhenStopped && ![m_playhead isPlaying];
 
     while ((oldDepth < NSIntegerMax) || (newDepth < NSIntegerMax)) {
         if (oldDepth == newDepth) {
             if (oldPlacedObject != newPlacedObject) {
+                if (shouldFlatten) {
+                    oldWantsLayer = NO;
+                    newWantsLayer = NO;
+                }
+
+                if (oldWantsLayer && !SwiffSparseArrayGetValueAtIndex(&m_sublayers, oldDepth)) {
+                    oldWantsLayer = NO;
+                }
+            
                 if (oldWantsLayer && newWantsLayer && (oldPlacedObject->m_libraryID == newPlacedObject->m_libraryID)) {
                     sUpdateSublayerAtDepth(self, oldDepth, newPlacedObject);
 
                 } else {
-                    if (!oldWantsLayer) {
-                        sInvalidatePlacedObject(movie, oldPlacedObject, &invalidRect);
-                    } else {
+                    if (oldWantsLayer) {
                         sRemoveSublayerAtDepth(self, oldDepth);
                         didAddOrRemoveLayers = YES;
+
+                    } else {
+                        sInvalidatePlacedObject(movie, oldPlacedObject, &invalidRect);
                     }
                     
-                    if (!newWantsLayer) {
-                        sInvalidatePlacedObject(movie, newPlacedObject, &invalidRect);
-                    } else {
+                    if (newWantsLayer) {
                         sAddSublayerAtDepth(self, newDepth, newPlacedObject);
                         didAddOrRemoveLayers = YES;
+
+                    } else {
+                        sInvalidatePlacedObject(movie, newPlacedObject, &invalidRect);
                     }
                 }
             }
@@ -339,6 +369,10 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
             NEXT(new);
             
         } else if (newDepth < oldDepth) {
+            if (shouldFlatten) {
+                newWantsLayer = NO;
+            }
+
             if (newWantsLayer) {
                 sAddSublayerAtDepth(self, newDepth, newPlacedObject);
                 didAddOrRemoveLayers = YES;
@@ -350,6 +384,14 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
             NEXT(new);
 
         } else if (oldDepth < newDepth) {
+            if (shouldFlatten) {
+                oldWantsLayer = NO;
+            }
+
+            if (oldWantsLayer && !SwiffSparseArrayGetValueAtIndex(&m_sublayers, oldDepth)) {
+                oldWantsLayer = NO;
+            }
+
             if (oldWantsLayer) {
                 sRemoveSublayerAtDepth(self, oldDepth);
                 didAddOrRemoveLayers = YES;
@@ -411,7 +453,7 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
         NSArray *placedObjects = [frame placedObjects];
         NSMutableArray *filteredObjects = nil;
         
-        if (m_depthToSublayerMap) {
+        if (m_sublayerCount) {
             filteredObjects = [[NSMutableArray alloc] initWithCapacity:[placedObjects count]];
             
             for (SwiffPlacedObject *object in placedObjects) {
@@ -434,7 +476,7 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
 #if WARN_ON_DROPPED_FRAMES        
         double msElapsed = (clock() - c) / (double)(CLOCKS_PER_SEC / 1000);
         if (msElapsed > (1000.0 / 60.0)) {
-            SwiffWarn(@"Rendering took %lf.02 ms", msElapsed);
+            SwiffWarn(@"View", @"Rendering took %lf.02 ms", msElapsed);
         }
 #endif
 
@@ -444,15 +486,15 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
         NSInteger libraryID = [[layer valueForKey:SwiffLibraryIDKey] integerValue];
 
         SwiffPlacedObject *originalPlacedObject = [layer valueForKey:SwiffPlacedObjectKey];
+        SwiffPlacedObject *placedObject = SwiffPlacedObjectCreate(m_movie, libraryID, originalPlacedObject);
+
+        [placedObject setAffineTransform:CGAffineTransformIdentity];
         
-        SwiffPlacedObject *placedObject = [[SwiffPlacedObject alloc] initWithDepth:0];
-        NSArray *placedObjects = [[NSArray alloc] initWithObjects:placedObject, nil];
-
-        [placedObject setLibraryID:libraryID];
-
         SwiffColorTransform colorTransform = [originalPlacedObject colorTransform];
         colorTransform.alphaMultiply = 1.0;
         [placedObject setColorTransform:colorTransform];
+
+        NSArray *placedObjects = [[NSArray alloc] initWithObjects:placedObject, nil];
 
         CGContextSaveGState(context);
 
@@ -469,19 +511,35 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
         // Save the CTM, reset the CTM to Identity, then pass the old CTM as the base
         // transform of SwiffRender()
         //
-        CGAffineTransform ctm = CGContextGetCTM(context);
+        CGAffineTransform base = CGContextGetCTM(context);
+        CGAffineTransform orig = base;
 
 //      CGContextSetCTM() is private, so immitate it with concatenation
-        CGContextConcatCTM(context, CGAffineTransformInvert(ctm)); // CGContextSetCTM(context, CGAffineTransformIdentity)
+        CGContextConcatCTM(context, CGAffineTransformInvert(base)); // CGContextSetCTM(context, CGAffineTransformIdentity)
 
-        CGAffineTransform t = CGAffineTransformMakeScale(
+        CGAffineTransform translate = CGAffineTransformMakeTranslation(
+            [[layer valueForKey:SwiffTranslateXKey] doubleValue],
+            [[layer valueForKey:SwiffTranslateYKey] doubleValue]
+        );
+        base = CGAffineTransformConcat(translate, base);
+
+        CGAffineTransform scale = CGAffineTransformMakeScale(
             [[layer valueForKey:SwiffScaleFactorXKey] doubleValue],
             [[layer valueForKey:SwiffScaleFactorYKey] doubleValue]
         );
-        
-        ctm = CGAffineTransformConcat(t, ctm);
+        base = CGAffineTransformConcat(scale, base);
+                
+        if (SwiffShouldLog(@"View")) {
+            SwiffLog(@"View", @"Rendering sublayer %d\n"
+                @" orig: %lf,%lf,%lf,%lf %lf,%lf\n"
+                @" base: %lf,%lf,%lf,%lf %lf,%lf\n",
+                (int)[originalPlacedObject depth],
+                (double)orig.a, (double)orig.b, (double)orig.c, (double)orig.d, (double)orig.tx, (double)orig.ty,
+                (double)base.a, (double)base.b, (double)base.c, (double)base.d, (double)base.tx, (double)base.ty
+            );
+        }
 
-        SwiffRendererSetBaseAffineTransform(m_renderer, &ctm);
+        SwiffRendererSetBaseAffineTransform(m_renderer, &base);
         SwiffRendererSetPlacedObjects(m_renderer, placedObjects);
         SwiffRendererRender(m_renderer, context);
 
@@ -541,7 +599,29 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
         [[SwiffSoundPlayer sharedInstance] processMovie:m_movie frame:frame];
     }
 
-    [self setCurrentFrame:frame];
+    if (frame != m_currentFrame) {
+        BOOL shouldInterpolate = NO;
+
+        if (m_delegate_layer_shouldInterpolateFromFrame_toFrame) {
+            shouldInterpolate = [m_delegate layer:self shouldInterpolateFromFrame:m_currentFrame toFrame:frame];
+        }
+
+        m_interpolateCurrentFrame = shouldInterpolate;
+
+        SwiffFrame *oldFrame = m_currentFrame;
+        m_currentFrame = [frame retain];
+
+        [self _transitionToFrame:frame fromFrame:oldFrame];
+        [oldFrame release];
+
+        if (m_delegate_layer_didUpdateCurrentFrame) {
+            [m_delegate layer:self didUpdateCurrentFrame:m_currentFrame];
+        }
+
+    } else {
+        m_interpolateCurrentFrame = NO;
+        [self redisplay];
+    }
 }
 
 
@@ -552,28 +632,16 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
 {
     [m_contentLayer setNeedsDisplay];
 
-    if (m_depthToSublayerMap) {
-        CFIndex count = CFDictionaryGetCount(m_depthToSublayerMap);
-        CALayer **sublayers = alloca(count * sizeof(CALayer *));
-
-        CFDictionaryGetKeysAndValues(m_depthToSublayerMap, NULL, (const void **)sublayers);
-        for (CFIndex i = 0; i < count; i++) {
-            [sublayers[i] removeFromSuperlayer];
-        }
-
-        CFRelease(m_depthToSublayerMap);
-        m_depthToSublayerMap = NULL;
-    }
-
-    SwiffFrame *savedFrame = [[self currentFrame] retain];
-    id<SwiffLayerDelegate> savedDelegate = m_delegate;
-
-    m_delegate = nil;
-    [self setCurrentFrame:nil];
-    [self setCurrentFrame:savedFrame];
-    m_delegate = savedDelegate;
+    SwiffSparseArrayEnumerateValues(&m_sublayers, ^(void *value) {
+        CALayer *layer = value;
+        [layer removeFromSuperlayer];
+        [layer release];
+    });
     
-    [savedFrame release];
+    SwiffSparseArrayFree(&m_sublayers);
+    m_sublayerCount = 0;
+
+    [self _transitionToFrame:m_currentFrame fromFrame:nil];
 }
 
 
@@ -614,70 +682,80 @@ static void sInvalidatePlacedObject(SwiffMovie *movie, SwiffPlacedObject *placed
 }
 
 
-- (void) setCurrentFrame:(SwiffFrame *)frame
-{
-    if (frame != m_currentFrame) {
-        BOOL shouldInterpolate = NO;
-
-        if (m_delegate_layer_shouldInterpolateFromFrame_toFrame) {
-            shouldInterpolate = [m_delegate layer:self shouldInterpolateFromFrame:m_currentFrame toFrame:frame];
-        }
-
-        m_interpolateCurrentFrame = shouldInterpolate;
-
-        SwiffFrame *oldFrame = m_currentFrame;
-        m_currentFrame = [frame retain];
-
-        if (m_delegate_layer_didUpdateCurrentFrame) {
-            [m_delegate layer:self didUpdateCurrentFrame:m_currentFrame];
-        }
-
-        [self _transitionToFrame:frame fromFrame:oldFrame];
-        [oldFrame release];
-    }
-}
-
-
 - (void) setTintColor:(SwiffColor *)tintColor
 {
     SwiffRendererSetTintColor(m_renderer, tintColor);
 }
 
 
-- (SwiffColor *) tintColor
+
+- (void) setHairlineWidth:(CGFloat)width
 {
-    return SwiffRendererGetTintColor(m_renderer);
+    if (width != SwiffRendererGetHairlineWidth(m_renderer)) {
+        SwiffRendererSetHairlineWidth(m_renderer, width);
+        [self redisplay];
+    }
 }
 
 
-- (void) setHairlineWidth:(CGFloat)hairlineWidth
+- (void) setFillHairlineWidth:(CGFloat)width
 {
-    SwiffRendererSetHairlineWidth(m_renderer, hairlineWidth);
+    if (width != SwiffRendererGetFillHairlineWidth(m_renderer)) {
+        SwiffRendererSetFillHairlineWidth(m_renderer, width);
+        [self redisplay];
+    }
 }
 
 
-- (CGFloat) hairlineWidth
+- (void) setShouldAntialias:(BOOL)yn
 {
-    return SwiffRendererGetHairlineWidth(m_renderer);
+    if (yn != SwiffRendererGetShouldAntialias(m_renderer)) {
+        SwiffRendererSetShouldAntialias(m_renderer, yn);
+        [self redisplay];
+    }
 }
 
 
-- (void) setHairlineWithFillWidth:(CGFloat)hairlineWidth
+- (void) setShouldSmoothFonts:(BOOL)yn
 {
-    SwiffRendererSetHairlineWithFillWidth(m_renderer, hairlineWidth);
+    if (yn != SwiffRendererGetShouldSmoothFonts(m_renderer)) {
+        SwiffRendererSetShouldSmoothFonts(m_renderer, yn);
+        [self redisplay];
+    }
 }
 
 
-- (CGFloat) hairlineWithFillWidth
+- (void) setShouldSubpixelPositionFonts:(BOOL)yn
 {
-    return SwiffRendererGetHairlineWithFillWidth(m_renderer);
+    if (yn != SwiffRendererGetShouldSubpixelPositionFonts(m_renderer)) {
+        SwiffRendererSetShouldSubpixelPositionFonts(m_renderer, yn);
+        [self redisplay];
+    }
 }
 
+
+- (void) setShouldSubpixelQuantizeFonts:(BOOL)yn
+{
+    if (yn != SwiffRendererGetShouldSubpixelQuantizeFonts(m_renderer)) {
+        SwiffRendererSetShouldSubpixelQuantizeFonts(m_renderer, yn);
+        [self redisplay];
+    }
+}
+
+
+- (SwiffColor *) tintColor              { return SwiffRendererGetTintColor(m_renderer);                   }
+- (CGFloat) hairlineWidth               { return SwiffRendererGetHairlineWidth(m_renderer);               }
+- (CGFloat) fillHairlineWidth           { return SwiffRendererGetFillHairlineWidth(m_renderer);           }
+- (BOOL)    shouldAntialias             { return SwiffRendererGetShouldAntialias(m_renderer);             }
+- (BOOL)    shouldSmoothFonts           { return SwiffRendererGetShouldSmoothFonts(m_renderer);           }
+- (BOOL)    shouldSubpixelPositionFonts { return SwiffRendererGetShouldSubpixelPositionFonts(m_renderer); }
+- (BOOL)    shouldSubpixelQuantizeFonts { return SwiffRendererGetShouldSubpixelQuantizeFonts(m_renderer); }
 
 @synthesize swiffLayerDelegate  = m_delegate,
             movie               = m_movie,
             playhead            = m_playhead,
             currentFrame        = m_currentFrame,
-            drawsBackground     = m_drawsBackground;
+            drawsBackground     = m_drawsBackground,
+            shouldFlattenSublayersWhenStopped = m_shouldFlattenSublayersWhenStopped;
 
 @end

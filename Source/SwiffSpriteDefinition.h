@@ -34,7 +34,7 @@
 
 @interface SwiffSpriteDefinition : NSObject <SwiffDefinition> {
 @private
-    CFMutableDictionaryRef m_depthToPlacedObjectMap;
+    SwiffSparseArray m_placedObjects;
     SwiffFrame      *m_lastFrame;
     UInt16           m_libraryID;
     CGRect           m_bounds;

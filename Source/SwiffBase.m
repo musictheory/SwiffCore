@@ -63,54 +63,53 @@ const SwiffColorTransform SwiffColorTransformIdentity = {
     0.0, 0.0, 0.0, 0.0
 };
 
-
-BOOL _SwiffShouldLog = NO;
-
-void SwiffEnableLogging()
-{
-    _SwiffShouldLog = YES;
-}
+NSInteger _SwiffLogEnabledCategoryCount = 0;
+static NSMutableArray  *sSwiffLogEnabledCategories = nil;
+void (*_SwiffLogFunction)(NSString *format, ...) = NSLog;
 
 
-void _SwiffLog(NSInteger level, NSString *format, ...)
+void _SwiffLog(NSString *category, NSInteger level, NSString *format, ...)
 {
     if (!format) return;
 
     va_list  v;
     va_start(v, format);
 
-#if TARGET_IPHONE_SIMULATOR
-    NSLogv(format, v);
-#else
-    CFStringRef message = CFStringCreateWithFormatAndArguments(NULL, NULL, (CFStringRef)format, v);
+    CFMutableStringRef message = CFStringCreateMutable(NULL, 0);
     
     if (message) {
-        UniChar *characters = (UniChar *)CFStringGetCharactersPtr((CFStringRef)message);
-        CFIndex  length     = CFStringGetLength(message);
-        BOOL     needsFree  = NO;
+        CFStringAppendFormat(message, NULL, CFSTR("[%@]: "), category);
+        CFStringAppendFormatAndArguments(message, NULL, (__bridge CFStringRef)format, v);
 
-        if (!characters) {
-            characters = malloc(sizeof(UniChar) * length);
-            
-            if (characters) {
-                CFStringGetCharacters(message, CFRangeMake(0, length), characters);
-                needsFree = YES;
-            }
-        }
-
-        // Always log to ASL
-
-        asl_log(NULL, NULL, level, "%ls\n", (wchar_t *)characters);
-
-        if (needsFree) {
-            free(characters);
-        }
+        _SwiffLogFunction(@"%@", message);
 
         CFRelease(message);
     }
-#endif
 
     va_end(v);
+}
+
+
+void SwiffLogSetCategoryEnabled(NSString *category, BOOL newEnabled)
+{
+    BOOL isEnabled = SwiffLogIsCategoryEnabled(category);
+    
+    if (isEnabled != newEnabled) {
+        if (newEnabled) {
+            if (!sSwiffLogEnabledCategories) sSwiffLogEnabledCategories = [[NSMutableArray alloc] init];
+            [sSwiffLogEnabledCategories addObject:category];
+        } else {
+            [sSwiffLogEnabledCategories removeObject:category];
+        }
+    }
+
+    _SwiffLogEnabledCategoryCount = [sSwiffLogEnabledCategories count];
+}
+
+
+BOOL SwiffLogIsCategoryEnabled(NSString *category)
+{
+    return [sSwiffLogEnabledCategories containsObject:category];
 }
 
 
@@ -331,4 +330,73 @@ BOOL SwiffTagJoin(SwiffTag inTag, NSInteger inVersion, SwiffTag *outTag)
     return yn;
 }
 
+
+void SwiffSparseArrayFree(SwiffSparseArray *array)
+{
+    if (array->values) {
+        for (NSInteger i = 0; i < 256; i++) {
+            if (array->values[i]) {
+                memset(array->values[i], 0, sizeof(void *) * 256);
+                free(array->values[i]);
+                array->values[i] = NULL;
+            }
+        }
+
+        free(array->values);
+        array->values = NULL;
+    }
+}
+
+
+void SwiffSparseArrayEnumerateValues(SwiffSparseArray *array, void (^callback)(void *value))
+{
+    if (array->values) {
+        for (NSInteger i = 0; i < 256; i++) {
+            if (array->values[i]) {
+                for (NSInteger j = 0; j < 256; j++) {
+                    void *value = array->values[i][j];
+                    if (value) callback(value);
+                }
+            }
+        }
+    }
+}
+
+
+void SwiffSparseArraySetValueAtIndex(SwiffSparseArray *array, UInt16 index, void *value)
+{
+    UInt8 highByte = index >> 8;
+    UInt8 lowByte  = index & 0xFF;
+
+    if (!array->values) {
+        array->values = calloc(256, sizeof(void *));
+    }
+
+    if (!array->values[highByte]) {
+        array->values[highByte] = calloc(256, sizeof(void *));
+    }
+
+    array->values[highByte][lowByte] = value;
+}
+
+
+void SwiffSparseArraySetConsumedObjectAtIndex(SwiffSparseArray *array, UInt16 index, id object CF_CONSUMED)
+{
+    SwiffSparseArraySetValueAtIndex(array, index, object);
+}
+
+
+void *SwiffSparseArrayGetValueAtIndex(SwiffSparseArray *array, UInt16 index)
+{
+    if (array->values) {
+        UInt8 highByte = index >> 8;
+        UInt8 lowByte  = index & 0xFF;
+
+        if (array->values[highByte]) {
+            return array->values[highByte][lowByte];
+        }
+    }
+
+    return NULL;
+}
 

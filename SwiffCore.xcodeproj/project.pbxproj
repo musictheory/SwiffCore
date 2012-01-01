@@ -68,6 +68,9 @@
 		55F3158E148A072100E6E625 /* SwiffPlacedDynamicText.h in Headers */ = {isa = PBXBuildFile; fileRef = 55F3158C148A072100E6E625 /* SwiffPlacedDynamicText.h */; };
 		55F3158F148A072100E6E625 /* SwiffPlacedDynamicText.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F3158D148A072100E6E625 /* SwiffPlacedDynamicText.m */; };
 		55F31590148A072100E6E625 /* SwiffPlacedDynamicText.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F3158D148A072100E6E625 /* SwiffPlacedDynamicText.m */; };
+		55F65C8A14AFC61B00DA2DDB /* SwiffFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 55F65C8814AFC61B00DA2DDB /* SwiffFilter.h */; };
+		55F65C8B14AFC61B00DA2DDB /* SwiffFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65C8914AFC61B00DA2DDB /* SwiffFilter.m */; };
+		55F65C8C14AFC61B00DA2DDB /* SwiffFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65C8914AFC61B00DA2DDB /* SwiffFilter.m */; };
 		55F9C75814464B1300FE8E4F /* SwiffSceneAndFrameLabelData.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F9C75714464B1300FE8E4F /* SwiffSceneAndFrameLabelData.m */; };
 /* End PBXBuildFile section */
 
@@ -152,6 +155,8 @@
 		55F65A8814429D1400E12C27 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		55F65AF014429F0D00E12C27 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		55F65B251442A2B300E12C27 /* SwiffCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffCore.h; path = Source/SwiffCore.h; sourceTree = "<group>"; };
+		55F65C8814AFC61B00DA2DDB /* SwiffFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffFilter.h; path = Source/SwiffFilter.h; sourceTree = "<group>"; };
+		55F65C8914AFC61B00DA2DDB /* SwiffFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffFilter.m; path = Source/SwiffFilter.m; sourceTree = "<group>"; };
 		55F9C75614464B1200FE8E4F /* SwiffSceneAndFrameLabelData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffSceneAndFrameLabelData.h; path = Source/SwiffSceneAndFrameLabelData.h; sourceTree = "<group>"; };
 		55F9C75714464B1300FE8E4F /* SwiffSceneAndFrameLabelData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffSceneAndFrameLabelData.m; path = Source/SwiffSceneAndFrameLabelData.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -202,6 +207,8 @@
 			children = (
 				5539A63D148EFB0400E8FA86 /* SwiffDynamicTextAttributes.h */,
 				5539A63E148EFB0400E8FA86 /* SwiffDynamicTextAttributes.m */,
+				55F65C8814AFC61B00DA2DDB /* SwiffFilter.h */,
+				55F65C8914AFC61B00DA2DDB /* SwiffFilter.m */,
 				55F65A6114429C9E00E12C27 /* SwiffFillStyle.h */,
 				55F65A6214429C9E00E12C27 /* SwiffFillStyle.m */,
 				55F65A6914429C9E00E12C27 /* SwiffGradient.h */,
@@ -360,6 +367,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				55F3158E148A072100E6E625 /* SwiffPlacedDynamicText.h in Headers */,
+				55F65C8A14AFC61B00DA2DDB /* SwiffFilter.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -460,6 +468,7 @@
 				5539A640148EFB1800E8FA86 /* SwiffDynamicTextAttributes.m in Sources */,
 				5539A64814905E1200E8FA86 /* SwiffBitmapDefinition.m in Sources */,
 				55B34CA314934EFA00C67849 /* SwiffView.m in Sources */,
+				55F65C8C14AFC61B00DA2DDB /* SwiffFilter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -497,6 +506,7 @@
 				5539A63F148EFB0500E8FA86 /* SwiffDynamicTextAttributes.m in Sources */,
 				5539A64614905CB700E8FA86 /* SwiffBitmapDefinition.m in Sources */,
 				55B34CA214934E8900C67849 /* SwiffView.m in Sources */,
+				55F65C8B14AFC61B00DA2DDB /* SwiffFilter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

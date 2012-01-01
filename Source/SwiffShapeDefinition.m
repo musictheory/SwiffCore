@@ -97,7 +97,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
         if (tag == SwiffTagDefineShape) {
             SwiffParserReadUInt16(parser, &m_libraryID);
 
-            SwiffLog(@"DEFINESHAPE defines id %ld", (long)m_libraryID);
+            SwiffLog(@"Shape", @"DEFINESHAPE defines id %ld", (long)m_libraryID);
             
             SwiffParserReadRect(parser, &m_bounds);
 
@@ -409,7 +409,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
         }
         
         if (hadFillStyle && ([[path lineStyle] width] == SwiffLineStyleHairlineWidth)) {
-            [path setUseHairlineWithFillWidth:YES];
+            [path setUsesFillHairlineWidth:YES];
         }
         
         if (path) {
@@ -478,11 +478,11 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
                 SwiffPoint point2 = currentOperation->toPoint;
                 
                 if ((point1.x == point2.x) && (point1.y == point2.y)) {
-                    SwiffLog(@"Shape: Found connecting path operation");
+                    SwiffLog(@"Shape", @"Found connecting path operation");
 
                     CFArrayAppendValue(sortedOperations, o);
                     currentOperation = o;
-                    SwiffLog(@"Shape: currentOperation = %p", currentOperation);
+                    SwiffLog(@"Shape", @"currentOperation = %p", currentOperation);
                     break;
                 }
             }
@@ -498,8 +498,8 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
                     currentOperation = (_SwiffShapeOperation *)CFArrayGetValueAtIndex(operations, 0);
                     CFArrayRemoveValueAtIndex(operations, 0);
 
-                    SwiffLog(@"Shape: No connecting path operation found");
-                    SwiffLog(@"Shape: currentOperation = %p", currentOperation);
+                    SwiffLog(@"Shape", @"No connecting path operation found");
+                    SwiffLog(@"Shape", @"currentOperation = %p", currentOperation);
 
                     SwiffPoint point1 = firstOperation->fromPoint;
                     SwiffPoint point2 = currentOperation->toPoint;
@@ -507,11 +507,11 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
                     if ((point1.x == point2.x) && (point1.y == point2.y)) {
                         CFArrayInsertValueAtIndex(sortedOperations, 0, currentOperation);
                         firstOperation = currentOperation;
-                        SwiffLog(@"Shape: firstOperation = %p", firstOperation);
+                        SwiffLog(@"Shape", @"firstOperation = %p", firstOperation);
 
                     } else {
                         CFArrayAppendValue(sortedOperations, currentOperation);
-                        SwiffLog(@"Shape: No join found, moving to:\n    %p\n", currentOperation);
+                        SwiffLog(@"Shape", @"No join found, moving to:\n    %p\n", currentOperation);
                         break;
                     }
                 }

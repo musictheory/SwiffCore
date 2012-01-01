@@ -49,5 +49,17 @@ extern SwiffColor *SwiffRendererGetTintColor(SwiffRenderer *renderer);
 extern void SwiffRendererSetHairlineWidth(SwiffRenderer *renderer, CGFloat hairlineWidth);
 extern CGFloat SwiffRendererGetHairlineWidth(SwiffRenderer *renderer);
 
-extern void SwiffRendererSetHairlineWithFillWidth(SwiffRenderer *renderer, CGFloat hairlineWidth);
-extern CGFloat SwiffRendererGetHairlineWithFillWidth(SwiffRenderer *renderer);
+extern void SwiffRendererSetFillHairlineWidth(SwiffRenderer *renderer, CGFloat hairlineWidth);
+extern CGFloat SwiffRendererGetFillHairlineWidth(SwiffRenderer *renderer);
+
+extern void SwiffRendererSetShouldAntialias(SwiffRenderer *renderer, BOOL yn);
+extern BOOL SwiffRendererGetShouldAntialias(SwiffRenderer *renderer);
+
+extern void SwiffRendererSetShouldSmoothFonts(SwiffRenderer *renderer, BOOL yn);
+extern BOOL SwiffRendererGetShouldSmoothFonts(SwiffRenderer *renderer);
+
+extern void SwiffRendererSetShouldSubpixelPositionFonts(SwiffRenderer *renderer, BOOL yn);
+extern BOOL SwiffRendererGetShouldSubpixelPositionFonts(SwiffRenderer *renderer);
+
+extern void SwiffRendererSetShouldSubpixelQuantizeFonts(SwiffRenderer *renderer, BOOL yn);
+extern BOOL SwiffRendererGetShouldSubpixelQuantizeFonts(SwiffRenderer *renderer);

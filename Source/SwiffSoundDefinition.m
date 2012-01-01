@@ -180,7 +180,7 @@ static size_t sGetStreamBlockSizeForFormat(UInt8 format)
         SwiffMPEGHeader header;
         SwiffMPEGError  error = SwiffMPEGReadHeader(frameStart, &header);
         if (error != SwiffMPEGErrorNone) {
-            SwiffWarn(@"SwiffMPEGReadHeader() returned %d", error);
+            SwiffWarn(@"Sound", @"SwiffMPEGReadHeader() returned %d", error);
         }
        
         [self _appendMP3Frame:frameStart length:header.frameSize];

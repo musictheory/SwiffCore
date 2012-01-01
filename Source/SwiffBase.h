@@ -64,6 +64,11 @@ typedef struct _SwiffHeader {
 } SwiffHeader;
 
 
+typedef struct _SwiffSparseArray {
+    id      **values;
+} SwiffSparseArray;
+
+
 enum _SwiffSoundFormat {
 //                                                     Description                      Minimum .swf version
     SwiffSoundFormatUncompressedNativeEndian = 0,   // Uncompressed, native-endian      1
@@ -78,7 +83,7 @@ enum _SwiffSoundFormat {
 typedef NSInteger SwiffSoundFormat;
 
 
-enum _SwiffLanguageCode {
+enum {
     SwiffFontLanguageCodeNone               = 0,
     SwiffFontLanguageCodeLatin              = 1,
     SwiffFontLanguageCodeJapanese           = 2,
@@ -87,6 +92,26 @@ enum _SwiffLanguageCode {
     SwiffFontLanguageCodeTraditionalChinese = 5
 };
 typedef NSInteger SwiffLanguageCode;
+
+
+enum {
+    SwiffBlendModeNormal     = 0,
+    SwiffBlendModeLayer      = 2,
+    SwiffBlendModeMultiply   = 3,
+    SwiffBlendModeScreen     = 4,
+    SwiffBlendModeLighten    = 5,
+    SwiffBlendModeDarken     = 6,
+    SwiffBlendModeDifference = 7,
+    SwiffBlendModeAdd        = 8,
+    SwiffBlendModeSubtract   = 9,
+    SwiffBlendModeInvert     = 10,
+    SwiffBlendModeAlpha      = 11,
+    SwiffBlendModeErase      = 12,
+    SwiffBlendModeOverlay    = 13,
+    SwiffBlendModeHardlight  = 14,
+    SwiffBlendModeOther      = 256
+};
+typedef NSInteger SwiffBlendMode;
 
 
 enum _SwiffTag {
@@ -161,15 +186,16 @@ typedef NSInteger SwiffTag;
 
 typedef NSInteger SwiffTwips;
 
+extern NSInteger _SwiffLogEnabledCategoryCount;
+extern void (*_SwiffLogFunction)(NSString *format, ...);
+extern void _SwiffLog(NSString *category, NSInteger level, NSString *format, ...) NS_FORMAT_FUNCTION(3,4);
 
+extern void SwiffLogSetCategoryEnabled(NSString *category, BOOL enabled);
+extern BOOL SwiffLogIsCategoryEnabled(NSString *category);
 
-extern void _SwiffLog(NSInteger level, NSString *format, ...) NS_FORMAT_FUNCTION(2,3);
-extern BOOL _SwiffShouldLog;
-
-extern void SwiffEnableLogging(void);
-#define SwiffShouldLog() _SwiffShouldLog
-#define SwiffLog( ...) { if (_SwiffShouldLog) _SwiffLog(6, __VA_ARGS__); }
-#define SwiffWarn(...) { _SwiffLog(4, __VA_ARGS__); }
+#define SwiffShouldLog(category) ((_SwiffLogEnabledCategoryCount > 0) && SwiffLogIsCategoryEnabled(category))
+#define SwiffLog(category, ...)  { if (SwiffShouldLog(category)) _SwiffLog(category, 6, __VA_ARGS__); }
+#define SwiffWarn(category, ...) { _SwiffLog(category, 4, __VA_ARGS__); }
 
 #define SwiffFloatFromTwips(TWIPS) ((TWIPS) / 20.0)
 
@@ -209,3 +235,9 @@ extern NSString *SwiffStringFromColorTransformStack(CFArrayRef stack);
 
 extern BOOL SwiffTagSplit(SwiffTag inTag, SwiffTag *outTag, NSInteger *outVersion);
 extern BOOL SwiffTagJoin(SwiffTag inTag, NSInteger inVersion, SwiffTag *outTag);
+
+extern void  SwiffSparseArrayFree(SwiffSparseArray *array);
+extern void  SwiffSparseArrayEnumerateValues(SwiffSparseArray *array, void (^)(void *value));
+extern void  SwiffSparseArraySetConsumedObjectAtIndex(SwiffSparseArray *array, UInt16 index, id object CF_CONSUMED);
+extern void  SwiffSparseArraySetValueAtIndex(SwiffSparseArray *array, UInt16 index, void *object);
+extern void *SwiffSparseArrayGetValueAtIndex(SwiffSparseArray *array, UInt16 index);

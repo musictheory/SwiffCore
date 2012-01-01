@@ -78,6 +78,8 @@ extern void SwiffParserReadSInt8(SwiffParser *parser, SInt8 *outValue);
 extern void SwiffParserReadSInt16(SwiffParser *parser, SInt16 *outValue);
 extern void SwiffParserReadSInt32(SwiffParser *parser, SInt32 *outValue);
 
+extern void SwiffParserReadFloat(SwiffParser *parser, float *outValue);
+extern void SwiffParserReadFixed(SwiffParser *parser, CGFloat *outValue);
 extern void SwiffParserReadFixed8(SwiffParser *parser, CGFloat *outValue);
 
 extern void SwiffParserReadEncodedU32(SwiffParser *parser, UInt32 *outValue);

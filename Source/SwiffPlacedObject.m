@@ -32,25 +32,61 @@
 typedef struct _SwiffPlacedObjectAdditionalStorage
 {
     NSString *name;
+    NSString *className;
+    NSArray  *filters;
     SwiffColorTransform colorTransform;
+    SwiffBlendMode blendMode;
     UInt16 clipDepth;
     UInt16 ratio;
     BOOL   hasColorTransform;
     BOOL   hidden;
     BOOL   wantsLayer;
+    BOOL   placesImage;
+    BOOL   cachesAsBitmap;
 } SwiffPlacedObjectAdditionalStorage;
 
 #define ADDITIONAL ((SwiffPlacedObjectAdditionalStorage *)m_additional)
 #define MAKE_ADDITIONAL { if (!m_additional) m_additional = calloc(sizeof(SwiffPlacedObjectAdditionalStorage), 1); }
 
+SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, SwiffPlacedObject *existingPlacedObject)
+{
+    id<SwiffDefinition> definition = nil;
+    SwiffPlacedObject *result = nil;
+    Class cls = [SwiffPlacedObject class];
+
+    if (libraryID) {
+        definition = [movie definitionWithLibraryID:libraryID];
+
+        if ([[definition class] respondsToSelector:@selector(placedObjectClass)]) {
+            cls = [[definition class] placedObjectClass];
+        }
+    }
+
+    if (existingPlacedObject) {
+        if (libraryID == 0) cls = [existingPlacedObject class];
+        result = existingPlacedObject ? [[cls alloc] initWithPlacedObject:existingPlacedObject] : nil;
+    }
+
+    if (!result) {
+        result = [[cls alloc] init];
+    }
+    
+    if (libraryID) {
+        [result setLibraryID:libraryID];
+        [result setupWithDefinition:definition];
+    }
+    
+    return result;
+}
+
+
 @implementation SwiffPlacedObject
 
 
-- (id) initWithDepth:(NSInteger)depth
+- (id) init
 {
     if ((self = [super init])) {
         m_affineTransform = CGAffineTransformIdentity;
-        m_depth = depth;
     }
 
     return self;
@@ -59,7 +95,8 @@ typedef struct _SwiffPlacedObjectAdditionalStorage
 
 - (id) initWithPlacedObject:(SwiffPlacedObject *)placedObject
 {
-    if ((self = [self initWithDepth:placedObject->m_depth])) {
+    if ((self = [self init])) {
+        m_depth             = placedObject->m_depth;
         m_libraryID         = placedObject->m_libraryID;
         m_affineTransform   = placedObject->m_affineTransform;
 
@@ -68,7 +105,9 @@ typedef struct _SwiffPlacedObjectAdditionalStorage
             memcpy(m_additional, placedObject->m_additional, sizeof(SwiffPlacedObjectAdditionalStorage));
             
             SwiffPlacedObjectAdditionalStorage *other = placedObject->m_additional;
-            ADDITIONAL->name = [other->name copy];
+            ADDITIONAL->name      = [other->name      copy];
+            ADDITIONAL->className = [other->className copy];
+            ADDITIONAL->filters   = [other->filters   copy];
         }
     }
     
@@ -79,7 +118,9 @@ typedef struct _SwiffPlacedObjectAdditionalStorage
 - (void) dealloc
 {
     if (m_additional) {
-        [ADDITIONAL->name release];
+        [ADDITIONAL->name      release];
+        [ADDITIONAL->className release];
+        [ADDITIONAL->filters   release];
 
         free(m_additional);
         m_additional = NULL;
@@ -136,6 +177,20 @@ typedef struct _SwiffPlacedObjectAdditionalStorage
 - (BOOL) wantsLayer
 {
     return m_additional ? ADDITIONAL->wantsLayer : NO;
+}
+
+
+
+- (void) setPlacesImage:(BOOL)placesImage
+{
+    MAKE_ADDITIONAL;
+    ADDITIONAL->placesImage = placesImage;
+}
+
+
+- (BOOL) placesImage
+{
+    return m_additional ? ADDITIONAL->placesImage : NO;
 }
 
 
@@ -214,6 +269,139 @@ typedef struct _SwiffPlacedObjectAdditionalStorage
 - (UInt16) clipDepth
 {
     return m_additional ? ADDITIONAL->clipDepth : 0;
+}
+
+
+- (void) setClassName:(NSString *)className
+{
+    if (className != [self className]) {
+        MAKE_ADDITIONAL;
+        [ADDITIONAL->className release];
+        ADDITIONAL->className = [className copy];
+    }
+}
+
+
+- (NSString *) className
+{
+    return m_additional ? ADDITIONAL->className : nil;
+}
+
+
+- (void) setBlendMode:(SwiffBlendMode)blendMode
+{
+    if (blendMode != [self blendMode]) {
+        MAKE_ADDITIONAL;
+        ADDITIONAL->blendMode = blendMode;
+    }
+}
+
+
+- (SwiffBlendMode) blendMode
+{
+    return m_additional ? ADDITIONAL->blendMode : SwiffBlendModeNormal;
+}
+
+
+
+- (void) setCachesAsBitmap:(BOOL)cachesAsBitmap
+{
+    if (cachesAsBitmap != [self cachesAsBitmap]) {
+        MAKE_ADDITIONAL;
+        ADDITIONAL->cachesAsBitmap = cachesAsBitmap;
+    }
+}
+
+
+- (BOOL) cachesAsBitmap
+{
+    return m_additional ? ADDITIONAL->cachesAsBitmap : NO;
+}
+
+
+- (void) setCGBlendMode:(CGBlendMode)inBlendMode
+{
+    SwiffBlendMode swiffBlendMode;
+
+    if (inBlendMode == kCGBlendModeNormal) {
+        swiffBlendMode = SwiffBlendModeNormal;
+
+    } else if (inBlendMode == kCGBlendModeMultiply) {
+        swiffBlendMode = SwiffBlendModeMultiply;
+
+    } else if (inBlendMode == kCGBlendModeScreen) {
+        swiffBlendMode = SwiffBlendModeScreen;
+
+    } else if (inBlendMode == kCGBlendModeLighten) {
+        swiffBlendMode = SwiffBlendModeLighten;
+
+    } else if (inBlendMode == kCGBlendModeDarken) {
+        swiffBlendMode = SwiffBlendModeDarken;
+
+    } else if (inBlendMode == kCGBlendModeDifference) {
+        swiffBlendMode = SwiffBlendModeDifference;
+
+    } else if (inBlendMode == kCGBlendModeOverlay) {
+        swiffBlendMode = SwiffBlendModeOverlay;
+
+    } else if (inBlendMode == kCGBlendModeHardLight) {
+        swiffBlendMode = SwiffBlendModeHardlight;
+    
+    } else {
+        swiffBlendMode = inBlendMode + SwiffBlendModeOther;
+    }
+
+    [self setBlendMode:swiffBlendMode];
+}
+
+
+- (CGBlendMode) CGBlendMode
+{
+    SwiffBlendMode swiffBlendMode = [self blendMode];
+
+    if (swiffBlendMode <= SwiffBlendModeHardlight) {
+        CGBlendMode lookup[] = {
+            kCGBlendModeNormal,     // 0  = SwiffBlendModeNormal
+            kCGBlendModeNormal,     // 1  = SwiffBlendModeNormal
+            0,                      // 2  = SwiffBlendModeLayer
+            kCGBlendModeMultiply,   // 3  = SwiffBlendModeMultiply
+            kCGBlendModeScreen,     // 4  = SwiffBlendModeScreen
+            kCGBlendModeLighten,    // 5  = SwiffBlendModeLighten
+            kCGBlendModeDarken,     // 6  = SwiffBlendModeDarken
+            kCGBlendModeDifference, // 7  = SwiffBlendModeDifference
+            0,                      // 8  = SwiffBlendModeAdd
+            0,                      // 9  = SwiffBlendModeSubtract
+            0,                      // 10 = SwiffBlendModeInvert
+            0,                      // 11 = SwiffBlendModeAlpha
+            0,                      // 12 = SwiffBlendModeErase
+            kCGBlendModeOverlay,    // 13 = SwiffBlendModeOverlay
+            kCGBlendModeHardLight,  // 14 = SwiffBlendModeHardlight
+        };
+
+        return lookup[swiffBlendMode];
+
+    } else if (swiffBlendMode > SwiffBlendModeOther) {
+        return swiffBlendMode - SwiffBlendModeOther;
+
+    } else {
+        return kCGBlendModeNormal;
+    }
+}
+
+
+- (void) setFilters:(NSArray *)filters
+{
+    if (filters != [self filters]) {
+        MAKE_ADDITIONAL;
+        [ADDITIONAL->filters release];
+        ADDITIONAL->filters = [filters retain];
+    }
+}
+
+
+- (NSArray *) filters
+{
+    return m_additional ? ADDITIONAL->filters : nil;
 }
 
 

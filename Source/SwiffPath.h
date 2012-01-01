@@ -55,7 +55,7 @@ extern void SwiffPathAddOperationAndTwips(SwiffPath *path, SwiffPathOperation op
     SwiffLineStyle   *m_lineStyle;
     SwiffFillStyle   *m_fillStyle;
 
-    BOOL              m_useHairlineWithFillWidth;
+    BOOL              m_usesFillHairlineWidth;
 }
 
 - (id) initWithLineStyle:(SwiffLineStyle *)lineStyle fillStyle:(SwiffFillStyle *)fillStyle;
@@ -79,6 +79,6 @@ extern void SwiffPathAddOperationAndTwips(SwiffPath *path, SwiffPathOperation op
 @property (nonatomic, retain, readonly) SwiffFillStyle *fillStyle;
 
 // If true, the path is a hairline, but also touched a fill 
-@property (nonatomic, assign) BOOL useHairlineWithFillWidth;
+@property (nonatomic, assign) BOOL usesFillHairlineWidth;
 
 @end

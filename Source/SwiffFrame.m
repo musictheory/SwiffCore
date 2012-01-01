@@ -78,6 +78,12 @@
 }
 
 
+- (NSString *) description
+{
+    return [NSString stringWithFormat:@"<%@: %p; %lu>", [self class], self, (long unsigned)[self index1InMovie]];
+}
+
+
 #pragma mark -
 #pragma mark Friend Methods
 
