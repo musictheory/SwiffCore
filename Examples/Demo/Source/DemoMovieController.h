@@ -37,8 +37,6 @@
     UIButton    *m_playButton;
     UISlider    *m_timelineSlider;
     NSInteger    m_frameNumber;
-    
-    BOOL         m_layerMode;
 }
 
 - (id) initWithURL:(NSURL *)url;
