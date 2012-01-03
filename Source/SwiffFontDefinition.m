@@ -249,9 +249,10 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
         m_glyphCount = (offset / 2);
 
         // Skip through OffsetTable
-        SwiffParserAdvance(parser, sizeof(UInt16) * m_glyphCount);
-
-        [self _readGlyphPathsFromParser:parser];
+        if (m_glyphCount) {
+            SwiffParserAdvance(parser, sizeof(UInt16) * (m_glyphCount - 1));
+            [self _readGlyphPathsFromParser:parser];
+        }
 
     } else if (version == 2 || version == 3) {
         UInt32 hasLayout, isShiftJIS, isSmallText, isANSIEncoding,
