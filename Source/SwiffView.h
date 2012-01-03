@@ -79,7 +79,6 @@
 @property (nonatomic, assign) BOOL shouldSubpixelQuantizeFonts;
 @property (nonatomic, assign) BOOL shouldFlattenSublayersWhenStopped;
 
-
 @end
 
 
