@@ -43,6 +43,7 @@ extern NSArray *SwiffRendererGetPlacedObjects(SwiffRenderer *renderer);
 extern void SwiffRendererSetBaseAffineTransform(SwiffRenderer *renderer, CGAffineTransform *transform);
 extern CGAffineTransform *SwiffRendererGetBaseAffineTransform(SwiffRenderer *renderer);
 
+// When set, all rendered colors are multiplied by the specified color
 extern void SwiffRendererSetMultiplyColor(SwiffRenderer *renderer, SwiffColor *color);
 extern SwiffColor *SwiffRendererGetMultiplyColor(SwiffRenderer *renderer);
 
@@ -52,14 +53,18 @@ extern CGFloat SwiffRendererGetHairlineWidth(SwiffRenderer *renderer);
 extern void SwiffRendererSetFillHairlineWidth(SwiffRenderer *renderer, CGFloat hairlineWidth);
 extern CGFloat SwiffRendererGetFillHairlineWidth(SwiffRenderer *renderer);
 
+// Maps to CGContextSetShouldAntialias()
 extern void SwiffRendererSetShouldAntialias(SwiffRenderer *renderer, BOOL yn);
 extern BOOL SwiffRendererGetShouldAntialias(SwiffRenderer *renderer);
 
+// Maps to CGContextSetShouldSmoothFonts()
 extern void SwiffRendererSetShouldSmoothFonts(SwiffRenderer *renderer, BOOL yn);
 extern BOOL SwiffRendererGetShouldSmoothFonts(SwiffRenderer *renderer);
 
+// Maps to CGContextSetShouldSubpixelPositionFonts()
 extern void SwiffRendererSetShouldSubpixelPositionFonts(SwiffRenderer *renderer, BOOL yn);
 extern BOOL SwiffRendererGetShouldSubpixelPositionFonts(SwiffRenderer *renderer);
 
+// Maps to CGContextSetShouldSubpixelQuantizeFonts()
 extern void SwiffRendererSetShouldSubpixelQuantizeFonts(SwiffRenderer *renderer, BOOL yn);
 extern BOOL SwiffRendererGetShouldSubpixelQuantizeFonts(SwiffRenderer *renderer);

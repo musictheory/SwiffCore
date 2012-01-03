@@ -161,16 +161,16 @@ static CGRect sExpandRect(CGRect rect)
     // If we aren't skewing/rotating, use additional tweak to draw crisp lines
     //
     if (outTranslate && (transform.b == 0) && (transform.c == 0)) {
-//        CGFloat tx = transform.tx * transform.a;
-//        CGFloat ty = transform.ty * transform.d;
-//
-//        transform.tx = floor(tx);
-//        transform.ty = floor(ty);
-//
-//        translate = CGPointMake((tx - transform.tx), (ty - transform.ty));
-//        
-//        transform.tx /= transform.a;
-//        transform.ty /= transform.d;
+        CGFloat tx = transform.tx / transform.a;
+        CGFloat ty = transform.ty / transform.d;
+        
+        transform.tx = floor(tx);
+        transform.ty = floor(ty);
+
+        translate = CGPointMake((tx - transform.tx), (ty - transform.ty));
+        
+        transform.tx *= transform.a;
+        transform.ty *= transform.d;
     }
     
     if (SwiffShouldLog(@"View")) {
@@ -230,7 +230,8 @@ static CGRect sExpandRect(CGRect rect)
 - (void) _updateGeometryForSublayer:(CALayer *)sublayer withPlacedObject:(SwiffPlacedObject *)placedObject
 {
     SwiffPlacedObject *oldPlacedObject = [sublayer valueForKey:SwiffPlacedObjectKey];
-
+    if (!oldPlacedObject) oldPlacedObject = placedObject;
+    
     CGFloat oldScaleFactor = [[sublayer valueForKey:SwiffRenderScaleFactorKey] doubleValue];
     CGFloat newScaleFactor = [self _scaleFactorForPlacedObject:placedObject];
 
