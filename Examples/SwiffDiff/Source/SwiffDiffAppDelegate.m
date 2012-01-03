@@ -32,6 +32,7 @@
 
 - (void) applicationDidFinishLaunching:(NSNotification *)notification
 {
+    SwiffLogSetCategoryEnabled(@"View", YES);
     [SwiffDiffDocument restoreDocuments];
 }
 

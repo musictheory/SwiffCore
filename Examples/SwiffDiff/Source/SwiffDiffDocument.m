@@ -107,6 +107,12 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
 {
     [sInstances removeObject:self];
 
+    [m_webView setFrameLoadDelegate:nil];
+    [m_webView setResourceLoadDelegate:nil];
+    [m_webView setUIDelegate:nil];
+
+    [m_swiffView setDelegate:nil];
+
     [m_diffTimer invalidate];
     [m_diffTimer release];
     m_diffTimer = nil;
@@ -178,6 +184,7 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
     m_swiffView = [[SwiffView alloc] initWithFrame:[o_containerView bounds] movie:m_movie];
     [m_swiffView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     [m_swiffView setDrawsBackground:YES];
+    [m_swiffView setDelegate:self];
 
     [o_containerView addSubview:m_swiffView];
 
@@ -461,6 +468,26 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
 }
 
 
+- (IBAction) nextFrame:(id)sender
+{
+    NSInteger frameIndex0 = [[[m_swiffView playhead] frame] indexInMovie];
+    NSInteger count = [[m_movie frames] count];
+
+    if (frameIndex0 < (count - 1)) {
+        [self _setCurrentFrame:(frameIndex0 + 1)];
+    }
+}
+
+
+- (IBAction) previousFrame:(id)sender
+{
+    NSInteger frameIndex0 = [[[m_swiffView playhead] frame] indexInMovie];
+    if (frameIndex0 > 0) {
+        [self _setCurrentFrame:(frameIndex0 - 1)];
+    }
+}
+
+
 #pragma mark -
 #pragma mark Delegate Methods
 
@@ -486,6 +513,12 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
     NSString *filename = [[NSURL URLWithString:sourceURL] lastPathComponent];
 
     NSLog(@"%@:%ld %@", filename, (long)line, message); 
+}
+
+
+- (BOOL) swiffView:(SwiffView *)swiffView shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame
+{
+    return ([o_wantsLayer state] == NSOnState);
 }
 
 

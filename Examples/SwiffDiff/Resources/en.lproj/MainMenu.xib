@@ -728,6 +728,36 @@
 							</array>
 						</object>
 					</object>
+					<object class="NSMenuItem" id="681715755">
+						<reference key="NSMenu" ref="649796088"/>
+						<string key="NSTitle">Control</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="35465992"/>
+						<reference key="NSMixedImage" ref="502551668"/>
+						<string key="NSAction">submenuAction:</string>
+						<object class="NSMenu" key="NSSubmenu" id="501514576">
+							<string key="NSTitle">Control</string>
+							<array class="NSMutableArray" key="NSMenuItems">
+								<object class="NSMenuItem" id="1013335722">
+									<reference key="NSMenu" ref="501514576"/>
+									<string key="NSTitle">Step Forward One Frame</string>
+									<string key="NSKeyEquiv">.</string>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="35465992"/>
+									<reference key="NSMixedImage" ref="502551668"/>
+								</object>
+								<object class="NSMenuItem" id="128312078">
+									<reference key="NSMenu" ref="501514576"/>
+									<string key="NSTitle">Step Backward One Frame</string>
+									<string key="NSKeyEquiv">,</string>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="35465992"/>
+									<reference key="NSMixedImage" ref="502551668"/>
+								</object>
+							</array>
+						</object>
+					</object>
 					<object class="NSMenuItem" id="713487014">
 						<reference key="NSMenu" ref="649796088"/>
 						<string key="NSTitle">Window</string>
@@ -1208,6 +1238,22 @@
 					</object>
 					<int key="connectionID">599</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">nextFrame:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="1013335722"/>
+					</object>
+					<int key="connectionID">605</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">previousFrame:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="128312078"/>
+					</object>
+					<int key="connectionID">606</int>
+				</object>
 			</array>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<array key="orderedObjects">
@@ -1245,6 +1291,7 @@
 							<reference ref="448692316"/>
 							<reference ref="952259628"/>
 							<reference ref="904626368"/>
+							<reference ref="681715755"/>
 						</array>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -1817,6 +1864,33 @@
 						<reference key="object" ref="417411257"/>
 						<reference key="parent" ref="126994606"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">601</int>
+						<reference key="object" ref="681715755"/>
+						<array class="NSMutableArray" key="children">
+							<reference ref="501514576"/>
+						</array>
+						<reference key="parent" ref="649796088"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">602</int>
+						<reference key="object" ref="501514576"/>
+						<array class="NSMutableArray" key="children">
+							<reference ref="1013335722"/>
+							<reference ref="128312078"/>
+						</array>
+						<reference key="parent" ref="681715755"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">603</int>
+						<reference key="object" ref="1013335722"/>
+						<reference key="parent" ref="501514576"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">604</int>
+						<reference key="object" ref="128312078"/>
+						<reference key="parent" ref="501514576"/>
+					</object>
 				</array>
 			</object>
 			<dictionary class="NSMutableDictionary" key="flattenedProperties">
@@ -1906,6 +1980,10 @@
 				<string key="593.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="594.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="598.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="601.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="602.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="603.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="604.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="72.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="73.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="79.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1917,7 +1995,7 @@
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">599</int>
+			<int key="maxID">606</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1977,6 +2055,8 @@
 						<string key="changeCurrentFrame:">id</string>
 						<string key="changeMode:">id</string>
 						<string key="changeOptions:">id</string>
+						<string key="nextFrame:">id</string>
+						<string key="previousFrame:">id</string>
 						<string key="showOptions:">id</string>
 						<string key="toggleWantsLayer:">id</string>
 						<string key="viewActualSize:">id</string>
@@ -1994,6 +2074,14 @@
 						</object>
 						<object class="IBActionInfo" key="changeOptions:">
 							<string key="name">changeOptions:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="nextFrame:">
+							<string key="name">nextFrame:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="previousFrame:">
+							<string key="name">previousFrame:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="showOptions:">

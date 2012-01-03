@@ -29,7 +29,7 @@
 #import <WebKit/WebKit.h>
 
 
-@interface SwiffDiffDocument : NSDocument <NSApplicationDelegate> {
+@interface SwiffDiffDocument : NSDocument <NSApplicationDelegate, SwiffViewDelegate> {
 @private
     NSSegmentedControl *o_modeSelect;
     NSTextField        *o_currentFrameField;
@@ -63,6 +63,9 @@
 - (IBAction) changeOptions:(id)sender;
 - (IBAction) changeCurrentFrame:(id)sender;
 - (IBAction) toggleWantsLayer:(id)sender;
+
+- (IBAction) nextFrame:(id)sender;
+- (IBAction) previousFrame:(id)sender;
 
 - (IBAction) viewActualSize:(id)sender;
 - (IBAction) viewZoomIn:(id)sender;
