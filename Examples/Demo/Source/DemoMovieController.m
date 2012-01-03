@@ -27,6 +27,8 @@
 
 #import "DemoMovieController.h"
 
+#define PROMOTE_ALL_PLACED_OBJECTS_TO_LAYERS 0
+
 static NSString * const sMovieCache = @"MovieCache";
 
 @interface DemoMovieController ()
@@ -158,11 +160,13 @@ static NSData *sGetCachedData(NSURL *url)
     CGRect movieFrame = [[self view] bounds];
     movieFrame.size.height -= 44;
 
+#if PROMOTE_ALL_PLACED_OBJECTS_TO_LAYERS
     for (SwiffFrame *frame in [m_movie frames]) {
-        for (SwiffPlacedObject *placedObject in [frame placedObjects]) {
-            [placedObject setWantsLayer:YES];
+        for (SwiffPlacedObject *object in [frame placedObjects]) {
+            [object setWantsLayer:YES];
         }
     }
+#endif
 
     m_movieView = [[SwiffView alloc] initWithFrame:movieFrame movie:m_movie];
     [m_movieView setDelegate:self];
@@ -247,12 +251,6 @@ static NSData *sGetCachedData(NSURL *url)
 {
     NSInteger i = [[[m_movieView playhead] frame] indexInMovie];
     [m_timelineSlider setValue:(float)i];
-}
-
-
-- (BOOL) swiffView:(SwiffView *)swiffView shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame
-{
-    return YES; //  ? YES : NO;
 }
 
 
