@@ -32,42 +32,21 @@
 
 @class SwiffMovie, SwiffSoundDefinition;
 
-
-typedef struct _SwiffSoundStreamBlock {
-    UInt32  frameRangeIndex;
-} SwiffSoundStreamBlock;
-
-
-typedef struct _SwiffSoundStreamBlockMP3 {
-    UInt32  frameRangeIndex;
-    UInt16  sampleCount;
-    SInt16  seek;
-} SwiffSoundStreamBlockMP3;
-
-
-extern void SwiffSoundDefinitionFillBuffer(
-    SwiffSoundDefinition *definition,
-    UInt32 inFrameIndex, void *inBuffer, UInt32 inBufferCapacity,
-    UInt32 *outBytesWritten, UInt32 *outFramesWritten
-);
-
 // C-based API, for audio callbacks
-extern CFDataRef SwiffSoundDefinitionGetData(SwiffSoundDefinition *definition);
-extern CFRange   SwiffSoundDefinitionGetFrameRangeAtIndex(SwiffSoundDefinition *definition, CFIndex index);
+extern CFDataRef  SwiffSoundDefinitionGetData(SwiffSoundDefinition *definition);
+extern NSUInteger SwiffSoundDefinitionGetOffsetForFrame(SwiffSoundDefinition *definition, CFIndex frame);
+extern NSUInteger SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *definition, CFIndex frame);
 
+@class SwiffSoundStreamBlock;
 
 @interface SwiffSoundDefinition : NSObject <SwiffDefinition> {
 @private
     SwiffMovie    *m_movie;
     NSMutableData *m_data;
 
-    void          *m_streamBlockArray;
-    NSUInteger     m_streamBlockCount;
-    NSUInteger     m_streamBlockCapacity;
-
-    NSRange       *m_frameRangeArray;
-    NSUInteger     m_frameRangeCount;
-    NSUInteger     m_frameRangeCapacity;
+    NSUInteger    *m_frames;
+    NSInteger      m_framesCount;
+    NSInteger      m_framesCapacity;
 
     UInt32         m_sampleCount;
     UInt16         m_averageSampleCount;
@@ -94,18 +73,8 @@ extern CFRange   SwiffSoundDefinitionGetFrameRangeAtIndex(SwiffSoundDefinition *
 @property (nonatomic, assign, readonly, getter=isStereo) BOOL stereo;
 @property (nonatomic, assign, readonly, getter=isStreaming) BOOL streaming;
 
-- (NSRange) frameRangeAtIndex:(NSUInteger)index;
-@property (nonatomic, assign, readonly) NSUInteger frameRangeCount;
-
 // Only applicable for streaming
-
-// Reads a SwiffSoundStreamBlock tag and adds an entry to the internal stream block array.  Returns the index
-// of the added entry
-- (NSUInteger) readSoundStreamBlockTagFromParser:(SwiffParser *)parser;
-
-- (SwiffSoundStreamBlock *) streamBlockAtIndex:(NSUInteger)index;
-@property (nonatomic, assign, readonly) NSUInteger streamBlockCount;
-
+- (SwiffSoundStreamBlock *) readSoundStreamBlockTagFromParser:(SwiffParser *)parser;
 @property (nonatomic, assign, readonly) NSInteger averageSampleCount;
 
 @end

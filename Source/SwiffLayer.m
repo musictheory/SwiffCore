@@ -35,8 +35,8 @@
 #import "SwiffSoundPlayer.h"
 #import "SwiffView.h"
 
-#define DEBUG_SUBLAYERS 1
-
+#define DEBUG_SUBLAYERS 0
+#define WARN_ON_DROPPED_FRAMES 0
 
 static NSString * const SwiffPlacedObjectKey       = @"SwiffPlacedObject";        // SwiffPlacedObject
 static NSString * const SwiffRenderScaleFactorKey  = @"SwiffRenderScaleFactor";   // NSNumber<CGFloat>
@@ -209,7 +209,7 @@ static CGRect sExpandRect(CGRect rect)
     // Next, use the distance formula to find the length of each side
     //
     CGFloat (^getDistance)(CGPoint, CGPoint) = ^(CGPoint p1, CGPoint p2) {
-        return sqrt(pow(p2.x - p1.x, 2.0) + pow(p2.y - p1.y, 2.0));
+        return (CGFloat)sqrt(pow(p2.x - p1.x, 2.0) + pow(p2.y - p1.y, 2.0));
     };
 
     CGFloat topLineLength    = getDistance(topLeftPoint,    topRightPoint);
@@ -627,14 +627,17 @@ static CGRect sExpandRect(CGRect rect)
 
 //      CGContextSetCTM() is private, so immitate it with concatenation
         CGContextConcatCTM(context, CGAffineTransformInvert(base)); // CGContextSetCTM(context, CGAffineTransformIdentity)
+        
+        // Refactor in contentScale
+        CGFloat contentsScale = [layer contentsScale];
 
         CGFloat renderTranslationX = [[layer valueForKey:SwiffRenderTranslationXKey] doubleValue];
         CGFloat renderTranslationY = [[layer valueForKey:SwiffRenderTranslationYKey] doubleValue];
         CGFloat renderScaleFactor  = [[layer valueForKey:SwiffRenderScaleFactorKey]  doubleValue];
-        
+
         base = CGAffineTransformConcat(CGAffineTransformMakeTranslation(renderTranslationX, renderTranslationY), base);
         base = CGAffineTransformConcat(CGAffineTransformMakeScale(renderScaleFactor, renderScaleFactor), base);
-                
+        
         if (SwiffShouldLog(@"View")) {
             SwiffLog(@"View", @"Rendering sublayer %d\n"
                 @" orig: %lf,%lf,%lf,%lf %lf,%lf\n"
@@ -645,9 +648,18 @@ static CGRect sExpandRect(CGRect rect)
             );
         }
 
+        CGFloat hairlineWidth     = SwiffRendererGetHairlineWidth(m_renderer);
+        CGFloat fillHairlineWidth = SwiffRendererGetFillHairlineWidth(m_renderer);
+
+        SwiffRendererSetHairlineWidth(m_renderer, hairlineWidth * contentsScale);
+        SwiffRendererSetFillHairlineWidth(m_renderer, fillHairlineWidth * contentsScale);
+
         SwiffRendererSetBaseAffineTransform(m_renderer, &base);
         SwiffRendererSetPlacedObjects(m_renderer, placedObjects);
         SwiffRendererRender(m_renderer, context);
+
+        SwiffRendererSetHairlineWidth(m_renderer, hairlineWidth);
+        SwiffRendererSetFillHairlineWidth(m_renderer, fillHairlineWidth);
 
         CGContextRestoreGState(context);
 
@@ -698,9 +710,13 @@ static CGRect sExpandRect(CGRect rect)
 #pragma mark -
 #pragma mark Playhead Delegate
 
-- (void) playheadDidUpdate:(SwiffPlayhead *)playhead
+- (void) playheadDidUpdate:(SwiffPlayhead *)playhead step:(BOOL)step
 {
     SwiffFrame *frame = [playhead frame];
+
+    if (!([playhead isPlaying] && step)) {
+        [[SwiffSoundPlayer sharedInstance] stopStream];
+    }
 
     if ([playhead isPlaying]) {
         [[SwiffSoundPlayer sharedInstance] processMovie:m_movie frame:frame];

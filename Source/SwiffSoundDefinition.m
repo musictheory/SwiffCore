@@ -29,6 +29,7 @@
 
 
 #import "SwiffMPEGUtils.h"
+#import "SwiffSoundStreamBlock.h"
 
 
 @interface SwiffSoundDefinition ()
@@ -85,7 +86,6 @@
             
             if (soundFormat == SwiffSoundFormatMP3) {
                 SwiffParserReadSInt16(parser, &m_latencySeek);
-                [self _readMP3FramesFromParser:parser];
             }
 
             m_streaming = YES;
@@ -98,11 +98,8 @@
 
 - (void) dealloc
 {
-    free(m_streamBlockArray);
-    m_streamBlockArray = NULL;
-    
-    free(m_frameRangeArray);
-    m_frameRangeArray = NULL;
+    free(m_frames);
+    m_frames = NULL;
 
     [m_data release];
     m_data = nil;
@@ -120,60 +117,8 @@
 #pragma mark -
 #pragma mark - Private Methods
 
-static size_t sGetStreamBlockSizeForFormat(UInt8 format)
-{
-    if (format == SwiffSoundFormatMP3) {
-        return sizeof(SwiffSoundStreamBlockMP3);
-    } else {
-        return sizeof(SwiffSoundStreamBlock);
-    }
-}
-
-
-- (SwiffSoundStreamBlock *) _nextStreamBlock
-{
-    size_t streamBlockSize = sGetStreamBlockSizeForFormat(m_format);
-
-    if (m_streamBlockCount == m_streamBlockCapacity) {
-        m_streamBlockCapacity = m_streamBlockCapacity ? m_streamBlockCapacity * 2 : 32;
-        m_streamBlockArray = realloc(m_streamBlockArray, streamBlockSize * m_streamBlockCapacity);
-    }
-
-    void *nextStreamBlock = m_streamBlockArray + (m_streamBlockCount * streamBlockSize);
-    m_streamBlockCount++;
-    
-    return nextStreamBlock;
-}
-
-
-- (NSRange *) _nextFrameRange
-{
-    if (m_frameRangeCount == m_frameRangeCapacity) {
-        m_frameRangeCapacity = m_frameRangeCapacity ? m_frameRangeCapacity * 2 : 256;
-        m_frameRangeArray = realloc(m_frameRangeArray, sizeof(NSRange) * m_frameRangeCapacity);
-    }
-
-    NSRange *nextFrameRange = &m_frameRangeArray[m_frameRangeCount];
-    m_frameRangeCount++;
-    
-    return nextFrameRange;
-}
-
-
-- (void) _appendMP3Frame:(const void *)bytes length:(NSUInteger)length
-{
-    NSRange *frameRange = [self _nextFrameRange];
-    
-    frameRange->location = [m_data length];
-    frameRange->length   = length;
-    
-    [m_data appendBytes:bytes length:length];
-}
-
-
 - (void) _readMP3FramesFromParser:(SwiffParser *)parser
 {
-
     while (SwiffParserGetBytesRemainingInCurrentTag(parser) > 0) {
         const void *frameStart = SwiffParserGetCurrentBytePointer(parser);
 
@@ -182,8 +127,16 @@ static size_t sGetStreamBlockSizeForFormat(UInt8 format)
         if (error != SwiffMPEGErrorNone) {
             SwiffWarn(@"Sound", @"SwiffMPEGReadHeader() returned %d", error);
         }
-       
-        [self _appendMP3Frame:frameStart length:header.frameSize];
+
+        if (m_framesCount == m_framesCapacity) {
+            m_framesCapacity = m_framesCapacity ? m_framesCapacity * 2 : 256;
+            m_frames = realloc(m_frames, sizeof(NSUInteger) * m_framesCapacity);
+        }
+
+        m_frames[m_framesCount] = [m_data length];
+        m_framesCount++;
+        
+        [m_data appendBytes:frameStart length:header.frameSize];
 
         SwiffParserAdvance(parser, header.frameSize);
     }
@@ -193,90 +146,61 @@ static size_t sGetStreamBlockSizeForFormat(UInt8 format)
 #pragma mark -
 #pragma mark Public Methods
 
-void SwiffSoundDefinitionFillBuffer(
-    SwiffSoundDefinition *self,
-    UInt32 inFrameIndex, void *inBuffer, UInt32 inBufferCapacity,
-    UInt32 *outBytesWritten, UInt32 *outFramesWritten
-) {
-    CFIndex location      = kCFNotFound;
-    CFIndex bytesWritten  = 0;
-    UInt32  framesWritten = 0;
-    
-    while (1) {
-        NSRange rangeOfFrame = self->m_frameRangeArray[inFrameIndex + framesWritten];
-        
-        if (location == kCFNotFound) {
-            location = rangeOfFrame.location;
-        }
-        
-        if ((bytesWritten + rangeOfFrame.length) < inBufferCapacity) {
-            bytesWritten += rangeOfFrame.length;
-            framesWritten++;
-
-        } else {
-            break;
-        }
-    }
-
-    CFDataGetBytes((CFDataRef)self->m_data, CFRangeMake(location, bytesWritten), inBuffer);
-    *outBytesWritten  = bytesWritten;
-    *outFramesWritten = framesWritten;
-}
-
-
 CFDataRef SwiffSoundDefinitionGetData(SwiffSoundDefinition *self)
 {
     return (__bridge CFDataRef)self->m_data;
 }
 
 
-CFRange SwiffSoundDefinitionGetFrameRangeAtIndex(SwiffSoundDefinition *self, CFIndex index)
+extern NSUInteger SwiffSoundDefinitionGetOffsetForFrame(SwiffSoundDefinition *self, CFIndex frame)
 {
-    NSRange range = self->m_frameRangeArray[index];
-    return CFRangeMake(range.location, range.length);
+    if ((frame >= 0) && (frame < self->m_framesCount)) {
+        return self->m_frames[frame];
+    }
+    
+    return NSNotFound;
 }
 
 
-- (NSUInteger) readSoundStreamBlockTagFromParser:(SwiffParser *)parser
+extern NSUInteger SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *self, CFIndex frame)
 {
-    NSUInteger index = NSNotFound;
+    NSUInteger offset1 = SwiffSoundDefinitionGetOffsetForFrame(self, frame);
+    if (offset1 == NSNotFound) return 0;
+
+    NSUInteger offset2 = SwiffSoundDefinitionGetOffsetForFrame(self, frame + 1);
+    if (offset2 == NSNotFound) {
+        offset2 = CFDataGetLength(SwiffSoundDefinitionGetData(self));
+    }
+    
+    return offset2 - offset1;
+}
+
+
+- (SwiffSoundStreamBlock *) readSoundStreamBlockTagFromParser:(SwiffParser *)parser
+{
+    SwiffSoundStreamBlock *result = nil;
 
     if (m_streaming) {
-        index = m_streamBlockCount;
-
-        SwiffSoundStreamBlock *streamBlock = [self _nextStreamBlock];
-
+        result = [[SwiffSoundStreamBlock alloc] init];
+        
+        [result setFrameOffset:m_framesCount];
+        
         if (m_format == SwiffSoundFormatMP3) {
             UInt16 sampleCount = 0;
             SwiffParserReadUInt16(parser, &sampleCount);
-            ((SwiffSoundStreamBlockMP3 *)streamBlock)->sampleCount = sampleCount;
+            [result setSampleCount:sampleCount];
 
             m_sampleCount += sampleCount;
 
             SInt16 seekSamples = 0;
             SwiffParserReadSInt16(parser, &seekSamples);
-            ((SwiffSoundStreamBlockMP3 *)streamBlock)->seek = seekSamples;
+            [result setSampleSeek:seekSamples];
         }
 
-        UInt32 frameRangeCount = m_frameRangeCount;
         [self _readMP3FramesFromParser:parser];
-        streamBlock->frameRangeIndex = frameRangeCount;
     }
 
-    return index;
-}
-
-
-- (SwiffSoundStreamBlock *) streamBlockAtIndex:(NSUInteger)index
-{
-    size_t streamBlockSize = sGetStreamBlockSizeForFormat(m_format);
-    return m_streamBlockArray ? m_streamBlockArray + (streamBlockSize * index) : NULL; 
-}
-
-
-- (NSRange) frameRangeAtIndex:(NSUInteger)index
-{
-    return m_frameRangeArray[index];
+    return [result autorelease];
 }
 
 
@@ -304,9 +228,7 @@ CFRange SwiffSoundDefinitionGetFrameRangeAtIndex(SwiffSoundDefinition *self, CFI
             bitsPerChannel     = m_bitsPerChannel,
             movie              = m_movie,
             libraryID          = m_libraryID,
-            streamBlockCount   = m_streamBlockCount,
             data               = m_data,
-            sampleCount        = m_sampleCount,
-            frameRangeCount    = m_frameRangeCount;
+            sampleCount        = m_sampleCount;
 
 @end

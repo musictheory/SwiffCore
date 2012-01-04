@@ -33,7 +33,7 @@
 #include <string.h>
 
 
-struct _SwiffWriter {
+struct SwiffWriter {
     CFMutableDataRef data;
     UInt8 bitPosition;
     UInt8 bitByte;

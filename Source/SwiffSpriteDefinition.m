@@ -32,20 +32,24 @@
 #import "SwiffParser.h"
 #import "SwiffPlacedObject.h"
 #import "SwiffPlacedDynamicText.h"
+#import "SwiffScene.h"
 #import "SwiffSceneAndFrameLabelData.h"
 #import "SwiffSoundDefinition.h"
 #import "SwiffSoundEvent.h"
+#import "SwiffSoundStreamBlock.h"
 #import "SwiffFilter.h"
 
-@interface SwiffPlacedObject (FriendMethods)
-@property (nonatomic, retain) NSString *instanceName;
-@property (nonatomic, assign) UInt16  libraryID;
-@property (nonatomic, assign) UInt16  depth;
-@property (nonatomic, assign) UInt16  clipDepth;
-@property (nonatomic, assign) CGFloat ratio;
-@property (nonatomic, assign) CGAffineTransform affineTransform;
-@property (nonatomic, assign) SwiffColorTransform colorTransform;
-@end
+// Associated value for parser - SwiffSceneAndFrameLabelData 
+static NSString * const SwiffSpriteDefinitionSceneAndFrameLabelDataKey = @"SwiffSpriteDefinitionSceneAndFrameLabelData";
+
+// Associated value for parser - NSMutableArray of the current SwiffSoundEvent objects
+static NSString * const SwiffSpriteDefinitionSoundEventsKey = @"SwiffSpriteDefinitionSoundEvents";
+
+// Associated value for parser - SwiffSoundDefinition for current streaming sound
+static NSString * const SwiffSpriteDefinitionStreamSoundDefinitionKey = @"SwiffSpriteDefinitionStreamSoundDefinition";
+
+// Associated value for parser - SwiffSoundStreamBlock for current streaming sound
+static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefinitionStreamBlock";
 
 
 @interface SwiffFrame ()
@@ -53,11 +57,13 @@
                           withNames: (NSArray *) placedObjectsWithNames
                         soundEvents: (NSArray *) soundEvents
                         streamSound: (SwiffSoundDefinition *) streamSound
-                   streamBlockIndex: (NSUInteger) streamBlockIndex;
+                        streamBlock: (SwiffSoundStreamBlock *) streamBlock;
 @end
+
 
 @interface SwiffSpriteDefinition ()
 - (void) _parser:(SwiffParser *)parser didFindTag:(SwiffTag)tag version:(NSInteger)version;
+- (void) _parserDidEnd:(SwiffParser *)parser;
 @end
 
 
@@ -99,12 +105,7 @@
             [self _parser:subparser didFindTag:tag version:version];
         }
 
-        if (m_sceneAndFrameLabelData) {
-            [m_sceneAndFrameLabelData applyLabelsToFrames:m_frames];
-            [m_sceneAndFrameLabelData clearWeakReferences];
-            [m_sceneAndFrameLabelData release];
-            m_sceneAndFrameLabelData = nil;
-        }
+        [self _parserDidEnd:subparser];
 
         SwiffSparseArrayEnumerateValues(&m_placedObjects, ^(void *v) { [(id)v release]; });
         SwiffSparseArrayFree(&m_placedObjects);
@@ -128,19 +129,11 @@
     SwiffSparseArrayEnumerateValues(&m_placedObjects, ^(void *v) { [(id)v release]; });
     SwiffSparseArrayFree(&m_placedObjects);
 
-    [m_frames          release];  m_frames          = nil;
-    [m_labelToFrameMap release];  m_labelToFrameMap = nil;
-                                  m_lastFrame       = nil;
-
-    [m_sceneAndFrameLabelData clearWeakReferences];
-    [m_sceneAndFrameLabelData release];
-    m_sceneAndFrameLabelData = nil;
-
-    [m_currentSoundEvents release];
-    m_currentSoundEvents = nil;
-
-    [m_currentStreamSoundDefinition release];
-    m_currentStreamSoundDefinition = nil;
+    [m_frames              release];  m_frames              = nil;
+    [m_labelToFrameMap     release];  m_labelToFrameMap     = nil;
+                                      m_lastFrame           = nil;
+    [m_scenes              release];  m_scenes              = nil;
+    [m_sceneNameToSceneMap release];  m_sceneNameToSceneMap = nil;
 
     [super dealloc];
 }
@@ -154,6 +147,23 @@
 
 #pragma mark -
 #pragma mark Tag Handlers
+
+- (void) _parserDidEnd:(SwiffParser *)parser
+{
+    SwiffSceneAndFrameLabelData *frameLabelData = SwiffParserGetAssociatedValue(parser, SwiffSpriteDefinitionSceneAndFrameLabelDataKey);
+
+    if (frameLabelData) {
+        [frameLabelData applyLabelsToFrames:m_frames];
+        m_scenes = [[frameLabelData scenesForFrames:m_frames] retain];
+
+        [frameLabelData clearWeakReferences];
+
+    } else {
+        SwiffScene *scene = [[SwiffScene alloc] initWithMovie:nil name:nil indexInMovie:0 frames:m_frames];
+        m_scenes = [[NSArray alloc] initWithObjects:scene, nil];
+        [scene release];
+    }
+}
 
 - (void) _parser:(SwiffParser *)parser didFindPlaceObjectTag:(SwiffTag)tag version:(NSInteger)version
 {
@@ -343,14 +353,19 @@
         }
     }
 
-    SwiffSoundDefinition *streamSound      = m_currentStreamBlockIndex >= 0 ? m_currentStreamSoundDefinition : nil;
-    NSInteger             streamBlockIndex = m_currentStreamBlockIndex >= 0 ? m_currentStreamBlockIndex      : 0;
+    NSArray               *soundEvents = SwiffParserGetAssociatedValue(parser, SwiffSpriteDefinitionSoundEventsKey);
+    SwiffSoundDefinition  *streamSound = SwiffParserGetAssociatedValue(parser, SwiffSpriteDefinitionStreamSoundDefinitionKey);
+    SwiffSoundStreamBlock *streamBlock = SwiffParserGetAssociatedValue(parser, SwiffSpriteDefinitionStreamBlockKey);
+
+    if (streamSound && !streamBlock) {
+        streamSound = nil;
+    }
 
     SwiffFrame *frame = [[SwiffFrame alloc] _initWithSortedPlacedObjects: placedObjects
                                                                withNames: placedObjectsWithNames
-                                                             soundEvents: m_currentSoundEvents
+                                                             soundEvents: soundEvents
                                                              streamSound: streamSound
-                                                        streamBlockIndex: streamBlockIndex];
+                                                             streamBlock: streamBlock];
 
     [m_frames addObject:frame];
     m_lastFrame = frame;
@@ -375,9 +390,12 @@
 - (void) _parser:(SwiffParser *)parser didFindTag:(SwiffTag)tag version:(NSInteger)version
 {
     if (tag == SwiffTagDefineSceneAndFrameLabelData) {
-        [m_sceneAndFrameLabelData clearWeakReferences];
-        [m_sceneAndFrameLabelData release];
-        m_sceneAndFrameLabelData = [[SwiffSceneAndFrameLabelData alloc] initWithParser:parser movie:m_movie];
+        SwiffSceneAndFrameLabelData *existingData = SwiffParserGetAssociatedValue(parser, SwiffSpriteDefinitionSceneAndFrameLabelDataKey);
+        [existingData clearWeakReferences];
+        
+        SwiffSceneAndFrameLabelData *data = [[SwiffSceneAndFrameLabelData alloc] initWithParser:parser movie:m_movie];
+        SwiffParserSetAssociatedValue(parser, SwiffSpriteDefinitionSceneAndFrameLabelDataKey, data);
+        [data release];
 
     } else if (tag == SwiffTagPlaceObject) {
         [self _parser:parser didFindPlaceObjectTag:tag version:version];
@@ -388,31 +406,53 @@
     } else if (tag == SwiffTagShowFrame) {
         [self _parser:parser didFindShowFrameTag:tag version:version];
 
-        m_currentStreamBlockIndex = -1;
-        [m_currentSoundEvents release];
-        m_currentSoundEvents = nil;
+        // Reset sound events and stream block
+        SwiffParserSetAssociatedValue(parser, SwiffSpriteDefinitionSoundEventsKey, nil);
+        SwiffParserSetAssociatedValue(parser, SwiffSpriteDefinitionStreamBlockKey, nil);
 
     } else if (tag == SwiffTagFrameLabel) {
         [self _parser:parser didFindFrameLabelTag:tag version:version];
 
     } else if (tag == SwiffTagSoundStreamHead) {
-        [m_currentStreamSoundDefinition release];
-        m_currentStreamSoundDefinition = [[SwiffSoundDefinition alloc] initWithParser:parser movie:m_movie];
-        m_currentStreamBlockIndex = -1;
+        SwiffSoundDefinition *definition = [[SwiffSoundDefinition alloc] initWithParser:parser movie:m_movie];
+        SwiffParserSetAssociatedValue(parser, SwiffSpriteDefinitionStreamSoundDefinitionKey, definition);
+        [definition release];
 
     } else if (tag == SwiffTagSoundStreamBlock) {
-        m_currentStreamBlockIndex = [m_currentStreamSoundDefinition readSoundStreamBlockTagFromParser:parser];
+        SwiffSoundDefinition *definition = SwiffParserGetAssociatedValue(parser, SwiffSpriteDefinitionStreamSoundDefinitionKey);
+        
+        SwiffSoundStreamBlock *block = [definition readSoundStreamBlockTagFromParser:parser];
+        SwiffParserSetAssociatedValue(parser, SwiffSpriteDefinitionStreamBlockKey, block);
 
     } else if (tag == SwiffTagStartSound) {
         SwiffSoundEvent *event = [[SwiffSoundEvent alloc] initWithParser:parser];
     
-        if (!m_currentSoundEvents) m_currentSoundEvents = [[NSMutableArray alloc] init];
-        [m_currentSoundEvents addObject:event];
+        SwiffSoundDefinition *definition = [m_movie soundDefinitionWithLibraryID:[event libraryID]];
+        
+        if (definition) {
+            [event setDefinition:definition];
+            
+            NSMutableArray *events = SwiffParserGetAssociatedValue(parser, SwiffSpriteDefinitionSoundEventsKey);
+            if (!events) {
+                events = [[NSMutableArray alloc] init];
+
+                SwiffParserSetAssociatedValue(parser, SwiffSpriteDefinitionSoundEventsKey, events);
+                [events addObject:event];
+
+                [events release];
+
+            } else {
+                [events addObject:event];
+            }
+        }
         
         [event release];
     }
 }
 
+
+#pragma mark -
+#pragma mark Public Methods
 
 - (SwiffFrame *) frameWithLabel:(NSString *)label
 {
@@ -461,6 +501,22 @@
 - (NSUInteger) indexOfFrame:(SwiffFrame *)frame
 {
     return [m_frames indexOfObject:frame];
+}
+
+
+- (SwiffScene *) sceneWithName:(NSString *)name
+{
+    if (!m_sceneNameToSceneMap) {
+        NSMutableDictionary *map = [[NSMutableDictionary alloc] initWithCapacity:[m_scenes count]];
+        
+        for (SwiffScene *scene in m_scenes) {
+            [map setObject:scene forKey:[scene name]];
+        }
+    
+        m_sceneNameToSceneMap = map;
+    }
+
+    return [m_sceneNameToSceneMap objectForKey:name];
 }
 
 
@@ -514,6 +570,7 @@
 
 @synthesize movie      = m_movie,
             libraryID  = m_libraryID,
+            scenes     = m_scenes,
             frames     = m_frames;
 
 @end

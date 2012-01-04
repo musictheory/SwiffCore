@@ -32,8 +32,6 @@
 #import "SwiffDynamicTextDefinition.h"
 #import "SwiffFontDefinition.h"
 #import "SwiffParser.h"
-#import "SwiffScene.h"
-#import "SwiffSceneAndFrameLabelData.h"
 #import "SwiffShapeDefinition.h"
 #import "SwiffSoundDefinition.h"
 #import "SwiffSpriteDefinition.h"
@@ -54,6 +52,7 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 @interface SwiffSpriteDefinition (Protected)
 - (void) _decodeData:(NSData *)data;
 - (void) _parser:(SwiffParser *)parser didFindTag:(SwiffTag)tag version:(NSInteger)version;
+- (void) _parserDidEnd:(SwiffParser *)parser;
 @end
 
 
@@ -76,9 +75,6 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 {
     SwiffSparseArrayEnumerateValues(&m_definitions, ^(void *v) { [(id)v release]; });
     SwiffSparseArrayFree(&m_definitions);
-
-    [m_scenes              release];  m_scenes              = nil;
-    [m_sceneNameToSceneMap release];  m_sceneNameToSceneMap = nil;
 
     [super dealloc];
 }
@@ -130,21 +126,9 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
             [bitmap _setJPEGTablesData:jpegTablesData];
         }
     }
-
-    if (m_sceneAndFrameLabelData) {
-        [m_sceneAndFrameLabelData applyLabelsToFrames:m_frames];
-        m_scenes = [[m_sceneAndFrameLabelData scenesForFrames:m_frames] retain];
-        
-        [m_sceneAndFrameLabelData clearWeakReferences];
-        [m_sceneAndFrameLabelData release];
-        m_sceneAndFrameLabelData = nil;
-
-    } else {
-        SwiffScene *scene = [[SwiffScene alloc] initWithMovie:self name:nil indexInMovie:0 frames:m_frames];
-        m_scenes = [[NSArray alloc] initWithObjects:scene, nil];
-        [scene release];
-    }
     
+    [self _parserDidEnd:parser];
+
     SwiffParserFree(parser);
 }
 
@@ -269,6 +253,7 @@ id<SwiffDefinition> SwiffMovieGetDefinition(SwiffMovie *movie, UInt16 libraryID)
     return [definition isKindOfClass:cls] ? definition : nil;
 }
 
+
 - (SwiffBitmapDefinition *) bitmapDefinitionWithLibraryID:(UInt16)libraryID
     { return [self _definitionWithLibraryID:libraryID ofClass:[SwiffBitmapDefinition class]]; }
 
@@ -291,22 +276,6 @@ id<SwiffDefinition> SwiffMovieGetDefinition(SwiffMovie *movie, UInt16 libraryID)
     { return [self _definitionWithLibraryID:libraryID ofClass:[SwiffStaticTextDefinition class]]; }
 
 
-- (SwiffScene *) sceneWithName:(NSString *)name
-{
-    if (!m_sceneNameToSceneMap) {
-        NSMutableDictionary *map = [[NSMutableDictionary alloc] initWithCapacity:[m_scenes count]];
-        
-        for (SwiffScene *scene in m_scenes) {
-            [map setObject:scene forKey:[scene name]];
-        }
-    
-        m_sceneNameToSceneMap = map;
-    }
-
-    return [m_sceneNameToSceneMap objectForKey:name];
-}
-
-
 #pragma mark -
 #pragma mark Accessors
 
@@ -315,8 +284,7 @@ id<SwiffDefinition> SwiffMovieGetDefinition(SwiffMovie *movie, UInt16 libraryID)
     return &m_backgroundColor;
 }
 
-@synthesize scenes          = m_scenes,
-            version         = m_version,
+@synthesize version         = m_version,
             frameRate       = m_frameRate,
             stageRect       = m_stageRect,
             backgroundColor = m_backgroundColor;

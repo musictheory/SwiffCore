@@ -28,12 +28,12 @@
 #import <SwiffImport.h>
 
 
-typedef struct _SwiffPoint {
+typedef struct SwiffPoint {
     NSInteger x;
     NSInteger y;
 } SwiffPoint;
 
-typedef struct _SwiffColorTransform {
+typedef struct SwiffColorTransform {
     CGFloat redMultiply;
     CGFloat greenMultiply;
     CGFloat blueMultiply;
@@ -46,7 +46,7 @@ typedef struct _SwiffColorTransform {
 
 extern const SwiffColorTransform SwiffColorTransformIdentity;
 
-typedef struct _SwiffColor {
+typedef struct SwiffColor {
     CGFloat red;
     CGFloat green;
     CGFloat blue;
@@ -54,7 +54,7 @@ typedef struct _SwiffColor {
 } SwiffColor;
 
 
-typedef struct _SwiffHeader {
+typedef struct SwiffHeader {
     UInt8   version;
     BOOL    isCompressed;
     UInt16  frameCount;
@@ -64,12 +64,12 @@ typedef struct _SwiffHeader {
 } SwiffHeader;
 
 
-typedef struct _SwiffSparseArray {
+typedef struct SwiffSparseArray {
     id      **values;
 } SwiffSparseArray;
 
 
-enum _SwiffSoundFormat {
+enum {
 //                                                     Description                      Minimum .swf version
     SwiffSoundFormatUncompressedNativeEndian = 0,   // Uncompressed, native-endian      1
     SwiffSoundFormatADPCM                    = 1,   // ADPCM                            1
@@ -114,7 +114,7 @@ enum {
 typedef NSInteger SwiffBlendMode;
 
 
-enum _SwiffTag {
+enum {
     SwiffTagEnd                          = 0,
     SwiffTagShowFrame                    = 1,
     SwiffTagDefineShape                  = 2,

@@ -33,7 +33,7 @@
 #include <string.h>
 
 
-struct _SwiffParser {
+struct SwiffParser {
     const UInt8  *buffer;
     const UInt8  *end;
     const UInt8  *b;
@@ -53,7 +53,7 @@ struct _SwiffParser {
     UInt8         currentTagVersion;
 };
 
-void _SwiffParserEnsureBufferError(SwiffParser *parser);
+void SwiffParserEnsureBufferError(SwiffParser *parser);
 
 
 SwiffParser *SwiffParserCreate(const UInt8 *buffer, UInt32 length)
@@ -115,9 +115,9 @@ static BOOL sInflate(const UInt8 *inBuffer, UInt32 inLength, UInt8 *outBuffer, U
 }
 
 
-void _SwiffParserEnsureBufferError(SwiffParser *parser)
+void SwiffParserEnsureBufferError(SwiffParser *parser)
 {
-    SwiffWarn(@"Parser", @"SwiffParser %p is no longer valid.  Break on _SwiffParserEnsureBufferError to debug.", parser);
+    SwiffWarn(@"Parser", @"SwiffParser %p is no longer valid.  Break on SwiffParserEnsureBufferError to debug.", parser);
 }
 
 
@@ -126,7 +126,7 @@ static BOOL sEnsureBuffer(SwiffParser *parser, int length)
     BOOL yn = ((parser->b + length) <= (parser->buffer + parser->length));
 
     if (!yn) {
-        _SwiffParserEnsureBufferError(parser);
+        SwiffParserEnsureBufferError(parser);
         parser->isValid = NO;
     }
 

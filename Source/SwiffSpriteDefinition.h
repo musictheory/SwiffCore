@@ -29,26 +29,25 @@
 #import <SwiffParser.h>
 #import <SwiffDefinition.h>
 
-@class SwiffFrame, SwiffMovie, SwiffSceneAndFrameLabelData, SwiffSoundDefinition, SwiffSoundStreamData;
+@class SwiffFrame, SwiffScene, SwiffMovie, SwiffSceneAndFrameLabelData, SwiffSoundDefinition, SwiffSoundStreamData;
 
 
 @interface SwiffSpriteDefinition : NSObject <SwiffDefinition> {
 @private
-    SwiffSparseArray m_placedObjects;
+    NSMutableArray  *m_frames;
+    NSDictionary    *m_labelToFrameMap;
     SwiffFrame      *m_lastFrame;
+    NSArray         *m_scenes;
+    NSDictionary    *m_sceneNameToSceneMap;
+
+    SwiffSparseArray m_placedObjects;
+
     UInt16           m_libraryID;
     CGRect           m_bounds;
     CGRect           m_renderBounds;
 
 @protected
     SwiffMovie      *m_movie;
-    NSMutableArray  *m_frames;
-    NSDictionary    *m_labelToFrameMap;
-
-    SwiffSceneAndFrameLabelData *m_sceneAndFrameLabelData;
-    NSMutableArray              *m_currentSoundEvents;
-    SwiffSoundDefinition        *m_currentStreamSoundDefinition;
-    NSInteger                    m_currentStreamBlockIndex;
 }
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie;
@@ -61,6 +60,9 @@
 - (SwiffFrame *) frameAtIndex:(NSUInteger)index1;
 - (NSUInteger) indexOfFrame:(SwiffFrame *)frame;
 
+- (SwiffScene *) sceneWithName:(NSString *)name;
+
+@property (nonatomic, retain, readonly) NSArray *scenes;
 @property (nonatomic, retain, readonly) NSArray *frames;
 
 @end

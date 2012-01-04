@@ -30,6 +30,7 @@
 #import "SwiffMovie.h"
 #import "SwiffSoundEvent.h"
 #import "SwiffSoundDefinition.h"
+#import "SwiffSoundStreamBlock.h"
 
 #import <AudioToolbox/AudioToolbox.h>
 
@@ -38,7 +39,8 @@
 #define kNumberOfAudioBuffers 2
 #define kMaxPacketsPerAudioBuffer 32
 
-@interface _SwiffSoundChannel : NSObject {
+
+@interface SwiffSoundChannel : NSObject {
 @private
     AudioQueueRef         m_queue;
     AudioQueueBufferRef   m_buffer[kNumberOfAudioBuffers];
@@ -46,6 +48,8 @@
     SwiffSoundEvent      *m_event;
     SwiffSoundDefinition *m_definition;
     UInt32                m_frameIndex;
+    UInt32                m_gotoFrameIndex;
+    UInt32                m_currentDataLocation;
 }
 
 - (id) initWithEvent:(SwiffSoundEvent *)event definition:(SwiffSoundDefinition *)definition;
@@ -55,6 +59,11 @@
 @property (nonatomic, retain, readonly) SwiffSoundEvent *event;
 @property (nonatomic, retain, readonly) SwiffSoundDefinition *definition;
 
+@end
+
+
+@interface SwiffSoundPlayer ()
+- (void) _channelDidReachEnd:(SwiffSoundChannel *)channel;
 @end
 
 
@@ -97,58 +106,84 @@ static void sFillASBDForSoundDefinition(AudioStreamBasicDescription *asbd, Swiff
 }
 
 
-@implementation _SwiffSoundChannel
+@implementation SwiffSoundChannel
 
 static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer)
 {
-    _SwiffSoundChannel   *channel    = (_SwiffSoundChannel *)inUserData;
+    SwiffSoundChannel    *channel    = (SwiffSoundChannel *)inUserData;
     SwiffSoundDefinition *definition = channel->m_definition;
     
     AudioStreamPacketDescription *aspd = inBuffer->mUserData;
     
-    CFIndex location      = kCFNotFound;
+    CFIndex firstOffset   = kCFNotFound;
     CFIndex bytesWritten  = 0;
     UInt32  framesWritten = 0;
-    
+    UInt32  frameIndex    = channel->m_frameIndex;
+
     while (framesWritten < kMaxPacketsPerAudioBuffer) {
-        CFRange rangeOfFrame = SwiffSoundDefinitionGetFrameRangeAtIndex(definition, channel->m_frameIndex + framesWritten);
-        
-        if (location == kCFNotFound) {
-            location = rangeOfFrame.location;
+        CFIndex offset = SwiffSoundDefinitionGetOffsetForFrame(definition, frameIndex);
+        if (offset == kCFNotFound) break;
+
+        if (firstOffset == kCFNotFound) {
+            firstOffset = offset;
         }
         
-        if ((bytesWritten + rangeOfFrame.length) < inBuffer->mAudioDataBytesCapacity) {
+        CFIndex length = SwiffSoundDefinitionGetLengthForFrame(definition, frameIndex);
+        if ((bytesWritten + length) < inBuffer->mAudioDataBytesCapacity) {
             aspd[framesWritten].mStartOffset = bytesWritten;
-            aspd[framesWritten].mDataByteSize = rangeOfFrame.length;
+            aspd[framesWritten].mDataByteSize = length;
             aspd[framesWritten].mVariableFramesInPacket = 0;
 
-            bytesWritten += rangeOfFrame.length;
+            bytesWritten += length;
             framesWritten++;
+            frameIndex++;
 
         } else {
             break;
         }
     }
 
-    CFDataRef data = SwiffSoundDefinitionGetData(definition);
-    CFDataGetBytes(data, CFRangeMake(location, bytesWritten), inBuffer->mAudioData);
+    if (bytesWritten > 0) {
+        CFDataRef data = SwiffSoundDefinitionGetData(definition);
+        CFDataGetBytes(data, CFRangeMake(firstOffset, bytesWritten), inBuffer->mAudioData);
 
-    inBuffer->mAudioDataByteSize = bytesWritten;
+        inBuffer->mAudioDataByteSize = bytesWritten;
 
-    OSStatus err = AudioQueueEnqueueBuffer(inAQ, inBuffer, framesWritten, aspd);
-    if (err != noErr) {
-        SwiffWarn(@"Sound", @"AudioQueueEnqueueBuffer() returned 0x%x", err);
+        OSStatus err = AudioQueueEnqueueBuffer(inAQ, inBuffer, framesWritten, aspd);
+        if (err != noErr) {
+            SwiffWarn(@"Sound", @"AudioQueueEnqueueBuffer() returned %d (0x%x)", err, err);
+        }
     }
 
-    channel->m_frameIndex += framesWritten; 
+    channel->m_frameIndex = frameIndex; 
 }
 
 
-- (id) initWithEvent:(SwiffSoundEvent *)event definition:(SwiffSoundDefinition *)definition
+static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, AudioQueuePropertyID inID)
+{
+    SwiffSoundChannel *channel = (SwiffSoundChannel *)inUserData;
+
+    if (inID == kAudioQueueProperty_IsRunning) {
+        UInt32 isRunning = 0;
+        UInt32 isRunningSize = sizeof(isRunning);
+
+        AudioQueueGetProperty(inAQ, kAudioQueueProperty_IsRunning, &isRunning, &isRunningSize);
+
+        if (!isRunning) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[SwiffSoundPlayer sharedInstance] _channelDidReachEnd:channel];
+            });
+        }
+    }
+}
+
+
+- (id) _initWithEvent:(SwiffSoundEvent *)event definition:(SwiffSoundDefinition *)definition streamBlock:(SwiffSoundStreamBlock *)streamBlock
 {
     if ((self = [super init])) {
         m_event      = [event retain];
         m_definition = [definition retain];
+        m_frameIndex = [streamBlock frameOffset];
 
         OSStatus err = noErr;
         
@@ -159,6 +194,13 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
             err = AudioQueueNewOutput(&inFormat, sAudioQueueCallback, self, CFRunLoopGetMain(), kCFRunLoopCommonModes, 0, &m_queue);
             if (err != noErr) {
                 SwiffWarn(@"Sound", @"AudioQueueNewOutput() returned 0x%x", err);
+            }
+        }
+
+        if (err == noErr) {
+            err = AudioQueueAddPropertyListener(m_queue, kAudioQueueProperty_IsRunning, sAudioQueuePropertyCallback, self);
+            if (err != noErr) {
+                SwiffWarn(@"Sound", @"AudioQueueAddPropertyListener() returned 0x%x", err);
             }
         }
 
@@ -194,10 +236,22 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
 }
 
 
+- (id) initWithEvent:(SwiffSoundEvent *)event definition:(SwiffSoundDefinition *)definition
+{
+    return [self _initWithEvent:event definition:definition streamBlock:nil];
+}
+
+
+- (id) initWithDefinition:(SwiffSoundDefinition *)definition streamBlock:(SwiffSoundStreamBlock *)streamBlock
+{
+    return [self _initWithEvent:nil definition:definition streamBlock:streamBlock];
+}
+
+
 - (void) dealloc
 {
     if (m_queue) {
-        AudioQueueDispose(m_queue, true);
+        AudioQueueDispose(m_queue, false);
         m_queue = NULL;
     }
 
@@ -216,7 +270,6 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
 
 @synthesize event      = m_event,
             definition = m_definition;
-
 
 @end
 
@@ -242,7 +295,7 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
 
 - (void) _startEventSound:(SwiffSoundEvent *)event
 {
-    _SwiffSoundChannel *channel = [[_SwiffSoundChannel alloc] initWithEvent:event definition:[event definition]];
+    SwiffSoundChannel *channel = [[SwiffSoundChannel alloc] initWithEvent:event definition:[event definition]];
 
     NSNumber       *libraryID = [[NSNumber alloc] initWithUnsignedShort:[event libraryID]];
     NSMutableArray *channels  = [m_libraryIDTChannelArrayMap objectForKey:libraryID];
@@ -288,40 +341,18 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
     for (NSArray *channels in [m_libraryIDTChannelArrayMap allValues]) {
         [channels makeObjectsPerformSelector:@selector(stop)];
     }
-    
+
     [m_libraryIDTChannelArrayMap release];
     m_libraryIDTChannelArrayMap = nil;
 }
 
 
-- (void) _processEvent:(SwiffSoundEvent *)event
+- (void) _channelDidReachEnd:(SwiffSoundChannel *)channel
 {
-    NSNumber       *libraryID = [[NSNumber alloc] initWithUnsignedShort:[event libraryID]];
-    NSMutableArray *channels  = [m_libraryIDTChannelArrayMap objectForKey:libraryID];
-
-    if ([event shouldStop]) {
-        [self _stopEventSound:event];
-    } else if (![channels count] || [event allowsMultiple]) {
-        [self _startEventSound:event];
-    }
-    
-    [libraryID release];
-}
-
-
-- (void) _stopStreamSound
-{
-    [m_currentStreamChannel stop];
-    [m_currentStreamChannel release];
-    m_currentStreamChannel = nil;
-}
-
-
-- (void) _startStreamSound:(SwiffSoundDefinition *)definition
-{
-    if ([m_currentStreamChannel definition] != definition) {
-        [self _stopStreamSound];
-        m_currentStreamChannel = [[_SwiffSoundChannel alloc] initWithEvent:nil definition:definition];
+    if ([channel event]) {
+        [self _stopEventSound:[channel event]];
+    } else {
+        [self stopStream];
     }
 }
 
@@ -332,19 +363,39 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
 - (void) processMovie:(SwiffMovie *)movie frame:(SwiffFrame *)frame
 {
     for (SwiffSoundEvent *event in [frame soundEvents]) {
-        [self _processEvent:event];
+        NSNumber       *libraryID = [[NSNumber alloc] initWithUnsignedShort:[event libraryID]];
+        NSMutableArray *channels  = [m_libraryIDTChannelArrayMap objectForKey:libraryID];
+
+        if ([event shouldStop]) {
+            [self _stopEventSound:event];
+        } else if (![channels count] || [event allowsMultiple]) {
+            [self _startEventSound:event];
+        }
+        
+        [libraryID release];
     }
     
     SwiffSoundDefinition *streamSound = [frame streamSound];
     if (streamSound) {
-        [self _startStreamSound:streamSound];
+        if ([m_currentStreamChannel definition] != streamSound) {
+            [self stopStream];
+            m_currentStreamChannel = [[SwiffSoundChannel alloc] initWithDefinition:streamSound streamBlock:[frame streamBlock]];
+        }
     }
+}
+
+
+- (void) stopStream
+{
+    [m_currentStreamChannel stop];
+    [m_currentStreamChannel release];
+    m_currentStreamChannel = nil;
 }
 
 
 - (void) stopAllSounds
 {
-    [self _stopStreamSound];
+    [self stopStream];
     [self _stopAllEventSounds];
 }
 

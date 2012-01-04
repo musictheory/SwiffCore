@@ -30,7 +30,7 @@
 #import <SwiffDefinition.h>
 #import <SwiffParser.h>
 
-typedef struct _SwiffFontKerningRecord {
+typedef struct SwiffFontKerningRecord {
     UInt16 leftCharacterCode;
     UInt16 rightCharacterCode;
     CGFloat adjustment;

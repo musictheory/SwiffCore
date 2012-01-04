@@ -30,15 +30,13 @@
 #import <SwiffSpriteDefinition.h>
 
 @class SwiffBitmapDefinition, SwiffDynamicTextDefinition, SwiffFontDefinition,
-       SwiffShapeDefinition, SwiffStaticTextDefinition, SwiffSoundDefinition, SwiffScene;
+       SwiffShapeDefinition, SwiffStaticTextDefinition, SwiffSoundDefinition;
 
 @protocol SwiffMovieDecoder;
 
 
 @interface SwiffMovie : SwiffSpriteDefinition {
 @private
-    NSArray          *m_scenes;
-    NSDictionary     *m_sceneNameToSceneMap;
     SwiffSparseArray  m_definitions;
     
     NSInteger   m_version;
@@ -58,10 +56,6 @@
 - (SwiffSoundDefinition       *) soundDefinitionWithLibraryID:(UInt16)libraryID;
 - (SwiffSpriteDefinition      *) spriteDefinitionWithLibraryID:(UInt16)libraryID;
 - (SwiffStaticTextDefinition  *) staticTextDefinitionWithLibraryID:(UInt16)libraryID;
-
-- (SwiffScene *) sceneWithName:(NSString *)name;
-
-@property (nonatomic, retain, readonly) NSArray *scenes;
 
 @property (nonatomic, assign, readonly) NSInteger version;
 @property (nonatomic, assign, readonly) CGFloat frameRate;

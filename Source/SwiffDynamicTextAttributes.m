@@ -32,13 +32,13 @@ static NSString * const SwiffTextVerticalOffsetAttributeName = @"SwiffTextVertic
 
 
 enum {
-    _SwiffFontMapTypeDirect             = 0,
-    _SwiffFontMapTypeIndirectUnknown    = -1,
-    _SwiffFontMapTypeIndirectSans       = 1,
-    _SwiffFontMapTypeIndirectSerif      = 2,
-    _SwiffFontMapTypeIndirectTypewriter = 3
+    SwiffFontMapTypeDirect             = 0,
+    SwiffFontMapTypeIndirectUnknown    = -1,
+    SwiffFontMapTypeIndirectSans       = 1,
+    SwiffFontMapTypeIndirectSerif      = 2,
+    SwiffFontMapTypeIndirectTypewriter = 3
 }; 
-typedef NSInteger _SwiffFontMapType;
+typedef NSInteger SwiffFontMapType;
 
 
 CGFloat SwiffTextGetMaximumVerticalOffset(CFAttributedStringRef as, CFRange range)
@@ -69,9 +69,9 @@ CGFloat SwiffTextGetMaximumVerticalOffset(CFAttributedStringRef as, CFRange rang
 }
 
 
-static void sGetMapTypeAndName(NSString *inName, NSString **outName, _SwiffFontMapType *outMapType)
+static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMapType *outMapType)
 {
-    _SwiffFontMapType mapType = _SwiffFontMapTypeDirect;
+    SwiffFontMapType mapType = SwiffFontMapTypeDirect;
     NSString *name = nil;
 
     @autoreleasepool {
@@ -83,23 +83,23 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, _SwiffFontM
 
             if ([inName hasPrefix:@"_"]) {
                 if ([inName isEqualToString:@"_sans"]) {
-                    mapType = _SwiffFontMapTypeIndirectSans;
+                    mapType = SwiffFontMapTypeIndirectSans;
                     name = @"Helvetica";
 
                 } else if ([inName isEqualToString:@"_serif"]) {
-                    mapType = _SwiffFontMapTypeIndirectSerif;
+                    mapType = SwiffFontMapTypeIndirectSerif;
                     name = @"Times";
 
                 } else if ([inName isEqualToString:@"_typewriter"]) {
-                    mapType = _SwiffFontMapTypeIndirectTypewriter;
+                    mapType = SwiffFontMapTypeIndirectTypewriter;
                     name = @"Courier";
 
                 } else {
-                    mapType = _SwiffFontMapTypeIndirectUnknown;
+                    mapType = SwiffFontMapTypeIndirectUnknown;
                 }
             }
             
-            if (mapType == _SwiffFontMapTypeDirect) {
+            if (mapType == SwiffFontMapTypeDirect) {
                 CTFontRef font = CTFontCreateWithName((CFStringRef)component, 12.0, NULL);
 
                 if (font) {
@@ -212,7 +212,7 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, _SwiffFontM
     CGFloat leading = CTFontGetLeading(font);
 
     // For direct fonts, Flash appears to use a line height exactly equal to the font size
-    if (m_mapType == _SwiffFontMapTypeDirect) {
+    if (m_mapType == SwiffFontMapTypeDirect) {
         minimumLineHeight = maximumLineHeight = floor(ascent + descent) - floor(leading);
         
     } else {
