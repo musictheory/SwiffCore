@@ -48,8 +48,6 @@
     SwiffSoundEvent      *m_event;
     SwiffSoundDefinition *m_definition;
     UInt32                m_frameIndex;
-    UInt32                m_gotoFrameIndex;
-    UInt32                m_currentDataLocation;
 }
 
 - (id) initWithEvent:(SwiffSoundEvent *)event definition:(SwiffSoundDefinition *)definition;
