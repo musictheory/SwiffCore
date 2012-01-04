@@ -75,7 +75,7 @@ enum {
 typedef NSInteger SwiffMPEGError;
 
 
-typedef struct _SwiffMPEGHeader {
+typedef struct SwiffMPEGHeader {
     SwiffMPEGVersion     version;
     SwiffMPEGLayer       layer;
     UInt16               samplingRate;

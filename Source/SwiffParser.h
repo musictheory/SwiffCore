@@ -29,7 +29,7 @@
 #import <SwiffBase.h>
 
 
-typedef struct _SwiffParser SwiffParser;
+typedef struct SwiffParser SwiffParser;
 
 extern SwiffParser *SwiffParserCreate(const UInt8 *buffer, UInt32 length);
 extern void SwiffParserFree(SwiffParser *reader);

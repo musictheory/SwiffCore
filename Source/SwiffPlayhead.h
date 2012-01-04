@@ -80,5 +80,5 @@
 
 
 @protocol SwiffPlayheadDelegate <NSObject>
-- (void) playheadDidUpdate:(SwiffPlayhead *)playhead;
+- (void) playheadDidUpdate:(SwiffPlayhead *)playhead step:(BOOL)step;
 @end

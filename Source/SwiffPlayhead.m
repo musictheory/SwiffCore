@@ -133,7 +133,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
     }
     
     if (needsUpdate) {
-        [m_delegate playheadDidUpdate:self];
+        [m_delegate playheadDidUpdate:self step:NO];
     }
 }
 
@@ -298,7 +298,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
         [self stop];
     }
 
-    [m_delegate playheadDidUpdate:self];
+    [m_delegate playheadDidUpdate:self step:YES];
 }
 
 

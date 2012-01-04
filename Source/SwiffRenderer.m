@@ -45,7 +45,7 @@
 #import "SwiffStaticTextDefinition.h"
 
 
-struct _SwiffRenderer {
+struct SwiffRenderer {
     SwiffMovie       *movie;
     NSArray          *placedObjects;
     CGFloat           hairlineWidth;
@@ -61,7 +61,7 @@ struct _SwiffRenderer {
 };
 
 
-typedef struct _SwiffRenderState {
+typedef struct SwiffRenderState {
     SwiffMovie       *movie;
     CGContextRef      context;
     CGRect            clipBoundingBox;
@@ -416,7 +416,10 @@ static void sFillPath(SwiffRenderState *state, SwiffPath *path)
 
     sTracePath(state, operations, floats, YES);
 
-    if (type == SwiffFillStyleTypeColor) {
+    if (state->isBuildingClippingPath) {
+        // Do nothing if we are building the clip path
+
+    } else if (type == SwiffFillStyleTypeColor) {
         SwiffColor color = SwiffColorApplyColorTransformStack([style color], state->colorTransforms);
         if (state->hasMultiplyColor) sApplyMultiplyColor(state, &color);
         CGContextSetFillColor(context, (CGFloat *)&color);
@@ -830,15 +833,15 @@ void SwiffRendererRender(SwiffRenderer *renderer, CGContextRef context)
     for (SwiffPlacedObject *object in renderer->placedObjects) {
         sDrawPlacedObject(&state, object);
     }
-    
+
+    sStopClipping(&state);
+
     state.movie   = nil;
     state.context = NULL;
     
     if (state.colorTransforms) {
         CFRelease(state.colorTransforms);
     }
-
-    sStopClipping(&state);
 }
 
 

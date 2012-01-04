@@ -29,7 +29,7 @@
 #import "SwiffPlacedObject.h"
 #import "SwiffMovie.h"
 
-typedef struct _SwiffPlacedObjectAdditionalStorage
+typedef struct SwiffPlacedObjectAdditionalStorage
 {
     NSString *name;
     NSString *className;

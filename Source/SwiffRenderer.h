@@ -30,7 +30,7 @@
 
 @class SwiffMovie;
 
-typedef struct _SwiffRenderer SwiffRenderer;
+typedef struct SwiffRenderer SwiffRenderer;
 
 extern SwiffRenderer *SwiffRendererCreate(SwiffMovie *movie);
 extern void SwiffRendererFree(SwiffRenderer *renderer);

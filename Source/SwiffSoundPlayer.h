@@ -28,19 +28,21 @@
 #import <SwiffImport.h>
 
 @class SwiffSoundEvent, SwiffMovie, SwiffFrame;
-@class _SwiffSoundChannel;
+@class SwiffSoundChannel;
 
 
 @interface SwiffSoundPlayer : NSObject {
 @private
-    NSMutableDictionary  *m_libraryIDTChannelArrayMap;
-    _SwiffSoundChannel   *m_currentStreamChannel;
+    NSMutableDictionary *m_libraryIDTChannelArrayMap;
+    SwiffSoundChannel   *m_currentStreamChannel;
 }
 
 + (SwiffSoundPlayer *) sharedInstance;
 
 - (void) processMovie:(SwiffMovie *)movie frame:(SwiffFrame *)frame;
+
 - (void) stopAllSounds;
+- (void) stopStream;
 
 @property (nonatomic, assign, readonly, getter=isPlaying)   BOOL playing;   // Is playing any sound
 @property (nonatomic, assign, readonly, getter=isStreaming) BOOL streaming; // Is playing non-event sound

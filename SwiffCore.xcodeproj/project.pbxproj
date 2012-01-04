@@ -29,6 +29,8 @@
 		5516B4EE1446D75900231D67 /* SwiffSpriteDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A7C14429C9E00E12C27 /* SwiffSpriteDefinition.m */; };
 		5516B4EF1446D75900231D67 /* SwiffStaticTextDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A7E14429C9E00E12C27 /* SwiffStaticTextDefinition.m */; };
 		5516B4F21446D75900231D67 /* SwiffRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65A7014429C9E00E12C27 /* SwiffRenderer.m */; };
+		55261BEE14B4160E004C6DA4 /* SwiffSoundStreamBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = 55261BED14B4160E004C6DA4 /* SwiffSoundStreamBlock.m */; };
+		55261BF114B431B2004C6DA4 /* SwiffSoundStreamBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = 55261BED14B4160E004C6DA4 /* SwiffSoundStreamBlock.m */; };
 		5539A63B148DA57B00E8FA86 /* SwiffStaticTextRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 5539A63A148DA57B00E8FA86 /* SwiffStaticTextRecord.m */; };
 		5539A63C148DA5E500E8FA86 /* SwiffStaticTextRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 5539A63A148DA57B00E8FA86 /* SwiffStaticTextRecord.m */; };
 		5539A63F148EFB0500E8FA86 /* SwiffDynamicTextAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 5539A63E148EFB0400E8FA86 /* SwiffDynamicTextAttributes.m */; };
@@ -87,6 +89,8 @@
 		5516B4C51446D0EA00231D67 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		5516B4C81446D0EA00231D67 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		5516B4CA1446D0EA00231D67 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		55261BEC14B4160E004C6DA4 /* SwiffSoundStreamBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffSoundStreamBlock.h; path = Source/SwiffSoundStreamBlock.h; sourceTree = "<group>"; };
+		55261BED14B4160E004C6DA4 /* SwiffSoundStreamBlock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffSoundStreamBlock.m; path = Source/SwiffSoundStreamBlock.m; sourceTree = "<group>"; };
 		5539A639148DA57A00E8FA86 /* SwiffStaticTextRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffStaticTextRecord.h; path = Source/SwiffStaticTextRecord.h; sourceTree = "<group>"; };
 		5539A63A148DA57B00E8FA86 /* SwiffStaticTextRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffStaticTextRecord.m; path = Source/SwiffStaticTextRecord.m; sourceTree = "<group>"; };
 		5539A63D148EFB0400E8FA86 /* SwiffDynamicTextAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffDynamicTextAttributes.h; path = Source/SwiffDynamicTextAttributes.h; sourceTree = "<group>"; };
@@ -221,6 +225,8 @@
 				55F65A7414429C9E00E12C27 /* SwiffPath.m */,
 				55F9C75614464B1200FE8E4F /* SwiffSceneAndFrameLabelData.h */,
 				55F9C75714464B1300FE8E4F /* SwiffSceneAndFrameLabelData.m */,
+				55261BEC14B4160E004C6DA4 /* SwiffSoundStreamBlock.h */,
+				55261BED14B4160E004C6DA4 /* SwiffSoundStreamBlock.m */,
 				5539A639148DA57A00E8FA86 /* SwiffStaticTextRecord.h */,
 				5539A63A148DA57B00E8FA86 /* SwiffStaticTextRecord.m */,
 			);
@@ -234,6 +240,19 @@
 				5516B4CA1446D0EA00231D67 /* Foundation.framework */,
 			);
 			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		55261BF014B41829004C6DA4 /* Placements */ = {
+			isa = PBXGroup;
+			children = (
+				55F65A7714429C9E00E12C27 /* SwiffPlacedObject.h */,
+				55F65A7814429C9E00E12C27 /* SwiffPlacedObject.m */,
+				55F3158C148A072100E6E625 /* SwiffPlacedDynamicText.h */,
+				55F3158D148A072100E6E625 /* SwiffPlacedDynamicText.m */,
+				550C99B8145A04FD00836C62 /* SwiffSoundEvent.h */,
+				550C99B9145A04FD00836C62 /* SwiffSoundEvent.m */,
+			);
+			name = Placements;
 			sourceTree = "<group>";
 		};
 		55C1B1ED14688E5B0010CB82 /* Combined */ = {
@@ -257,16 +276,10 @@
 				55F65A6814429C9E00E12C27 /* SwiffFrame.m */,
 				55F65A6D14429C9E00E12C27 /* SwiffMovie.h */,
 				55F65A6E14429C9E00E12C27 /* SwiffMovie.m */,
-				55F65A7714429C9E00E12C27 /* SwiffPlacedObject.h */,
-				55F65A7814429C9E00E12C27 /* SwiffPlacedObject.m */,
-				55F3158C148A072100E6E625 /* SwiffPlacedDynamicText.h */,
-				55F3158D148A072100E6E625 /* SwiffPlacedDynamicText.m */,
 				55038DDE144CDA4900EA5841 /* SwiffPlayhead.h */,
 				55038DDF144CDA4900EA5841 /* SwiffPlayhead.m */,
 				55DBFABF1444EE1F003AA0DA /* SwiffScene.h */,
 				55DBFAC01444EE20003AA0DA /* SwiffScene.m */,
-				550C99B8145A04FD00836C62 /* SwiffSoundEvent.h */,
-				550C99B9145A04FD00836C62 /* SwiffSoundEvent.m */,
 				550C99B4145A03F200836C62 /* SwiffSoundPlayer.h */,
 				550C99B5145A03F200836C62 /* SwiffSoundPlayer.m */,
 			);
@@ -319,6 +332,7 @@
 				55DBFAB81443A56D003AA0DA /* Base */,
 				55038DF2144EB7EF00EA5841 /* Models */,
 				55038DF1144EB79500EA5841 /* Definitions */,
+				55261BF014B41829004C6DA4 /* Placements */,
 				55DBFAB71443A556003AA0DA /* Movie */,
 				55DBFAB91443A5C1003AA0DA /* Rendering */,
 			);
@@ -469,6 +483,7 @@
 				5539A64814905E1200E8FA86 /* SwiffBitmapDefinition.m in Sources */,
 				55B34CA314934EFA00C67849 /* SwiffView.m in Sources */,
 				55F65C8C14AFC61B00DA2DDB /* SwiffFilter.m in Sources */,
+				55261BF114B431B2004C6DA4 /* SwiffSoundStreamBlock.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -507,6 +522,7 @@
 				5539A64614905CB700E8FA86 /* SwiffBitmapDefinition.m in Sources */,
 				55B34CA214934E8900C67849 /* SwiffView.m in Sources */,
 				55F65C8B14AFC61B00DA2DDB /* SwiffFilter.m in Sources */,
+				55261BEE14B4160E004C6DA4 /* SwiffSoundStreamBlock.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

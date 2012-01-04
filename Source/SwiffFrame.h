@@ -27,21 +27,21 @@
 
 #import <SwiffImport.h>
 
-@class SwiffScene, SwiffPlacedObject, SwiffSoundDefinition;
+@class SwiffScene, SwiffPlacedObject, SwiffSoundDefinition, SwiffSoundStreamBlock;
 
 
 @interface SwiffFrame : NSObject {
 @private
-    SwiffScene           *m_scene;
-    NSUInteger            m_indexInScene;
+    SwiffScene  *m_scene;
+    NSUInteger   m_indexInScene;
 
-    NSString             *m_label;
-    NSArray              *m_placedObjects;
-    NSArray              *m_placedObjectsWithNames;
+    NSString    *m_label;
+    NSArray     *m_placedObjects;
+    NSArray     *m_placedObjectsWithNames;
 
-    SwiffSoundDefinition *m_streamSound;
-    NSArray              *m_soundEvents;
-    NSUInteger            m_streamBlockIndex;
+    NSArray               *m_soundEvents;
+    SwiffSoundDefinition  *m_streamSound;
+    SwiffSoundStreamBlock *m_streamBlock;
 }
 
 - (void) clearWeakReferences;
@@ -57,8 +57,8 @@
 @property (nonatomic, assign, readonly) NSUInteger indexInMovie;
 
 @property (nonatomic, retain, readonly) NSArray *soundEvents;
-@property (nonatomic, retain, readonly) SwiffSoundDefinition *streamSound;
-@property (nonatomic, assign, readonly) NSUInteger streamBlockIndex;
+@property (nonatomic, retain, readonly) SwiffSoundDefinition  *streamSound;
+@property (nonatomic, retain, readonly) SwiffSoundStreamBlock *streamBlock;
 
 // Sorted by ascending depth 
 @property (nonatomic, retain, readonly) NSArray *placedObjects;

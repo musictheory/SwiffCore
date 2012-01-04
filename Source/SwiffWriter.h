@@ -29,7 +29,7 @@
 #import <SwiffBase.h>
 
 
-typedef struct _SwiffWriter SwiffWriter;
+typedef struct SwiffWriter SwiffWriter;
 
 extern SwiffWriter *SwiffWriterCreate(void);
 extern void SwiffWriterFree(SwiffWriter *writer);

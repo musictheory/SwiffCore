@@ -34,14 +34,14 @@
 
 
 enum {
-    _SwiffShapeOperationTypeHeader = 0,
-    _SwiffShapeOperationTypeLine   = 1,
-    _SwiffShapeOperationTypeCurve  = 2,
-    _SwiffShapeOperationTypeEnd    = 3
+    SwiffShapeOperationTypeHeader = 0,
+    SwiffShapeOperationTypeLine   = 1,
+    SwiffShapeOperationTypeCurve  = 2,
+    SwiffShapeOperationTypeEnd    = 3
 };
 
 
-typedef struct _SwiffShapeOperation {
+typedef struct SwiffShapeOperation {
     UInt8      type;
     BOOL       duplicate;
     UInt16     lineStyleIndex;
@@ -49,10 +49,10 @@ typedef struct _SwiffShapeOperation {
     SwiffPoint fromPoint;
     SwiffPoint controlPoint;
     SwiffPoint toPoint;
-} _SwiffShapeOperation;
+} SwiffShapeOperation;
 
 
-static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, SwiffPoint *position)
+static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, SwiffPoint *position)
 {
     if ((op->fromPoint.x != position->x) ||
         (op->fromPoint.y != position->y))
@@ -60,7 +60,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
         SwiffPathAddOperationAndTwips(path, SwiffPathOperationMove, op->fromPoint.x, op->fromPoint.y);
     }
     
-    if (op->type == _SwiffShapeOperationTypeLine) {
+    if (op->type == SwiffShapeOperationTypeLine) {
         if (op->fromPoint.x == op->toPoint.x) {
             SwiffPathAddOperationAndTwips(path, SwiffPathOperationVerticalLine, op->toPoint.y);
             
@@ -71,7 +71,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
             SwiffPathAddOperationAndTwips(path, SwiffPathOperationLine, op->toPoint.x, op->toPoint.y);
         }
     
-    } else if (op->type == _SwiffShapeOperationTypeCurve) {
+    } else if (op->type == SwiffShapeOperationTypeCurve) {
         SwiffPathAddOperationAndTwips(path, SwiffPathOperationCurve, op->toPoint.x, op->toPoint.y, op->controlPoint.x, op->controlPoint.y);
     }
     
@@ -128,7 +128,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
         NSMutableArray *fillStyles = [[NSMutableArray alloc] init];
         NSMutableArray *lineStyles = [[NSMutableArray alloc] init];
 
-        __block _SwiffShapeOperation *operations = NULL;
+        __block SwiffShapeOperation *operations = NULL;
         __block NSUInteger operationsCount = 0;
         __block NSUInteger operationsCapacity = 0;
         __block CGFloat maxWidth = 0.0;
@@ -155,27 +155,27 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
             [lineStyles addObjectsFromArray:moreLineStyles];
         };
         
-        _SwiffShapeOperation *(^nextOperation)() = ^{
+        SwiffShapeOperation *(^nextOperation)() = ^{
             if (operationsCount == operationsCapacity) {
                 operationsCapacity *= 2;
                 if (!operationsCapacity) operationsCapacity = 32;
-                operations = realloc(operations, operationsCapacity * sizeof(_SwiffShapeOperation));
+                operations = realloc(operations, operationsCapacity * sizeof(SwiffShapeOperation));
             }
     
             return &operations[operationsCount++];
         };
         
         void (^addEndOperation)() = ^{
-            _SwiffShapeOperation *o = nextOperation();
+            SwiffShapeOperation *o = nextOperation();
 
-            o->type = _SwiffShapeOperationTypeEnd;
+            o->type = SwiffShapeOperationTypeEnd;
             o->fillStyleIndex = UINT16_MAX;
             o->lineStyleIndex = UINT16_MAX;
         };
         
         void (^addOperation)(NSInteger, SwiffPoint, SwiffPoint, SwiffPoint) = ^(NSInteger type, SwiffPoint from, SwiffPoint control, SwiffPoint to) {
             {
-                _SwiffShapeOperation *o = nextOperation();
+                SwiffShapeOperation *o = nextOperation();
                 o->fromPoint      = from;
                 o->controlPoint   = control;
                 o->toPoint        = to;
@@ -186,7 +186,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
             }
 
             if (fillStyleIndex1) {
-                _SwiffShapeOperation *o = nextOperation();
+                SwiffShapeOperation *o = nextOperation();
                 o->fromPoint      = to;
                 o->controlPoint   = control;
                 o->toPoint        = from;
@@ -298,7 +298,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
                     position.x += deltaX;
                     position.y += deltaY;
 
-                    addOperation( _SwiffShapeOperationTypeLine, from, control, position );
+                    addOperation( SwiffShapeOperationTypeLine, from, control, position );
                 
                 // CURVEDEDGERECORD
                 } else {
@@ -318,7 +318,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
                     position.x = control.x + anchorDeltaX;
                     position.y = control.y + anchorDeltaY;
 
-                    addOperation( _SwiffShapeOperationTypeCurve, from, control, position );
+                    addOperation( SwiffShapeOperationTypeCurve, from, control, position );
                 }
             }
             
@@ -371,7 +371,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
 #pragma mark -
 #pragma mark Private Methods
 
-- (NSArray *) _linePathsForOperations:(_SwiffShapeOperation *)inOperations
+- (NSArray *) _linePathsForOperations:(SwiffShapeOperation *)inOperations
 {
     UInt16 index;
     NSMutableArray *result = [NSMutableArray array];
@@ -379,13 +379,13 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
     NSUInteger lineStyleCount = [m_lineStyles count];
 
     for (index = 1; index <= lineStyleCount; index++) {
-        _SwiffShapeOperation *operation = inOperations;
+        SwiffShapeOperation *operation = inOperations;
         SwiffPoint position = { NSIntegerMax, NSIntegerMax };
         SwiffPath *path = nil;
         
         BOOL hadFillStyle = NO;
         
-        while (operation->type != _SwiffShapeOperationTypeEnd) {
+        while (operation->type != SwiffShapeOperationTypeEnd) {
             BOOL   isDuplicate    = operation->duplicate;
             UInt16 lineStyleIndex = operation->lineStyleIndex; 
             UInt16 fillStyleIndex = operation->fillStyleIndex; 
@@ -424,14 +424,14 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
 }
 
 
-- (NSArray *) _fillPathsForOperations:(_SwiffShapeOperation *)inOperations
+- (NSArray *) _fillPathsForOperations:(SwiffShapeOperation *)inOperations
 {
     NSMutableArray *results = [NSMutableArray array];
     CFMutableDictionaryRef map = CFDictionaryCreateMutable(NULL, 0, NULL, &kCFTypeDictionaryValueCallBacks);
     
     // Collect operations by fill style
-    _SwiffShapeOperation *operation = inOperations;
-    while (operation->type != _SwiffShapeOperationTypeEnd) {
+    SwiffShapeOperation *operation = inOperations;
+    while (operation->type != SwiffShapeOperationTypeEnd) {
         const void *key = (const void *)operation->fillStyleIndex;
         if (!key) {
             operation++;
@@ -464,8 +464,8 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
 
         CFMutableArrayRef sortedOperations = CFArrayCreateMutable(NULL, 0, NULL);
 
-        _SwiffShapeOperation *currentOperation = (_SwiffShapeOperation *)CFArrayGetValueAtIndex(operations, 0);
-        _SwiffShapeOperation *firstOperation   = NULL;
+        SwiffShapeOperation *currentOperation = (SwiffShapeOperation *)CFArrayGetValueAtIndex(operations, 0);
+        SwiffShapeOperation *firstOperation   = NULL;
 
         CFArrayAppendValue(sortedOperations, currentOperation);
         CFArrayRemoveValueAtIndex(operations, 0);
@@ -473,7 +473,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
         
         while ((jCount = CFArrayGetCount(operations)) > 0) {
             for (j = 0; j < jCount; j++) {
-                _SwiffShapeOperation *o = (_SwiffShapeOperation *)CFArrayGetValueAtIndex(operations, j);
+                SwiffShapeOperation *o = (SwiffShapeOperation *)CFArrayGetValueAtIndex(operations, j);
                 SwiffPoint point1 = o->fromPoint;
                 SwiffPoint point2 = currentOperation->toPoint;
                 
@@ -495,7 +495,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
 
             } else {
                 while ((jCount = CFArrayGetCount(operations)) > 0) {
-                    currentOperation = (_SwiffShapeOperation *)CFArrayGetValueAtIndex(operations, 0);
+                    currentOperation = (SwiffShapeOperation *)CFArrayGetValueAtIndex(operations, 0);
                     CFArrayRemoveValueAtIndex(operations, 0);
 
                     SwiffLog(@"Shape", @"No connecting path operation found");
@@ -527,7 +527,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
                 SwiffPoint position = { NSIntegerMax, NSIntegerMax };
 
                 for (j = 0; j < jCount; j++) {
-                    _SwiffShapeOperation *op = (_SwiffShapeOperation *)CFArrayGetValueAtIndex(sortedOperations, j);
+                    SwiffShapeOperation *op = (SwiffShapeOperation *)CFArrayGetValueAtIndex(sortedOperations, j);
                     sPathAddShapeOperation(path, op, &position);
                 }
 
@@ -557,7 +557,7 @@ static void sPathAddShapeOperation(SwiffPath *path, _SwiffShapeOperation *op, Sw
 
         CFIndex length = CFArrayGetCount(m_groups);
         for (CFIndex i = 0; i < length; i++) {
-            _SwiffShapeOperation *operations = (_SwiffShapeOperation *)CFArrayGetValueAtIndex(m_groups, i);
+            SwiffShapeOperation *operations = (SwiffShapeOperation *)CFArrayGetValueAtIndex(m_groups, i);
            
             [result addObjectsFromArray:[self _fillPathsForOperations:operations]];
             [result addObjectsFromArray:[self _linePathsForOperations:operations]];

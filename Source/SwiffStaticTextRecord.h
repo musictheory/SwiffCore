@@ -30,7 +30,7 @@
 #import <SwiffParser.h>
 
 
-typedef struct _SwiffTextRecordGlyphEntry {
+typedef struct SwiffTextRecordGlyphEntry {
     UInt16  index;
     CGFloat advance;
 } SwiffStaticTextRecordGlyphEntry;

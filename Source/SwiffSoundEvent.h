@@ -59,18 +59,18 @@ typedef struct {
 
 - (void) getLeftLevel:(float *)outLeftLevel rightLevel:(float *)outRightLevel atPosition:(UInt32)position;
 
-@property (nonatomic, assign, readonly) UInt16 libraryID;
-@property (nonatomic, assign, readonly) NSString *className;
-@property (nonatomic, assign, readonly) SwiffSoundDefinition *definition;
+@property (nonatomic, assign) UInt16 libraryID;
+@property (nonatomic, assign) NSString *className;
+@property (nonatomic, assign) SwiffSoundDefinition *definition;
 
 @property (nonatomic, assign, readonly) NSInteger envelopeCount; 
 - (SwiffSoundEnvelope) envelopeAtIndex:(NSInteger)index;
 
-@property (nonatomic, assign, readonly) NSUInteger inPoint;
-@property (nonatomic, assign, readonly) NSUInteger outPoint;
-@property (nonatomic, assign, readonly) NSInteger  loopCount;
+@property (nonatomic, assign) NSUInteger inPoint;
+@property (nonatomic, assign) NSUInteger outPoint;
+@property (nonatomic, assign) NSInteger  loopCount;
 
-@property (nonatomic, assign, readonly) BOOL shouldStop;
-@property (nonatomic, assign, readonly) BOOL allowsMultiple;
+@property (nonatomic, assign) BOOL shouldStop;
+@property (nonatomic, assign) BOOL allowsMultiple;
 
 @end

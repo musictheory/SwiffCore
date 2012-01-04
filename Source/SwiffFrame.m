@@ -42,16 +42,15 @@
                           withNames: (NSArray *) placedObjectsWithNames
                         soundEvents: (NSArray *) soundEvents
                         streamSound: (SwiffSoundDefinition *) streamSound
-                   streamBlockIndex: (NSUInteger) streamBlockIndex
+                        streamBlock: (SwiffSoundStreamBlock *) streamBlock
 {
     if ((self = [super init])) {
         m_placedObjects = [placedObjects retain];
         m_soundEvents   = [soundEvents   retain];
         m_streamSound   = [streamSound   retain];
+        m_streamBlock   = [streamBlock   retain];
 
         m_placedObjectsWithNames = [placedObjectsWithNames retain];
-
-        m_streamBlockIndex = streamBlockIndex;
     }
     
     return self;
@@ -68,8 +67,9 @@
 {
     [m_label         release];  m_label         = nil;
     [m_placedObjects release];  m_placedObjects = nil;
-    [m_streamSound   release];  m_streamSound   = nil;
     [m_soundEvents   release];  m_soundEvents   = nil;
+    [m_streamSound   release];  m_streamSound   = nil;
+    [m_streamBlock   release];  m_streamBlock   = nil;
 
     [m_placedObjectsWithNames release];
     m_placedObjectsWithNames = nil;
@@ -143,12 +143,12 @@
 }
 
 
-@synthesize indexInScene     = m_indexInScene,
-            placedObjects    = m_placedObjects,
-            scene            = m_scene,
-            label            = m_label,
-            streamSound      = m_streamSound,
-            soundEvents      = m_soundEvents,
-            streamBlockIndex = m_streamBlockIndex;
+@synthesize indexInScene  = m_indexInScene,
+            placedObjects = m_placedObjects,
+            scene         = m_scene,
+            label         = m_label,
+            soundEvents   = m_soundEvents,
+            streamSound   = m_streamSound,
+            streamBlock   = m_streamBlock;
 
 @end
