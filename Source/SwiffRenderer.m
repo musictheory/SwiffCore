@@ -134,7 +134,7 @@ static void sPopColorTransform(SwiffRenderState *state)
 }
 
 
-static void sTracePathAdvanced(
+static void sTracePathStrokeAdvanced(
     SwiffRenderState *state,
     SwiffPathOperation *operations,
     CGFloat *floats,
@@ -268,7 +268,7 @@ nextOperation:
 }
 
 
-static void sTracePath(SwiffRenderState *state, SwiffPathOperation *operations, CGFloat *floats, BOOL shouldClose)
+static void sTracePathStrokeSimple(SwiffRenderState *state, SwiffPathOperation *operations, CGFloat *floats, BOOL shouldClose)
 {
     CGContextRef context = state->context;
     CGFloat toX = NAN, toY = NAN, controlX = NAN, controlY = NAN, moveX = NAN, moveY = NAN;
@@ -320,6 +320,92 @@ nextOperation:
 }
 
 
+// This works around <rdar://10646847> and also immitates what the Flash engine does
+static CGPoint sTracePathFill_ApplyTransform(CGFloat x, CGFloat y, CGAffineTransform *transform)
+{
+    CGPoint point = CGPointApplyAffineTransform(CGPointMake(x, y), *transform);
+    CGFloat iX, iY, fX, fY;
+
+#if CGFLOAT_IS_DOUBLE
+    fX= modf(point.x, &iX);
+    fY= modf(point.y, &iY);
+
+    if (fX < 0.15 || fX > 0.85) point.x = round(point.x);
+    if (fY < 0.15 || fY > 0.85) point.y = round(point.y);
+#else
+    fX= modff(point.x, &iX);
+    fY= modff(point.y, &iY);
+
+    if (fX < 0.15 || fX > 0.85) point.x = roundf(point.x);
+    if (fY < 0.15 || fY > 0.85) point.y = roundf(point.y);
+#endif
+
+    return point;
+}
+
+static void sTracePathFill(SwiffRenderState *state, SwiffPathOperation *operations, CGFloat *floats, CGAffineTransform pointTransform)
+{
+    CGContextRef context = state->context;
+    CGFloat toX = NAN, toY = NAN, moveX = NAN, moveY = NAN;
+
+    CGPoint p, c;
+
+nextOperation:
+    switch (*operations++) {
+    case SwiffPathOperationMove:
+        if ((toX == moveX) && (toY == moveY)) {
+            CGContextClosePath(context);
+        }
+
+        moveX = toX = *floats++;
+        moveY = toY = *floats++;
+        
+        p = sTracePathFill_ApplyTransform(toX, toY, &pointTransform);
+        CGContextMoveToPoint(context, p.x, p.y);
+
+        goto nextOperation;
+
+    case SwiffPathOperationCurve:
+        toX = *floats++;  toY = *floats++;
+        c.x = *floats++;  c.y = *floats++;
+
+        c = CGPointApplyAffineTransform(c, pointTransform);
+        p = sTracePathFill_ApplyTransform(toX, toY, &pointTransform);
+        CGContextAddQuadCurveToPoint(context, c.x, c.y, p.x, p.y);
+
+        goto nextOperation;
+
+    case SwiffPathOperationLine:
+        toX = *floats++;  toY = *floats++;
+
+        p = sTracePathFill_ApplyTransform(toX, toY, &pointTransform);
+        CGContextAddLineToPoint(context, p.x, p.y);
+
+        goto nextOperation;
+
+    case SwiffPathOperationHorizontalLine:
+        toX = *floats++;
+
+        p = sTracePathFill_ApplyTransform(toX, toY, &pointTransform);
+        CGContextAddLineToPoint(context, p.x, p.y);
+
+        goto nextOperation;
+
+    case SwiffPathOperationVerticalLine:
+        toY = *floats++;
+
+        p = sTracePathFill_ApplyTransform(toX, toY, &pointTransform);
+        CGContextAddLineToPoint(context, p.x, p.y);
+
+        goto nextOperation;
+    }
+
+    if ((toX == moveX) && (toY == moveY)) {
+        CGContextClosePath(context);
+    }
+}
+
+
 static void sStrokePath(SwiffRenderState *state, SwiffPath *path)
 {
     SwiffPathOperation *operations = [path operations];
@@ -357,11 +443,11 @@ static void sStrokePath(SwiffRenderState *state, SwiffPath *path)
             }
         }
         
-        sTracePathAdvanced(state, operations, floats, lineWidth, state->affineTransform, isHairline, shouldRound, [lineStyle closesStroke]);
+        sTracePathStrokeAdvanced(state, operations, floats, lineWidth, state->affineTransform, isHairline, shouldRound, [lineStyle closesStroke]);
 
     } else {
         CGContextConcatCTM(context, state->affineTransform);
-        sTracePath(state, operations, floats, [lineStyle closesStroke]);
+        sTracePathStrokeSimple(state, operations, floats, [lineStyle closesStroke]);
     }
 
     CGContextSetLineWidth(context, lineWidth);
@@ -412,9 +498,9 @@ static void sFillPath(SwiffRenderState *state, SwiffPath *path)
     CGContextRef context = state->context;
 
     CGContextSaveGState(context);
-    CGContextConcatCTM(context, state->affineTransform);
+    sTracePathFill(state, operations, floats, state->affineTransform);
 
-    sTracePath(state, operations, floats, YES);
+    CGContextConcatCTM(context, state->affineTransform);
 
     if (state->isBuildingClippingPath) {
         // Do nothing if we are building the clip path
