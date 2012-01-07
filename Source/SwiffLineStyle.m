@@ -28,6 +28,7 @@
 #import "SwiffLineStyle.h"
 #import "SwiffParser.h"
 #import "SwiffFillStyle.h"
+#import "SwiffUtils.h"
 
 const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
 
@@ -73,7 +74,7 @@ const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
         if (width == 1) {
             m_width = SwiffLineStyleHairlineWidth;
         } else {
-            m_width = SwiffFloatFromTwips(width);
+            m_width = SwiffGetCGFloatFromTwips(width);
         }
 
         CGLineCap (^getLineCap)(UInt32) = ^(UInt32 capStyle) {
@@ -104,10 +105,12 @@ const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
 
         if (version < 3) {
             SwiffParserReadColorRGB(parser, &m_color);
+            m_closesStroke = YES;
 
         } else if (version == 3) {
             SwiffParserReadColorRGBA(parser, &m_color);
-        
+            m_closesStroke = YES;
+
         } else {
             UInt32 startCapStyle, joinStyle, hasFillFlag, noHScaleFlag, noVScaleFlag, pixelHintingFlag, reserved, noClose, endCapStyle;
 

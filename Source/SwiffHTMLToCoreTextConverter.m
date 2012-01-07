@@ -27,8 +27,8 @@
 
 #import "SwiffHTMLToCoreTextConverter.h"
 
-#import "SwiffBase.h"
-#import "SwiffDynamicTextAttributes.h"
+#import <SwiffUtils.h>
+#import <SwiffDynamicTextAttributes.h>
 
 #include <libxml/HTMLparser.h>
 

@@ -36,6 +36,7 @@
 #import "SwiffSoundDefinition.h"
 #import "SwiffSpriteDefinition.h"
 #import "SwiffStaticTextDefinition.h"
+#import "SwiffUtils.h"
 
 
 // Associated value for parser - NSData of the movie-global JPEG tables
@@ -283,6 +284,7 @@ id<SwiffDefinition> SwiffMovieGetDefinition(SwiffMovie *movie, UInt16 libraryID)
 {
     return &m_backgroundColor;
 }
+
 
 @synthesize version         = m_version,
             frameRate       = m_frameRate,

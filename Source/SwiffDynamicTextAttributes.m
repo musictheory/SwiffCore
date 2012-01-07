@@ -27,6 +27,7 @@
 
 
 #import "SwiffDynamicTextAttributes.h"
+#import "SwiffUtils.h"
 
 static NSString * const SwiffTextVerticalOffsetAttributeName = @"SwiffTextVerticalOffset";
 
@@ -213,11 +214,11 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
 
     // For direct fonts, Flash appears to use a line height exactly equal to the font size
     if (m_mapType == SwiffFontMapTypeDirect) {
-        minimumLineHeight = maximumLineHeight = floor(ascent + descent) - floor(leading);
+        minimumLineHeight = maximumLineHeight = SwiffFloor(ascent + descent) - SwiffFloor(leading);
         
     } else {
         // Tweak for mapping indirect font to Helvetica or Times
-        minimumLineHeight = maximumLineHeight = floor(fontPointSize * 1.15);
+        minimumLineHeight = maximumLineHeight = SwiffFloor(fontPointSize * 1.15);
     }
 
     if (font) {

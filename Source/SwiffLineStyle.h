@@ -26,7 +26,7 @@
 */
 
 #import <SwiffImport.h>
-#import <SwiffBase.h>
+#import <SwiffTypes.h>
 #import <SwiffParser.h>
 
 @class SwiffFillStyle;

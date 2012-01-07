@@ -31,6 +31,7 @@
 #import "SwiffLineStyle.h"
 #import "SwiffParser.h"
 #import "SwiffPath.h"
+#import "SwiffUtils.h"
 
 
 enum {
@@ -334,7 +335,7 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
             CFArrayAppendValue(groups, operations);
         }
         
-        CGFloat padding = ceil(maxWidth / 2.0) + 1;
+        CGFloat padding = SwiffCeil(maxWidth / 2.0) + 1;
         m_renderBounds = CGRectInset(m_bounds, -padding, -padding);
     }
 
@@ -413,7 +414,7 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
         }
         
         if (path) {
-            SwiffPathAddOperationAndTwips(path, SwiffPathOperationEnd);
+            SwiffPathAddOperationEnd(path);
 
             [result addObject:path];
             [path release];
@@ -531,7 +532,7 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
                     sPathAddShapeOperation(path, op, &position);
                 }
 
-                SwiffPathAddOperationAndTwips(path, SwiffPathOperationEnd);
+                SwiffPathAddOperationEnd(path);
 
                 [results addObject:path];
                 [path release];

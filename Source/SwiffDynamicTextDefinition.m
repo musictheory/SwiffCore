@@ -29,6 +29,7 @@
 
 #import "SwiffParser.h"
 #import "SwiffPlacedDynamicText.h"
+#import "SwiffUtils.h"
 
 
 @implementation SwiffDynamicTextDefinition

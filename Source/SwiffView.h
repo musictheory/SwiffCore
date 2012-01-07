@@ -26,7 +26,7 @@
 */
 
 #import <SwiffImport.h>
-#import <SwiffBase.h>
+#import <SwiffTypes.h>
 #import <SwiffLayer.h>
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR || TARGET_HAS_UIKIT
@@ -77,7 +77,8 @@
 @property (nonatomic, assign) BOOL shouldSmoothFonts;
 @property (nonatomic, assign) BOOL shouldSubpixelPositionFonts;
 @property (nonatomic, assign) BOOL shouldSubpixelQuantizeFonts;
-@property (nonatomic, assign) BOOL shouldFlattenSublayersWhenStopped;
+@property (nonatomic, assign) BOOL shouldFlattenSublayers;
+@property (nonatomic, assign) BOOL shouldDrawDebugColors;
 
 @end
 

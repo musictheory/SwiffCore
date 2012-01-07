@@ -26,6 +26,7 @@
 */
 
 #import "SwiffBitmapDefinition.h"
+#import "SwiffUtils.h"
 
 #include <zlib.h>
 

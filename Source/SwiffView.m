@@ -27,6 +27,7 @@
 
 #import "SwiffView.h"
 #import "SwiffMovie.h"
+#import "SwiffUtils.h"
 
 
 @interface SwiffView ()
@@ -159,12 +160,12 @@
     CGSize  stageSize   = [movie stageRect].size;
     CGFloat aspectRatio = stageSize.width / stageSize.height;
     
-    CGSize size = CGSizeMake(w, floor(w  / aspectRatio));
+    CGSize size = CGSizeMake(w, SwiffFloor(w  / aspectRatio));
     if (size.height > h) {
-        size = CGSizeMake(floor(h * aspectRatio), h);
+        size = CGSizeMake(SwiffFloor(h * aspectRatio), h);
     }
 
-    CGRect movieFrame = CGRectMake(floor((w - size.width) / 2.0), floor((h - size.height) / 2.0), size.width, size.height);
+    CGRect movieFrame = CGRectMake(SwiffFloor((w - size.width) / 2.0), SwiffFloor((h - size.height) / 2.0), size.width, size.height);
     [m_layer setFrame:movieFrame];
 }
 
@@ -225,26 +226,28 @@
     }
 }
 
-- (void) setMultiplyColor:(SwiffColor *)color          { [m_layer setMultiplyColor:color];                  }
-- (void) setHairlineWidth:(CGFloat)width               { [m_layer setHairlineWidth:width];                  }
-- (void) setFillHairlineWidth:(CGFloat)width           { [m_layer setFillHairlineWidth:width];              }
-- (void) setShouldAntialias:(BOOL)yn                   { [m_layer setShouldAntialias:yn];                   }
-- (void) setShouldSmoothFonts:(BOOL)yn                 { [m_layer setShouldSmoothFonts:yn];                 }
-- (void) setShouldSubpixelPositionFonts:(BOOL)yn       { [m_layer setShouldSubpixelPositionFonts:yn];       }
-- (void) setShouldSubpixelQuantizeFonts:(BOOL)yn       { [m_layer setShouldSubpixelQuantizeFonts:yn];       }
-- (void) setShouldFlattenSublayersWhenStopped:(BOOL)yn { [m_layer setShouldFlattenSublayersWhenStopped:yn]; }
+- (void) setMultiplyColor:(SwiffColor *)color         { [m_layer setMultiplyColor:color];             }
+- (void) setHairlineWidth:(CGFloat)width              { [m_layer setHairlineWidth:width];             }
+- (void) setFillHairlineWidth:(CGFloat)width          { [m_layer setFillHairlineWidth:width];         }
+- (void) setShouldAntialias:(BOOL)yn                  { [m_layer setShouldAntialias:yn];              }
+- (void) setShouldSmoothFonts:(BOOL)yn                { [m_layer setShouldSmoothFonts:yn];            }
+- (void) setShouldSubpixelPositionFonts:(BOOL)yn      { [m_layer setShouldSubpixelPositionFonts:yn];  }
+- (void) setShouldSubpixelQuantizeFonts:(BOOL)yn      { [m_layer setShouldSubpixelQuantizeFonts:yn];  }
+- (void) setShouldFlattenSublayers:(BOOL)yn           { [m_layer setShouldFlattenSublayers:yn];       }
+- (void) setShouldDrawDebugColors:(BOOL)yn            { [m_layer setShouldDrawDebugColors:yn];        }
 
-- (SwiffMovie    *) movie                             { return [m_layer movie];                             }
-- (SwiffPlayhead *) playhead                          { return [m_layer playhead];                          }
-- (BOOL)            drawsBackground                   { return [m_layer drawsBackground];                   }
-- (SwiffColor    *) multiplyColor                     { return [m_layer multiplyColor];                     }
-- (CGFloat)         hairlineWidth                     { return [m_layer hairlineWidth];                     }
-- (CGFloat)         fillHairlineWidth                 { return [m_layer fillHairlineWidth];                 }       
-- (BOOL)            shouldAntialias                   { return [m_layer shouldAntialias];                   }
-- (BOOL)            shouldSmoothFonts                 { return [m_layer shouldSmoothFonts];                 }
-- (BOOL)            shouldSubpixelPositionFonts       { return [m_layer shouldSubpixelPositionFonts];       }
-- (BOOL)            shouldSubpixelQuantizeFonts       { return [m_layer shouldSubpixelQuantizeFonts];       }
-- (BOOL)            shouldFlattenSublayersWhenStopped { return [m_layer shouldFlattenSublayersWhenStopped]; }
+- (SwiffMovie    *) movie                             { return [m_layer movie];                       }
+- (SwiffPlayhead *) playhead                          { return [m_layer playhead];                    }
+- (BOOL)            drawsBackground                   { return [m_layer drawsBackground];             }
+- (SwiffColor    *) multiplyColor                     { return [m_layer multiplyColor];               }
+- (CGFloat)         hairlineWidth                     { return [m_layer hairlineWidth];               }
+- (CGFloat)         fillHairlineWidth                 { return [m_layer fillHairlineWidth];           }       
+- (BOOL)            shouldAntialias                   { return [m_layer shouldAntialias];             }
+- (BOOL)            shouldSmoothFonts                 { return [m_layer shouldSmoothFonts];           }
+- (BOOL)            shouldSubpixelPositionFonts       { return [m_layer shouldSubpixelPositionFonts]; }
+- (BOOL)            shouldSubpixelQuantizeFonts       { return [m_layer shouldSubpixelQuantizeFonts]; }
+- (BOOL)            shouldFlattenSublayers            { return [m_layer shouldFlattenSublayers];      }
+- (BOOL)            shouldDrawDebugColors             { return [m_layer shouldDrawDebugColors];       }
 
 @synthesize delegate = m_delegate;
 

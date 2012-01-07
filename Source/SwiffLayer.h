@@ -25,7 +25,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <SwiffBase.h>
+#import <SwiffTypes.h>
 #import <SwiffImport.h>
 #import <QuartzCore/QuartzCore.h>
 #import <SwiffPlayhead.h>
@@ -51,7 +51,8 @@
 
     BOOL  m_interpolateCurrentFrame;
     BOOL  m_drawsBackground;
-    BOOL  m_shouldFlattenSublayersWhenStopped;
+    BOOL  m_shouldFlattenSublayers;
+    BOOL  m_shouldDrawDebugColors;
 }
 
 - (id) initWithMovie:(SwiffMovie *)movie;
@@ -76,7 +77,8 @@
 @property (nonatomic, assign) BOOL shouldSmoothFonts;
 @property (nonatomic, assign) BOOL shouldSubpixelPositionFonts;
 @property (nonatomic, assign) BOOL shouldSubpixelQuantizeFonts;
-@property (nonatomic, assign) BOOL shouldFlattenSublayersWhenStopped;
+@property (nonatomic, assign) BOOL shouldFlattenSublayers;
+@property (nonatomic, assign) BOOL shouldDrawDebugColors;
 
 @end
 

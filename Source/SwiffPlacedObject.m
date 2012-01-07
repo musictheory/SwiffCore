@@ -28,12 +28,14 @@
 
 #import "SwiffPlacedObject.h"
 #import "SwiffMovie.h"
+#import "SwiffUtils.h"
 
 typedef struct SwiffPlacedObjectAdditionalStorage
 {
     NSString *name;
     NSString *className;
     NSArray  *filters;
+    NSString *layerID;
     SwiffColorTransform colorTransform;
     SwiffBlendMode blendMode;
     UInt16 clipDepth;
@@ -108,6 +110,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
             ADDITIONAL->name      = [other->name      copy];
             ADDITIONAL->className = [other->className copy];
             ADDITIONAL->filters   = [other->filters   copy];
+            ADDITIONAL->layerID   = [other->layerID   copy];
         }
     }
     
@@ -121,6 +124,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
         [ADDITIONAL->name      release];
         [ADDITIONAL->className release];
         [ADDITIONAL->filters   release];
+        [ADDITIONAL->layerID   release];
 
         free(m_additional);
         m_additional = NULL;
@@ -180,6 +184,21 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 }
 
 
+- (void) setLayerIdentifier:(NSString *)layerID
+{
+    if (layerID != [self layerIdentifier]) {
+        MAKE_ADDITIONAL;
+        [ADDITIONAL->layerID release];
+        ADDITIONAL->layerID = [layerID copy];
+    }
+}
+
+
+- (NSString *) layerIdentifier
+{
+    return m_additional ? ADDITIONAL->layerID : nil;
+}
+
 
 - (void) setPlacesImage:(BOOL)placesImage
 {
@@ -197,7 +216,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 - (void) setRatio:(CGFloat)ratio
 {
     MAKE_ADDITIONAL;
-    ADDITIONAL->ratio = round(ratio * 65535.0);
+    ADDITIONAL->ratio = SwiffRound(ratio * 65535.0);
 }
 
 

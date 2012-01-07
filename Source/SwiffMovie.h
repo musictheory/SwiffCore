@@ -26,7 +26,7 @@
 */
 
 #import <SwiffImport.h>
-#import <SwiffBase.h>
+#import <SwiffTypes.h>
 #import <SwiffSpriteDefinition.h>
 
 @class SwiffBitmapDefinition, SwiffDynamicTextDefinition, SwiffFontDefinition,
@@ -57,11 +57,12 @@
 - (SwiffSpriteDefinition      *) spriteDefinitionWithLibraryID:(UInt16)libraryID;
 - (SwiffStaticTextDefinition  *) staticTextDefinitionWithLibraryID:(UInt16)libraryID;
 
-@property (nonatomic, assign, readonly) NSInteger version;
-@property (nonatomic, assign, readonly) CGFloat frameRate;
-@property (nonatomic, assign, readonly) CGRect stageRect;
+@property (nonatomic, assign) NSInteger version;
+@property (nonatomic, assign) CGRect stageRect;
 
-@property (nonatomic, assign, readonly) SwiffColor  backgroundColor;
+@property (nonatomic, assign) CGFloat frameRate;
+
+@property (nonatomic, assign) SwiffColor backgroundColor;
 @property (nonatomic, assign, readonly) SwiffColor *backgroundColorPointer;
 
 @end

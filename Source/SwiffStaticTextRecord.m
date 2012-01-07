@@ -28,6 +28,7 @@
 #import "SwiffStaticTextRecord.h"
 
 #import "SwiffParser.h"
+#import "SwiffUtils.h"
 
 @implementation SwiffStaticTextRecord
 
@@ -80,21 +81,21 @@
             if (hasXOffset) {
                 SInt16 x = 0;
                 SwiffParserReadSInt16(parser, &x);
-                m_xOffset = SwiffFloatFromTwips(x);
+                m_xOffset = SwiffGetCGFloatFromTwips(x);
                 m_hasXOffset = YES;
             }
 
             if (hasYOffset) {
                 SInt16 y = 0;
                 SwiffParserReadSInt16(parser, &y);
-                m_yOffset = SwiffFloatFromTwips(y);
+                m_yOffset = SwiffGetCGFloatFromTwips(y);
                 m_hasYOffset = YES;
             }
             
             if (hasFont) {
                 UInt16 height;
                 SwiffParserReadUInt16(parser, &height);
-                m_textHeight = SwiffFloatFromTwips(height);
+                m_textHeight = SwiffGetCGFloatFromTwips(height);
             }
             
             UInt8 glyphCount;
@@ -110,7 +111,7 @@
                 SwiffParserReadSBits(parser, advanceBits, &glyphAdvance);
                 
                 m_glyphEntries[i].index   = glyphIndex;
-                m_glyphEntries[i].advance = SwiffFloatFromTwips(glyphAdvance);
+                m_glyphEntries[i].advance = SwiffGetCGFloatFromTwips(glyphAdvance);
             }
             
         } else {

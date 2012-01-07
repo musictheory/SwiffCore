@@ -42,7 +42,7 @@ typedef UInt8 SwiffPathOperation;
 
 @class SwiffPath;
 extern void SwiffPathAddOperationAndTwips(SwiffPath *path, SwiffPathOperation operation, /*SwiffTwips*/ ...);
-
+extern void SwiffPathAddOperationEnd(SwiffPath *path);
 
 @interface SwiffPath : NSObject {
 @private

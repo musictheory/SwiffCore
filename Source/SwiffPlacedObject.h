@@ -26,7 +26,7 @@
 */
 
 #import <SwiffImport.h>
-#import <SwiffBase.h>
+#import <SwiffTypes.h>
 #import <SwiffImport.h>
 #import <SwiffDefinition.h>
 
@@ -57,8 +57,10 @@
 @property (nonatomic, assign) CGBlendMode CGBlendMode;
 @property (nonatomic, retain) NSArray *filters;
 
-@property (nonatomic, assign, getter=isHidden) BOOL hidden;
 @property (nonatomic, assign) BOOL wantsLayer;
+@property (nonatomic, retain) NSString *layerIdentifier;
+
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
 @property (nonatomic, assign) BOOL placesImage;
 @property (nonatomic, assign) BOOL cachesAsBitmap;
 

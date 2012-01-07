@@ -25,7 +25,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <SwiffBase.h>
+#import <SwiffTypes.h>
+#import <SwiffUtils.h>
 
 #import <SwiffDefinition.h>
 

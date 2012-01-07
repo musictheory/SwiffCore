@@ -27,7 +27,7 @@
 
 
 #import "SwiffPath.h"
-#import "SwiffBase.h"
+#import "SwiffUtils.h"
 
 static const NSUInteger sGrowthForOperations = 64;
 static const NSUInteger sGrowthForFloats     = 256;
@@ -73,6 +73,13 @@ void SwiffPathAddOperationAndTwips(SwiffPath *path, SwiffPathOperation operation
     }
     
     va_end(v);
+}
+
+
+void SwiffPathAddOperationEnd(SwiffPath *path)
+{
+    SwiffPathAddOperationAndTwips(path, SwiffPathOperationEnd);
+    SwiffPathAddOperationAndTwips(path, SwiffPathOperationEnd);
 }
 
 
