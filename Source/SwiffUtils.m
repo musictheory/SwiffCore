@@ -1,5 +1,5 @@
 /*
-    SwiffBase.m
+    SwiffUtils.m
     Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,43 +25,43 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import "SwiffBase.h"
+#import "SwiffUtils.h"
 #import <asl.h>
+
+
+#pragma mark -
+#pragma mark Global Configuration
 
 static NSStringEncoding sANSIStringEncoding   = NSWindowsCP1252StringEncoding;
 static NSStringEncoding sLegacyStringEncoding = NSWindowsCP1252StringEncoding;
 
 
-static NSInteger const sTagMap[] = {
-    SwiffTagDefineBitsJPEG2,       SwiffTagDefineBits,           2,
-    SwiffTagDefineShape2,          SwiffTagDefineShape,          2,
-    SwiffTagPlaceObject2,          SwiffTagPlaceObject,          2,
-    SwiffTagRemoveObject2,         SwiffTagRemoveObject,         2,
-    SwiffTagDefineText2,           SwiffTagDefineText,           2,
-    SwiffTagDefineButton2,         SwiffTagDefineButton,         2,
-    SwiffTagDefineBitsLossless2,   SwiffTagDefineBitsLossless,   2,
-    SwiffTagSoundStreamHead2,      SwiffTagSoundStreamHead,      2,
-    SwiffTagDefineFont2,           SwiffTagDefineFont,           2,
-    SwiffTagDefineFontInfo2,       SwiffTagDefineFontInfo,       2,
-    SwiffTagEnableDebugger2,       SwiffTagEnableDebugger,       2,
-    SwiffTagImportAssets2,         SwiffTagImportAssets,         2,
-    SwiffTagDefineMorphShape2,     SwiffTagDefineMorphShape,     2,
-    SwiffTagStartSound2,           SwiffTagStartSound,           2,
-    SwiffTagDefineShape3,          SwiffTagDefineShape,          3,
-    SwiffTagDefineBitsJPEG3,       SwiffTagDefineBits,           3,
-    SwiffTagPlaceObject3,          SwiffTagPlaceObject,          3,
-    SwiffTagDefineFont3,           SwiffTagDefineFont,           3,
-    SwiffTagDefineShape4,          SwiffTagDefineShape,          4,
-    SwiffTagDefineBitsJPEG4,       SwiffTagDefineBits,           4,
-    SwiffTagDefineFont4,           SwiffTagDefineFont,           4,
-    0, 0, 0
-};
+NSStringEncoding SwiffGetANSIStringEncoding(void)
+{
+    return sANSIStringEncoding;
+}
 
 
-const SwiffColorTransform SwiffColorTransformIdentity = {
-    1.0, 1.0, 1.0, 1.0,
-    0.0, 0.0, 0.0, 0.0
-};
+void SwiffSetANSIStringEncoding(NSStringEncoding encoding)
+{
+    sANSIStringEncoding = encoding;
+}
+
+
+extern NSStringEncoding SwiffGetLegacyStringEncoding(void)
+{
+    return sLegacyStringEncoding;
+}
+
+
+void SwiffSetLegacyStringEncoding(NSStringEncoding encoding)
+{
+    sLegacyStringEncoding = encoding;
+}
+
+
+#pragma mark -
+#pragma mark Logging
 
 NSInteger _SwiffLogEnabledCategoryCount = 0;
 static NSMutableArray  *sSwiffLogEnabledCategories = nil;
@@ -113,6 +113,9 @@ BOOL SwiffLogIsCategoryEnabled(NSString *category)
 }
 
 
+#pragma mark -
+#pragma mark Colors
+
 static void sSwiffColorApplyColorTransformPointer(SwiffColor *color, const SwiffColorTransform *transform)
 {
     if (!transform) return;
@@ -132,30 +135,6 @@ static void sSwiffColorApplyColorTransformPointer(SwiffColor *color, const Swiff
     color->alpha = (color->alpha * transform->alphaMultiply) + transform->alphaAdd;
     if      (color->alpha < 0.0) color->alpha = 0.0;
     else if (color->alpha > 1.0) color->alpha = 1.0;
-}
-
-
-NSStringEncoding SwiffGetANSIStringEncoding(void)
-{
-    return sANSIStringEncoding;
-}
-
-
-void SwiffSetANSIStringEncoding(NSStringEncoding encoding)
-{
-    sANSIStringEncoding = encoding;
-}
-
-
-extern NSStringEncoding SwiffGetLegacyStringEncoding(void)
-{
-    return sLegacyStringEncoding;
-}
-
-
-void SwiffSetLegacyStringEncoding(NSStringEncoding encoding)
-{
-    sLegacyStringEncoding = encoding;
 }
 
 
@@ -281,6 +260,35 @@ NSString *SwiffStringFromColorTransformStack(CFArrayRef stack)
 }
 
 
+#pragma mark -
+#pragma mark Tags
+
+static NSInteger const sTagMap[] = {
+    SwiffTagDefineBitsJPEG2,       SwiffTagDefineBits,           2,
+    SwiffTagDefineShape2,          SwiffTagDefineShape,          2,
+    SwiffTagPlaceObject2,          SwiffTagPlaceObject,          2,
+    SwiffTagRemoveObject2,         SwiffTagRemoveObject,         2,
+    SwiffTagDefineText2,           SwiffTagDefineText,           2,
+    SwiffTagDefineButton2,         SwiffTagDefineButton,         2,
+    SwiffTagDefineBitsLossless2,   SwiffTagDefineBitsLossless,   2,
+    SwiffTagSoundStreamHead2,      SwiffTagSoundStreamHead,      2,
+    SwiffTagDefineFont2,           SwiffTagDefineFont,           2,
+    SwiffTagDefineFontInfo2,       SwiffTagDefineFontInfo,       2,
+    SwiffTagEnableDebugger2,       SwiffTagEnableDebugger,       2,
+    SwiffTagImportAssets2,         SwiffTagImportAssets,         2,
+    SwiffTagDefineMorphShape2,     SwiffTagDefineMorphShape,     2,
+    SwiffTagStartSound2,           SwiffTagStartSound,           2,
+    SwiffTagDefineShape3,          SwiffTagDefineShape,          3,
+    SwiffTagDefineBitsJPEG3,       SwiffTagDefineBits,           3,
+    SwiffTagPlaceObject3,          SwiffTagPlaceObject,          3,
+    SwiffTagDefineFont3,           SwiffTagDefineFont,           3,
+    SwiffTagDefineShape4,          SwiffTagDefineShape,          4,
+    SwiffTagDefineBitsJPEG4,       SwiffTagDefineBits,           4,
+    SwiffTagDefineFont4,           SwiffTagDefineFont,           4,
+    0, 0, 0
+};
+
+
 BOOL SwiffTagSplit(SwiffTag inTag, SwiffTag *outTag, NSInteger *outVersion)
 {
     NSInteger i         = 0;
@@ -330,6 +338,9 @@ BOOL SwiffTagJoin(SwiffTag inTag, NSInteger inVersion, SwiffTag *outTag)
     return yn;
 }
 
+
+#pragma mark -
+#pragma mark Sparse Array
 
 void SwiffSparseArrayFree(SwiffSparseArray *array)
 {
@@ -400,3 +411,131 @@ void *SwiffSparseArrayGetValueAtIndex(SwiffSparseArray *array, UInt16 index)
     return NULL;
 }
 
+
+#pragma mark -
+#pragma mark MPEG
+
+SwiffMPEGError SwiffMPEGReadHeader(const UInt8 *buffer, SwiffMPEGHeader *header)
+{
+    UInt16 frameSync    = 0;
+    UInt8  bitrateIndex = 0;
+    UInt8  rateIndex    = 0;
+
+    UInt32 i = ntohl(*((UInt32 *)buffer));
+ 
+    frameSync             = ((i >> 21) & 0x7FF);
+    header->version       = ((i >> 19) & 0x3);
+    header->layer         = ((i >> 17) & 0x3);
+    header->hasCRC        = ((i >> 16) & 0x1) ? NO : YES;
+    bitrateIndex          = ((i >> 12) & 0xf);
+    rateIndex             = ((i >> 10) & 0x3);
+    header->hasPadding    = ((i >>  9) & 0x1);
+/*  UInt8 reserved        = ((i >>  8) & 0x1); */
+    header->channelMode   = ((i >>  6) & 0x3);
+    header->modeExtension = ((i >>  4) & 0x3);
+    header->hasCopyright  = ((i >>  3) & 0x1);
+    header->isOriginal    = ((i >>  2) & 0x1);
+    header->emphasis      = ((i      ) & 0x3);
+
+    header->samplingRate  = SwiffMPEGGetSamplingRate(header->version, rateIndex);
+    header->bitrate       = SwiffMPEGGetBitrate(header->version, header->layer, bitrateIndex);
+    header->frameSize     = SwiffMPEGGetFrameSize(header->version, header->layer, header->bitrate, header->samplingRate, header->hasPadding);
+
+    SwiffMPEGError error = SwiffMPEGErrorNone;
+
+    // Check for errors
+    if (frameSync != 0x7FF) {
+        error = SwiffMPEGErrorInvalidFrameSync;
+    } else if (bitrateIndex == 15) {
+        error = SwiffMPEGErrorBadBitrate;
+    }
+    
+    // Check for reserved values
+    if (error == SwiffMPEGErrorNone) {
+        if      (header->version  == 1) { error = SwiffMPEGErrorReservedVersion;      }
+        else if (header->layer    == 0) { error = SwiffMPEGErrorReservedLayer;        }
+        else if (rateIndex        == 3) { error = SwiffMPEGErrorReservedSamplingRate; }
+        else if (header->emphasis == 2) { error = SwiffMPEGErrorReservedEmphasis;     }
+    }   
+
+    return error;
+}
+
+
+UInt32 SwiffMPEGGetBitrate(SwiffMPEGVersion version, SwiffMPEGLayer layer, UInt8 bitrateIndex)
+{
+    BOOL isVersion2x = (version == SwiffMPEGVersion2) || (version == SwiffMPEGVersion25);
+
+    const NSInteger map[2][4][16] = {
+        {
+            {   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 },  // Layer bit reserved
+            {   0,  32,  40,  48,  56,  64,  80,  96, 112, 128, 160, 192, 224, 256, 320,   0 },  // MPEG1, Layer 3
+            {   0,  32,  48,  56,  64,  80,  96, 112, 128, 160, 192, 224, 256, 320, 384,   0 },  // MPEG1, Layer 2
+            {   0,  32,  64,  96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448,   0 }   // MPEG1, Layer 1
+        },{ 
+            {   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 },  // Layer bit reserved
+            {   0,   8,  16,  24,  32,  40,  48,  56,  64,  80,  96, 112, 128, 144, 160,   0 },  // MPEG2x, Layer 3
+            {   0,   8,  16,  24,  32,  40,  48,  56,  64,  80,  96, 112, 128, 144, 160,   0 },  // MPEG2x, Layer 2
+            {   0,  32,  48,  56,  64,  80,  96, 112, 128, 144, 160, 176, 192, 224, 256,   0 }   // MPEG2x, Layer 1
+        }
+    };
+
+    return map[isVersion2x ? 1 : 0][layer % 4][bitrateIndex % 16] * 1000;
+}
+
+
+UInt32 SwiffMPEGGetSamplesPerFrame(SwiffMPEGVersion version, SwiffMPEGLayer layer)
+{
+    static const NSInteger map[2][4] = {
+        {   0, 1152, 1152, 384 },  // MPEG 1
+        {   0,  576, 1152, 384 }   // MPEG 2, MPEG 2.5
+    };
+
+    BOOL isVersion2x = (version == SwiffMPEGVersion2) || (version == SwiffMPEGVersion25);
+    return map[isVersion2x ? 1 : 0][layer % 4];
+}
+
+
+UInt16 SwiffMPEGGetSamplingRate(SwiffMPEGVersion version, UInt8 rateIndex)
+{
+    static const NSInteger map[4][3] = {
+        { 11025, 12000,  8000 },  // MPEG 2.5
+        {     0,     0,     0 },  // reserved
+        { 22050, 24000, 16000 },  // MPEG 2
+        { 44100, 48000, 32000 }   // MPEG 1
+    };
+
+    return map[version % 4][rateIndex % 3];
+}
+
+
+extern NSInteger SwiffMPEGGetCoefficients(SwiffMPEGVersion version, SwiffMPEGLayer layer)
+{
+    static const NSInteger map[2][4] = {
+        {   0, 144, 144,  12 },  // MPEG 1
+        {   0,  72, 144,  12 }   // MPEG 2, MPEG 2.5
+    };
+
+    BOOL isVersion2x = (version == SwiffMPEGVersion2) || (version == SwiffMPEGVersion25);
+    return map[isVersion2x ? 1 : 0][layer % 4];
+}
+
+
+extern NSInteger SwiffMPEGGetSlotSize(SwiffMPEGLayer layer)
+{
+    static const NSInteger map[4] = { 0, 1, 1, 4 };
+    return map[layer % 4];
+}
+
+
+extern UInt32 SwiffMPEGGetFrameSize(SwiffMPEGVersion version, SwiffMPEGLayer layer, NSInteger bitrate, NSInteger samplingRate, BOOL hasPadding)
+{
+    NSInteger coefficients = SwiffMPEGGetCoefficients(version, layer);
+    NSInteger slotSize     = SwiffMPEGGetSlotSize(layer);
+
+    if (samplingRate) {
+        return (NSInteger)(((coefficients * bitrate / samplingRate) + (hasPadding ? 1 : 0))) * slotSize;
+    } else {
+        return 0;
+    }
+}

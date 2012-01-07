@@ -26,7 +26,7 @@
 */
 
 #import <SwiffImport.h>
-#import <SwiffBase.h>
+#import <SwiffTypes.h>
 
 
 typedef struct SwiffWriter SwiffWriter;

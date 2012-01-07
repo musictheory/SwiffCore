@@ -31,6 +31,7 @@
 #import "SwiffSoundEvent.h"
 #import "SwiffSoundDefinition.h"
 #import "SwiffSoundStreamBlock.h"
+#import "SwiffUtils.h"
 
 #import <AudioToolbox/AudioToolbox.h>
 

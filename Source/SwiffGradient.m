@@ -25,10 +25,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #import "SwiffGradient.h"
 #import "SwiffParser.h"
-#import "SwiffBase.h"
+#import <SwiffUtils.h>
 
 
 @implementation SwiffGradient

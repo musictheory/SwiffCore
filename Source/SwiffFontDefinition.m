@@ -29,6 +29,7 @@
 #import "SwiffFontDefinition.h"
 #import "SwiffParser.h"
 #import "SwiffShapeDefinition.h"
+#import "SwiffUtils.h"
 
 const CGFloat SwiffFontEmSquareHeight = 1024;
 

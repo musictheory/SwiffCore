@@ -26,7 +26,7 @@
 */
 
 #import <SwiffImport.h>
-#import <SwiffBase.h>
+#import <SwiffTypes.h>
 
 @class SwiffMovie;
 
@@ -42,6 +42,10 @@ extern NSArray *SwiffRendererGetPlacedObjects(SwiffRenderer *renderer);
 
 extern void SwiffRendererSetBaseAffineTransform(SwiffRenderer *renderer, CGAffineTransform *transform);
 extern CGAffineTransform *SwiffRendererGetBaseAffineTransform(SwiffRenderer *renderer);
+
+// Hint to renderer about the original contentsScale of the context.  Used only for pixel-snapping, not scaling
+extern void SwiffRendererSetScaleFactorHint(SwiffRenderer *renderer, CGFloat hint);
+extern CGFloat SwiffRendererGetScaleFactorHint(SwiffRenderer *renderer);
 
 // When set, all rendered colors are multiplied by the specified color
 extern void SwiffRendererSetMultiplyColor(SwiffRenderer *renderer, SwiffColor *color);

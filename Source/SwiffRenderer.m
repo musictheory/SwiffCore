@@ -43,6 +43,7 @@
 #import "SwiffShapeDefinition.h"
 #import "SwiffStaticTextRecord.h"
 #import "SwiffStaticTextDefinition.h"
+#import "SwiffUtils.h"
 
 
 struct SwiffRenderer {
@@ -50,6 +51,7 @@ struct SwiffRenderer {
     NSArray          *placedObjects;
     CGFloat           hairlineWidth;
     CGFloat           fillHairlineWidth;
+    CGFloat           scaleFactorHint;
     CGAffineTransform baseAffineTransform;
     SwiffColor        multiplyColor;
     BOOL              hasBaseAffineTransform;
@@ -67,6 +69,7 @@ typedef struct SwiffRenderState {
     CGRect            clipBoundingBox;
     CGAffineTransform affineTransform;
     CFMutableArrayRef colorTransforms;
+    CGFloat           scaleFactorHint;
     CGFloat           hairlineWidth;
     CGFloat           fillHairlineWidth;
     CGFloat           multiplyRed;
@@ -146,14 +149,21 @@ static void sTracePathStrokeAdvanced(
 ) {
     CGContextRef context = state->context;
 
-    CGFloat roundScale  = (1.0 / width);
-    CGFloat roundOffset = width / 2.0;
+    CGFloat scale  = state->scaleFactorHint;
+    CGFloat offset = (lround(width) % 2) ? (scale / 2) : 0;
 
     CGFloat x = NAN, y = NAN, controlX = NAN, controlY = NAN, moveX = NAN, moveY = NAN;
 
+    SwiffPathOperation prevOp = SwiffPathOperationMove;
+    SwiffPathOperation op;
+    SwiffPathOperation nextOp = *operations++;
 
 nextOperation:
-    switch (*operations++) {
+    prevOp = op;
+    op     = nextOp;
+    nextOp = *operations++;
+
+    switch (op) {
     case SwiffPathOperationMove:
         if (shouldClose && (x == moveX) && (y == moveY)) {
             CGContextClosePath(context);
@@ -164,6 +174,12 @@ nextOperation:
         
         {
             CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
+
+            if (isHairline || shouldRound) {
+                to.x = (state->ceilX) ? (SwiffScaleCeil(to.x, scale) - offset) : (SwiffScaleFloor(to.x, scale) + offset);
+                to.y = (state->ceilY) ? (SwiffScaleCeil(to.y, scale) - offset) : (SwiffScaleFloor(to.y, scale) + offset);
+            }
+
             CGContextMoveToPoint(context, to.x, to.y);
         }
 
@@ -194,72 +210,60 @@ nextOperation:
         goto nextOperation;
 
     case SwiffPathOperationHorizontalLine:
-        {
-            // Special hairline case, each horizontal or vertical line is a move followed by a lineTo
-            // This corrects fuzzy line caps
-            if (isHairline) {
-                moveX = x; moveY = y;
-                CGPoint from = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
-                x = *floats++;
-                CGPoint to   = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
-
-                CGFloat roundedY;
-                if (state->ceilY) {
-                    roundedY = (ceil (to.y * roundScale) / roundScale) - roundOffset;
-                } else {
-                    roundedY = (floor(to.y * roundScale) / roundScale) + roundOffset;
-                }
-
-                CGContextMoveToPoint(context, from.x, roundedY);
-                CGContextAddLineToPoint(context, to.x, roundedY);
-
-            } else {
-                x = *floats++;
-
-                CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
-                if (shouldRound) {
-                    to.x = (state->ceilX) ? (ceil(to.x) - 0.5) : (floor(to.x) + 0.5);
-                    to.y = (state->ceilY) ? (ceil(to.y) - 0.5) : (floor(to.y) + 0.5);
-                }
-                CGContextAddLineToPoint(context, to.x, to.y);
-            }
-        }
-
-        goto nextOperation;
-
     case SwiffPathOperationVerticalLine:
         {
+            CGFloat oldX = x, oldY = y;
+            if (op == SwiffPathOperationHorizontalLine) {
+                x = *floats++;;
+            } else {
+                y = *floats++;;
+            }
+            CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
+
             // Special hairline case, each horizontal or vertical line is a move followed by a lineTo
             // This corrects fuzzy line caps
-            if (isHairline) {
-                moveX = x; moveY = y;
-                CGPoint from = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
-                y = *floats++;
-                CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
+            BOOL previousWasMove = (prevOp == SwiffPathOperationMove);
+            BOOL nextIsMove      = (nextOp == SwiffPathOperationMove) || (nextOp == SwiffPathOperationEnd);
 
-                CGFloat roundedX;
-                if (state->ceilX) {
-                    roundedX = (ceil (to.x * roundScale) / roundScale) - roundOffset;
+            if (isHairline && previousWasMove && nextIsMove) {
+                moveX = oldX;
+                moveY = oldY;
+                CGPoint from = CGPointApplyAffineTransform(CGPointMake(oldX, oldY), pointTransform);
+
+                if (op == SwiffPathOperationVerticalLine) {
+                    CGFloat roundedX;
+                    if (state->ceilX) {
+                        roundedX = SwiffScaleCeil (to.x, scale) - offset;
+                    } else {
+                        roundedX = SwiffScaleFloor(to.x, scale) + offset;
+                    }
+
+                    CGContextMoveToPoint(context, roundedX, from.y);
+                    CGContextAddLineToPoint(context, roundedX, to.y);
+
                 } else {
-                    roundedX = (floor(to.x * roundScale) / roundScale) + roundOffset;
+                    CGFloat roundedY;
+                    if (state->ceilY) {
+                        roundedY = SwiffScaleCeil (to.y, scale) - offset;
+                    } else {
+                        roundedY = SwiffScaleFloor(to.y, scale) + offset;
+                    }
+
+                    CGContextMoveToPoint(context, from.x, roundedY);
+                    CGContextAddLineToPoint(context, to.x, roundedY);
                 }
-
-                CGContextMoveToPoint(context, roundedX, from.y);
-                CGContextAddLineToPoint(context, roundedX, to.y);
-
+                    
             } else {
-                y = *floats++;
-            
-                CGPoint to = CGPointApplyAffineTransform(CGPointMake(x, y), pointTransform);
-                if (shouldRound) {
-                    to.x = (state->ceilX) ? (ceil(to.x) - 0.5) : (floor(to.x) + 0.5);
-                    to.y = (state->ceilY) ? (ceil(to.y) - 0.5) : (floor(to.y) + 0.5);
+                if (isHairline || shouldRound) {
+                    to.x = (state->ceilX) ? (SwiffScaleCeil(to.x, scale) - offset) : (SwiffScaleFloor(to.x, scale) + offset);
+                    to.y = (state->ceilY) ? (SwiffScaleCeil(to.y, scale) - offset) : (SwiffScaleFloor(to.y, scale) + offset);
                 }
+
                 CGContextAddLineToPoint(context, to.x, to.y);
             }
-        }
 
-        goto nextOperation;
+            goto nextOperation;
+        }
     }
 
     if (shouldClose && (x == moveX) && (y == moveY)) {
@@ -855,6 +859,7 @@ SwiffRenderer *SwiffRendererCreate(SwiffMovie *movie)
 
     renderer->movie = [movie retain];
     renderer->shouldAntialias = YES;
+    renderer->scaleFactorHint = 1.0;
     
     return renderer;
 }
@@ -897,7 +902,7 @@ void SwiffRendererRender(SwiffRenderer *renderer, CGContextRef context)
     state.ceilY = CGContextGetCTM(context).d > 0;
     state.hairlineWidth = renderer->hairlineWidth ? renderer->hairlineWidth : 1.0;
     state.fillHairlineWidth = renderer->fillHairlineWidth;
-    
+    state.scaleFactorHint = renderer->scaleFactorHint;
     state.clipBoundingBox = CGContextGetClipBoundingBox(context);
 
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
@@ -964,6 +969,18 @@ CGAffineTransform *SwiffRendererGetBaseAffineTransform(SwiffRenderer *renderer)
     } else {
         return NULL;
     }
+}
+
+
+void SwiffRendererSetScaleFactorHint(SwiffRenderer *renderer, CGFloat hint)
+{
+    renderer->scaleFactorHint = hint;
+}
+
+
+CGFloat SwiffRendererGetScaleFactorHint(SwiffRenderer *renderer)
+{
+    return renderer->scaleFactorHint;
 }
 
 

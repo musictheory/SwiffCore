@@ -372,7 +372,7 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
     CGFloat heightRatio = containerFrame.size.width / movieSize.width;
 
     CGFloat ratio = (widthRatio < heightRatio) ? widthRatio : heightRatio;
-    return round(ratio * 2) / 2;
+    return SwiffRound(ratio * 2) / 2;
 }
 
 

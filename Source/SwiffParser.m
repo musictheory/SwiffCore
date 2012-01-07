@@ -27,6 +27,8 @@
 
 #import "SwiffParser.h"
 
+#import "SwiffUtils.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <zlib.h>
@@ -525,10 +527,10 @@ void SwiffParserReadRect(SwiffParser *parser, CGRect *outValue)
     SwiffParserReadSBits(parser, nBits, &(maxY));
     
     if (outValue) {
-        outValue->origin.x    = SwiffFloatFromTwips(minX);
-        outValue->origin.y    = SwiffFloatFromTwips(minY);
-        outValue->size.width  = SwiffFloatFromTwips(maxX - minX);
-        outValue->size.height = SwiffFloatFromTwips(maxY - minY);
+        outValue->origin.x    = SwiffGetCGFloatFromTwips(minX);
+        outValue->origin.y    = SwiffGetCGFloatFromTwips(minY);
+        outValue->size.width  = SwiffGetCGFloatFromTwips(maxX - minX);
+        outValue->size.height = SwiffGetCGFloatFromTwips(maxY - minY);
     }
 
     SwiffParserByteAlign(parser);
@@ -573,8 +575,8 @@ void SwiffParserReadMatrix(SwiffParser *parser, CGAffineTransform *outMatrix)
         outMatrix->b  = rotateSkew0;
         outMatrix->c  = rotateSkew1;
         outMatrix->d  = scaleY;
-        outMatrix->tx = SwiffFloatFromTwips(translateX);
-        outMatrix->ty = SwiffFloatFromTwips(translateY);
+        outMatrix->tx = SwiffGetCGFloatFromTwips(translateX);
+        outMatrix->ty = SwiffGetCGFloatFromTwips(translateY);
     }
 }
 
@@ -660,10 +662,11 @@ static void sSWFParserReadColorTransform(SwiffParser *parser, SwiffColorTransfor
         SwiffParserReadSBits(parser, nBits, &b);
         if (hasAlpha) SwiffParserReadSBits(parser, nBits, &a);
         
-        transform->redMultiply   = (r / 255.0);
-        transform->greenMultiply = (g / 255.0);
-        transform->blueMultiply  = (b / 255.0);
-        if (hasAlpha) transform->alphaMultiply = (a / 255.0);
+        static const CGFloat sMultiplyDivisor = 256;
+        transform->redMultiply   = (r / sMultiplyDivisor);
+        transform->greenMultiply = (g / sMultiplyDivisor);
+        transform->blueMultiply  = (b / sMultiplyDivisor);
+        if (hasAlpha) transform->alphaMultiply = (a / sMultiplyDivisor);
     }
 
     if (hasAddTerms) {
@@ -674,10 +677,11 @@ static void sSWFParserReadColorTransform(SwiffParser *parser, SwiffColorTransfor
         SwiffParserReadSBits(parser, nBits, &b);
         if (hasAlpha) SwiffParserReadSBits(parser, nBits, &a);
 
-        transform->redAdd   = (r / 255.0);
-        transform->greenAdd = (g / 255.0);
-        transform->blueAdd  = (b / 255.0);
-        if (hasAlpha) transform->alphaAdd = (a / 255.0);
+        static const CGFloat sAddDivisor = 255;
+        transform->redAdd   = (r / sAddDivisor);
+        transform->greenAdd = (g / sAddDivisor);
+        transform->blueAdd  = (b / sAddDivisor);
+        if (hasAlpha) transform->alphaAdd = (a / sAddDivisor);
     }
 
     SwiffParserByteAlign(parser);

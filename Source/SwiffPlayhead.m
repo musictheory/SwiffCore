@@ -30,6 +30,7 @@
 #import "SwiffFrame.h"
 #import "SwiffMovie.h"
 #import "SwiffScene.h"
+#import "SwiffUtils.h"
 
 #import <QuartzCore/QuartzCore.h>
 

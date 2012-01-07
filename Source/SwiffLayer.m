@@ -33,9 +33,10 @@
 #import "SwiffPlayhead.h"
 #import "SwiffRenderer.h"
 #import "SwiffSoundPlayer.h"
+#import "SwiffUtils.h"
 #import "SwiffView.h"
 
-#define DEBUG_SUBLAYERS 0
+#define DEBUG_SUBLAYERS 1
 #define WARN_ON_DROPPED_FRAMES 0
 
 static NSString * const SwiffPlacedObjectKey       = @"SwiffPlacedObject";        // SwiffPlacedObject
@@ -95,26 +96,6 @@ static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";
 #pragma mark -
 #pragma mark Sublayers & Transitions
 
-static NSValue *sGetValueForCGRect(CGRect rect)
-{
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-    return [NSValue valueWithCGRect:rect];
-#else
-    return [NSValue valueWithRect:NSRectFromCGRect(rect)];
-#endif
-}
-
-
-static NSValue *sGetValueForCGPoint(CGPoint point)
-{
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-    return [NSValue valueWithCGPoint:point];
-#else
-    return [NSValue valueWithPoint:NSPointFromCGPoint(point)];
-#endif
-}
-
-
 static CGRect sExpandRect(CGRect rect)
 {
     CGFloat minX = CGRectGetMinX(rect);
@@ -122,19 +103,31 @@ static CGRect sExpandRect(CGRect rect)
     CGFloat maxX = CGRectGetMaxX(rect);
     CGFloat maxY = CGRectGetMaxY(rect);
 
-#if defined(CGFLOAT_IS_DOUBLE) && CGFLOAT_IS_DOUBLE
-    minX = floor(minX);
-    minY = floor(minY);
-    maxX = ceil (maxX);
-    maxY = ceil (maxY);
-#else
-    minX = floorf(minX);
-    minY = floorf(minY);
-    maxX = ceilf (maxX);
-    maxY = ceilf (maxY);
-#endif
+    minX = SwiffFloor(minX);
+    minY = SwiffFloor(minY);
+    maxX = SwiffCeil( maxX);
+    maxY = SwiffCeil( maxY);
 
     return CGRectMake(minX, minY, (maxX - minX), (maxY - minY));
+}
+
+
+static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
+{
+    // Return NO if the library IDs are not equal
+    if (a->m_libraryID != b->m_libraryID) {
+        return NO;
+    }
+    
+    NSString *aIdentifier = [a layerIdentifier];
+    NSString *bIdentifier = [b layerIdentifier];
+
+    // Return NO if only one identifier is nil
+    if (!aIdentifier ^ !bIdentifier) {
+        return NO;
+    }
+
+    return (!aIdentifier && !bIdentifier) || ([aIdentifier isEqualToString:bIdentifier]);
 }
 
 
@@ -164,8 +157,8 @@ static CGRect sExpandRect(CGRect rect)
         CGFloat tx = transform.tx / transform.a;
         CGFloat ty = transform.ty / transform.d;
         
-        transform.tx = floor(tx);
-        transform.ty = floor(ty);
+        transform.tx = SwiffFloor(tx);
+        transform.ty = SwiffFloor(ty);
 
         translate = CGPointMake((tx - transform.tx), (ty - transform.ty));
         
@@ -193,7 +186,7 @@ static CGRect sExpandRect(CGRect rect)
 }
 
 
-- (CGFloat) _scaleFactorForPlacedObject:(SwiffPlacedObject *)placedObject
+- (CGFloat) _scaleFactorForPlacedObject:(SwiffPlacedObject *)placedObject hairlineWidth:(CGFloat)hairlineWidth
 {
     CGAffineTransform t = CGAffineTransformIdentity;
     t = CGAffineTransformConcat(t, [placedObject affineTransform]);
@@ -208,14 +201,10 @@ static CGRect sExpandRect(CGRect rect)
 
     // Next, use the distance formula to find the length of each side
     //
-    CGFloat (^getDistance)(CGPoint, CGPoint) = ^(CGPoint p1, CGPoint p2) {
-        return (CGFloat)sqrt(pow(p2.x - p1.x, 2.0) + pow(p2.y - p1.y, 2.0));
-    };
-
-    CGFloat topLineLength    = getDistance(topLeftPoint,    topRightPoint);
-    CGFloat bottomLineLength = getDistance(bottomLeftPoint, bottomRightPoint);
-    CGFloat leftLineLength   = getDistance(topLeftPoint,    bottomLeftPoint);
-    CGFloat rightLineLength  = getDistance(topRightPoint,   bottomRightPoint);
+    CGFloat topLineLength    = SwiffGetDistance(topLeftPoint,    topRightPoint);
+    CGFloat bottomLineLength = SwiffGetDistance(bottomLeftPoint, bottomRightPoint);
+    CGFloat leftLineLength   = SwiffGetDistance(topLeftPoint,    bottomLeftPoint);
+    CGFloat rightLineLength  = SwiffGetDistance(topRightPoint,   bottomRightPoint);
 
     // Finally, return the ceil of the maximum length
     //
@@ -223,7 +212,7 @@ static CGRect sExpandRect(CGRect rect)
     CGFloat max2 = MAX(leftLineLength, rightLineLength);
     CGFloat max3 = MAX(max1, max2);
 
-    return ceil(max3);
+    return SwiffScaleCeil(max3, hairlineWidth);
 }
 
 
@@ -233,7 +222,7 @@ static CGRect sExpandRect(CGRect rect)
     if (!oldPlacedObject) oldPlacedObject = placedObject;
     
     CGFloat oldScaleFactor = [[sublayer valueForKey:SwiffRenderScaleFactorKey] doubleValue];
-    CGFloat newScaleFactor = [self _scaleFactorForPlacedObject:placedObject];
+    CGFloat newScaleFactor = [self _scaleFactorForPlacedObject:placedObject hairlineWidth:[self hairlineWidth]];
 
     CGAffineTransform fromTransform = [sublayer affineTransform];
     CGRect            fromBounds    = [sublayer bounds];
@@ -243,6 +232,10 @@ static CGRect sExpandRect(CGRect rect)
     CGRect            toBounds;
     CGPoint           toAnchor;
     CGFloat           toOpacity     = 1.0;
+    
+    BOOL needsDisplayForScaleFactor    = NO;
+    BOOL needsDisplayForColorTransform = NO;
+    
 
     // When Core Animation interpolate 'bounds' at the same time as 'transform',
     // the result looks bad.  To fix this, we calculate the 'from' values with
@@ -260,8 +253,8 @@ static CGRect sExpandRect(CGRect rect)
             -fromBounds.origin.x / fromBounds.size.width,
             -fromBounds.origin.y / fromBounds.size.height
         );
-
-        [sublayer setNeedsDisplay];
+        
+        needsDisplayForScaleFactor = YES;
     }
 
     // Handle color transforms.  For rendering speed, map SwiffColorTransform.alphaMultiple 
@@ -279,7 +272,7 @@ static CGRect sExpandRect(CGRect rect)
         newColorTransform.alphaMultiply = 0;
 
         if (!SwiffColorTransformEqualToTransform(&oldColorTransform, &newColorTransform)) {
-            [sublayer setNeedsDisplay];
+            needsDisplayForColorTransform = YES;
         }
     }
 
@@ -294,55 +287,65 @@ static CGRect sExpandRect(CGRect rect)
         -toBounds.origin.x / toBounds.size.width,
         -toBounds.origin.y / toBounds.size.height
     );
-    
-    [sublayer removeAllAnimations];
+
+    CALayer *masterLayer = nil;
+    if ([m_delegate isKindOfClass:[SwiffView class]]) {
+        masterLayer = [(SwiffView *)m_delegate layer];
+    }
+
+    CAAnimation *existingAnimation = nil;
+    if (!existingAnimation) existingAnimation = [masterLayer animationForKey:@"bounds"];
+    if (!existingAnimation) existingAnimation = [masterLayer animationForKey:@"position"];
+
+    if (!existingAnimation && needsDisplayForScaleFactor) {
+        [CATransaction begin];
+        [CATransaction setDisableActions:YES];
+
+        // Old placed object but new scale factor
+        [sublayer setValue:oldPlacedObject forKey:SwiffPlacedObjectKey];
+        [sublayer setValue:[NSNumber numberWithDouble:newScaleFactor] forKey:SwiffRenderScaleFactorKey];
+        [sublayer setValue:[NSNumber numberWithDouble:toTranslate.x]  forKey:SwiffRenderTranslationXKey];
+        [sublayer setValue:[NSNumber numberWithDouble:toTranslate.y]  forKey:SwiffRenderTranslationYKey];
+
+        [sublayer setBounds:fromBounds];
+        [sublayer setAffineTransform:fromTransform];
+        [sublayer setAnchorPoint:fromAnchor];
+        [sublayer setOpacity:fromOpacity];
+
+        [sublayer setNeedsDisplay];
+        [sublayer displayIfNeeded];
+
+        [CATransaction commit];
+    }
+
+    [sublayer setGeometryFlipped:NO];
+    [self addSublayer:sublayer];
 
     [CATransaction begin];
-    [CATransaction setDisableActions:YES];
+    if (m_interpolateCurrentFrame || existingAnimation) {
+        [CATransaction setAnimationDuration:existingAnimation ? [existingAnimation duration] : (1.0 / [m_movie frameRate])];
+        [CATransaction setAnimationTimingFunction:existingAnimation ? [existingAnimation timingFunction] : [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]];
+    } else {
+        [CATransaction disableActions];
+        [CATransaction setAnimationDuration:0];
+    }
+    {
+        [sublayer setValue:placedObject forKey:SwiffPlacedObjectKey];
+        [sublayer setValue:[NSNumber numberWithDouble:newScaleFactor] forKey:SwiffRenderScaleFactorKey];
+        [sublayer setValue:[NSNumber numberWithDouble:toTranslate.x]  forKey:SwiffRenderTranslationXKey];
+        [sublayer setValue:[NSNumber numberWithDouble:toTranslate.y]  forKey:SwiffRenderTranslationYKey];
 
-    [sublayer setBounds:toBounds];
-    [sublayer setAnchorPoint:toAnchor];
-    [sublayer setAffineTransform:toTransform];
-    [sublayer setOpacity:toOpacity];
- 
-    [sublayer setValue:placedObject forKey:SwiffPlacedObjectKey];
-    [sublayer setValue:[NSNumber numberWithDouble:toTranslate.x]  forKey:SwiffRenderTranslationXKey];
-    [sublayer setValue:[NSNumber numberWithDouble:toTranslate.y]  forKey:SwiffRenderTranslationYKey];
-    [sublayer setValue:[NSNumber numberWithDouble:newScaleFactor] forKey:SwiffRenderScaleFactorKey];
-    
-    [CATransaction commit];
+        [sublayer setBounds:toBounds];
+        [sublayer setAnchorPoint:toAnchor];
+        [sublayer setAffineTransform:toTransform];
+        [sublayer setOpacity:toOpacity];
 
-    if (m_interpolateCurrentFrame) {
-        CAMediaTimingFunction *linear = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
-        CGFloat duration = 1.0 / [m_movie frameRate];
-
-        void (^animate)(NSString *, NSValue *, NSValue *) = ^(NSString *key, NSValue *from, NSValue *to) {
-            CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:key];
-            [animation setFromValue:from];
-            [animation setToValue:to];
-            [animation setTimingFunction:linear];
-            [animation setDuration:duration];
-            [sublayer addAnimation:animation forKey:key];
-        };
-
-        if (!CGRectEqualToRect(fromBounds, toBounds)) {
-            animate(@"bounds", sGetValueForCGRect(fromBounds), sGetValueForCGRect(toBounds));
-        }
-
-        if (fromOpacity != toOpacity) {
-            animate(@"opacity", [NSNumber numberWithDouble:fromOpacity], [NSNumber numberWithDouble:toOpacity]);
-        }
-
-        if (!CGAffineTransformEqualToTransform(fromTransform, toTransform)) {
-            NSValue *from = [NSValue valueWithCATransform3D:CATransform3DMakeAffineTransform(fromTransform)];
-            NSValue *to   = [NSValue valueWithCATransform3D:CATransform3DMakeAffineTransform(toTransform)];
-            animate(@"transform", from, to);
-        }
-
-        if (!CGPointEqualToPoint(fromAnchor, toAnchor)) {
-            animate(@"anchorPoint", sGetValueForCGPoint(fromAnchor), sGetValueForCGPoint(toAnchor));
+        if (existingAnimation || needsDisplayForColorTransform) {
+            [sublayer setNeedsDisplay];
+            [sublayer displayIfNeeded];
         }
     }
+    [CATransaction commit];
 }
 
 
@@ -363,14 +366,21 @@ static CGRect sExpandRect(CGRect rect)
         [sublayer setDelegate:self];
         [sublayer setZPosition:depth];
         [sublayer setNeedsDisplay];
-        
-        [self _updateGeometryForSublayer:sublayer withPlacedObject:placedObject];
 
+        // Toggle geometry flipped flag until [self addSublayer:sublayer] in _updateGeometryForSublayer:withPlacedObject:
+        [sublayer setGeometryFlipped:YES];
+        
         SwiffLog(@"View", @"adding sublayer at depth %d", (int)depth);
-        [self addSublayer:sublayer];
+
+        CALayer *existing = SwiffSparseArrayGetValueAtIndex(&self->m_sublayers, depth);
+        if (existing) {
+            [existing removeFromSuperlayer];
+            [existing release];
+        } else {
+            m_sublayerCount++;
+        }
 
         SwiffSparseArraySetConsumedObjectAtIndex(&m_sublayers, depth, sublayer);
-        m_sublayerCount++;
     }
 }
 
@@ -381,7 +391,7 @@ static CGRect sExpandRect(CGRect rect)
         UInt16 depth = [placedObject depth];
 
         CALayer *sublayer = SwiffSparseArrayGetValueAtIndex(&m_sublayers, depth);
-        if (!sublayer) return;
+        if (!sublayer) continue;
 
         SwiffLog(@"View", @"removing sublayer at depth %d", (int)depth);
         [sublayer removeFromSuperlayer];
@@ -398,7 +408,11 @@ static CGRect sExpandRect(CGRect rect)
     for (SwiffPlacedObject *placedObject in placedObjects) {
         UInt16 depth = [placedObject depth];
         CALayer *sublayer = SwiffSparseArrayGetValueAtIndex(&m_sublayers, depth);
-        if (!sublayer) continue;
+
+        if (!sublayer) {
+            NSLog(@"nothing to update!");
+            continue;
+        }
 
         [self _updateGeometryForSublayer:sublayer withPlacedObject:placedObject];
     }
@@ -414,7 +428,6 @@ static CGRect sExpandRect(CGRect rect)
         id<SwiffDefinition> definition = [m_movie definitionWithLibraryID:libraryID];
         
         CGRect bounds = [definition renderBounds];
-
         bounds = CGRectApplyAffineTransform(bounds, [placedObject affineTransform]);
 
         if (CGRectIsEmpty(invalidRect)) {
@@ -451,8 +464,6 @@ static CGRect sExpandRect(CGRect rect)
     NEXT(old);
     NEXT(new);
 
-    BOOL shouldFlatten = m_shouldFlattenSublayersWhenStopped && ![m_playhead isPlaying];
-
     NSMutableArray *sublayerAdds    = [[NSMutableArray alloc] init];
     NSMutableArray *sublayerRemoves = [[NSMutableArray alloc] init];
     NSMutableArray *sublayerUpdates = [[NSMutableArray alloc] init];
@@ -461,7 +472,7 @@ static CGRect sExpandRect(CGRect rect)
     while ((oldDepth < NSIntegerMax) || (newDepth < NSIntegerMax)) {
         if (oldDepth == newDepth) {
             if (oldPlacedObject != newPlacedObject) {
-                if (shouldFlatten) {
+                if (m_shouldFlattenSublayers) {
                     oldWantsLayer = NO;
                     newWantsLayer = NO;
                 }
@@ -470,7 +481,7 @@ static CGRect sExpandRect(CGRect rect)
                     oldWantsLayer = NO;
                 }
             
-                if (oldWantsLayer && newWantsLayer && (oldPlacedObject->m_libraryID == newPlacedObject->m_libraryID)) {
+                if (oldWantsLayer && newWantsLayer && sShouldUseSameLayer(oldPlacedObject, newPlacedObject)) { 
                     [sublayerUpdates addObject:newPlacedObject];
 
                 } else {
@@ -483,7 +494,7 @@ static CGRect sExpandRect(CGRect rect)
             NEXT(new);
             
         } else if (newDepth < oldDepth) {
-            if (shouldFlatten) {
+            if (m_shouldFlattenSublayers) {
                 newWantsLayer = NO;
             }
 
@@ -492,7 +503,7 @@ static CGRect sExpandRect(CGRect rect)
             NEXT(new);
 
         } else if (oldDepth < newDepth) {
-            if (shouldFlatten) {
+            if (m_shouldFlattenSublayers) {
                 oldWantsLayer = NO;
             }
 
@@ -512,8 +523,11 @@ static CGRect sExpandRect(CGRect rect)
     
     [self _removeSublayersForPlacedObjects:sublayerRemoves];
     [self _addSublayersForPlacedObjects:sublayerAdds];
-    [self _updateSublayersForPlacedObjects:sublayerUpdates];
     [self _invalidatePlacedObjects:rectInvalidates];
+
+    // Do updates last, as it calls +[CATransaction flush]
+    [sublayerUpdates addObjectsFromArray:sublayerAdds];
+    [self _updateSublayersForPlacedObjects:sublayerUpdates];
 
     [sublayerRemoves release];
     [sublayerAdds    release];
@@ -534,15 +548,28 @@ static CGRect sExpandRect(CGRect rect)
 
 - (void) setBounds:(CGRect)bounds
 {
+    CGRect oldBounds = [self bounds];
+
     [super setBounds:bounds];
-    
+
     CGSize movieSize = [m_movie stageRect].size;
 
     m_scaledAffineTransform = CGAffineTransformMakeScale(bounds.size.width /  movieSize.width, bounds.size.height / movieSize.height);
 
     [m_contentLayer setContentsScale:[self contentsScale]];
     [m_contentLayer setFrame:bounds];
-    [m_contentLayer setNeedsDisplay];
+
+    if (!CGSizeEqualToSize(oldBounds.size, bounds.size)) {
+        [m_contentLayer setNeedsDisplay];
+        SwiffSparseArrayEnumerateValues(&m_sublayers, ^(void *value) {
+            CALayer *sublayer = (CALayer *)value;
+
+            SwiffPlacedObject *placedObject = [sublayer valueForKey:SwiffPlacedObjectKey];
+            if (placedObject) {
+                [self _updateGeometryForSublayer:sublayer withPlacedObject:placedObject];
+            }
+        });
+    }
 }
 
 
@@ -564,13 +591,24 @@ static CGRect sExpandRect(CGRect rect)
             filteredObjects = [[NSMutableArray alloc] initWithCapacity:[placedObjects count]];
             
             for (SwiffPlacedObject *object in placedObjects) {
-                if (!object->m_additional || ![object wantsLayer]) {
+                UInt16 depth = object->m_depth;
+                if (!SwiffSparseArrayGetValueAtIndex(&m_sublayers, depth)) {
                     [filteredObjects addObject:object];
                 }
             }
         }
 
         CGContextSaveGState(context);
+
+        if (m_shouldDrawDebugColors) {
+            static int sCounter = 0;
+            if      (sCounter == 0) CGContextSetRGBFillColor(context, 1, 1, 0, 0.15);
+            else if (sCounter == 1) CGContextSetRGBFillColor(context, 0, 1, 1, 0.15);
+            else if (sCounter == 2) CGContextSetRGBFillColor(context, 1, 0, 1, 0.15);
+            sCounter = (sCounter + 1) % 3;
+
+            CGContextFillRect(context, [layer bounds]);
+        }
 
         SwiffRendererSetBaseAffineTransform(m_renderer, &m_scaledAffineTransform);
         SwiffRendererSetPlacedObjects(m_renderer, filteredObjects ? filteredObjects : placedObjects);
@@ -604,15 +642,15 @@ static CGRect sExpandRect(CGRect rect)
 
         CGContextSaveGState(context);
 
-#if DEBUG_SUBLAYERS
-        static int sCounter = 0;
-        if      (sCounter == 0) CGContextSetRGBFillColor(context, 1, 0, 0, 0.25);
-        else if (sCounter == 1) CGContextSetRGBFillColor(context, 0, 1, 0, 0.25);
-        else if (sCounter == 2) CGContextSetRGBFillColor(context, 0, 0, 1, 0.25);
-        sCounter = (sCounter + 1) % 3;
+        if (m_shouldDrawDebugColors) {
+            static int sCounter = 0;
+            if      (sCounter == 0) CGContextSetRGBFillColor(context, 1, 0, 0, 0.35);
+            else if (sCounter == 1) CGContextSetRGBFillColor(context, 0, 1, 0, 0.35);
+            else if (sCounter == 2) CGContextSetRGBFillColor(context, 0, 0, 1, 0.35);
+            sCounter = (sCounter + 1) % 3;
 
-        CGContextFillRect(context, [layer bounds]);
-#endif
+            CGContextFillRect(context, [layer bounds]);
+        }
 
         // At this point, our graphics state has an affine transform based on the layer's 
         // bounds and contentsScale
@@ -679,8 +717,12 @@ static CGRect sExpandRect(CGRect rect)
 {
     CAAnimation *existingAnimation = nil;
 
-    if (layer != m_contentLayer) return nil;
-
+    if (layer != m_contentLayer) {
+        if ([event hasPrefix:@"Swiff"]) {
+            return (id)[NSNull null];
+        }
+    }
+    
     if ([m_delegate isKindOfClass:[SwiffView class]]) {
         CALayer *master = [(SwiffView *)m_delegate layer];
         
@@ -735,9 +777,6 @@ static CGRect sExpandRect(CGRect rect)
 
         [m_delegate layer:self didUpdateCurrentFrame:m_currentFrame];
 
-    } else {
-        m_interpolateCurrentFrame = NO;
-        [self redisplay];
     }
 }
 
@@ -747,8 +786,6 @@ static CGRect sExpandRect(CGRect rect)
 
 - (void) redisplay
 {
-    [m_contentLayer setNeedsDisplay];
-
     SwiffSparseArrayEnumerateValues(&m_sublayers, ^(void *value) {
         CALayer *layer = value;
         [layer removeFromSuperlayer];
@@ -759,6 +796,16 @@ static CGRect sExpandRect(CGRect rect)
     m_sublayerCount = 0;
 
     [self _transitionToFrame:m_currentFrame fromFrame:nil];
+    [m_contentLayer setNeedsDisplay];
+}
+
+
+- (void) _setNeedsRedisplay
+{
+    [m_contentLayer setNeedsDisplay];
+    SwiffSparseArrayEnumerateValues(&m_sublayers, ^(void *value) {
+        [(id)value setNeedsDisplay];
+    });
 }
 
 
@@ -807,7 +854,7 @@ static CGRect sExpandRect(CGRect rect)
 {
     if (width != SwiffRendererGetHairlineWidth(m_renderer)) {
         SwiffRendererSetHairlineWidth(m_renderer, width);
-        [self redisplay];
+        [self _setNeedsRedisplay];
     }
 }
 
@@ -816,7 +863,7 @@ static CGRect sExpandRect(CGRect rect)
 {
     if (width != SwiffRendererGetFillHairlineWidth(m_renderer)) {
         SwiffRendererSetFillHairlineWidth(m_renderer, width);
-        [self redisplay];
+        [self _setNeedsRedisplay];
     }
 }
 
@@ -825,7 +872,7 @@ static CGRect sExpandRect(CGRect rect)
 {
     if (yn != SwiffRendererGetShouldAntialias(m_renderer)) {
         SwiffRendererSetShouldAntialias(m_renderer, yn);
-        [self redisplay];
+        [self _setNeedsRedisplay];
     }
 }
 
@@ -834,7 +881,7 @@ static CGRect sExpandRect(CGRect rect)
 {
     if (yn != SwiffRendererGetShouldSmoothFonts(m_renderer)) {
         SwiffRendererSetShouldSmoothFonts(m_renderer, yn);
-        [self redisplay];
+        [self _setNeedsRedisplay];
     }
 }
 
@@ -843,7 +890,7 @@ static CGRect sExpandRect(CGRect rect)
 {
     if (yn != SwiffRendererGetShouldSubpixelPositionFonts(m_renderer)) {
         SwiffRendererSetShouldSubpixelPositionFonts(m_renderer, yn);
-        [self redisplay];
+        [self _setNeedsRedisplay];
     }
 }
 
@@ -852,7 +899,16 @@ static CGRect sExpandRect(CGRect rect)
 {
     if (yn != SwiffRendererGetShouldSubpixelQuantizeFonts(m_renderer)) {
         SwiffRendererSetShouldSubpixelQuantizeFonts(m_renderer, yn);
-        [self redisplay];
+        [self _setNeedsRedisplay];
+    }
+}
+
+
+- (void) setShouldFlattenSublayers:(BOOL)shouldFlattenSublayers
+{
+    if (shouldFlattenSublayers != m_shouldFlattenSublayers) {
+        m_shouldFlattenSublayers  = shouldFlattenSublayers;
+        [self _setNeedsRedisplay];
     }
 }
 
@@ -865,11 +921,12 @@ static CGRect sExpandRect(CGRect rect)
 - (BOOL)    shouldSubpixelPositionFonts { return SwiffRendererGetShouldSubpixelPositionFonts(m_renderer); }
 - (BOOL)    shouldSubpixelQuantizeFonts { return SwiffRendererGetShouldSubpixelQuantizeFonts(m_renderer); }
 
-@synthesize swiffLayerDelegate  = m_delegate,
-            movie               = m_movie,
-            playhead            = m_playhead,
-            currentFrame        = m_currentFrame,
-            drawsBackground     = m_drawsBackground,
-            shouldFlattenSublayersWhenStopped = m_shouldFlattenSublayersWhenStopped;
+@synthesize swiffLayerDelegate     = m_delegate,
+            movie                  = m_movie,
+            playhead               = m_playhead,
+            currentFrame           = m_currentFrame,
+            drawsBackground        = m_drawsBackground,
+            shouldFlattenSublayers = shouldFlattenSublayers,
+            shouldDrawDebugColors  = m_shouldDrawDebugColors;
 
 @end

@@ -38,6 +38,7 @@
 #import "SwiffSoundEvent.h"
 #import "SwiffSoundStreamBlock.h"
 #import "SwiffFilter.h"
+#import "SwiffUtils.h"
 
 // Associated value for parser - SwiffSceneAndFrameLabelData 
 static NSString * const SwiffSpriteDefinitionSceneAndFrameLabelDataKey = @"SwiffSpriteDefinitionSceneAndFrameLabelData";

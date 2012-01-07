@@ -1,37 +1,21 @@
-/*
-    SwiffBase.h
-    Copyright (c) 2011, musictheory.net, LLC.  All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-        * Redistributions of source code must retain the above copyright
-          notice, this list of conditions and the following disclaimer.
-        * Redistributions in binary form must reproduce the above copyright
-          notice, this list of conditions and the following disclaimer in the
-          documentation and/or other materials provided with the distribution.
-        * Neither the name of musictheory.net, LLC nor the names of its contributors
-          may be used to endorse or promote products derived from this software
-          without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL MUSICTHEORY.NET, LLC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+//
+//  SwiffTypes.h
+//  SwiffCore
+//
+//  Created by Ricci Adams on 2012-01-06.
+//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+//
 
 #import <SwiffImport.h>
 
+typedef NSInteger SwiffTwips;
+
 
 typedef struct SwiffPoint {
-    NSInteger x;
-    NSInteger y;
+    SwiffTwips x;
+    SwiffTwips y;
 } SwiffPoint;
+
 
 typedef struct SwiffColorTransform {
     CGFloat redMultiply;
@@ -45,6 +29,7 @@ typedef struct SwiffColorTransform {
 } SwiffColorTransform;
 
 extern const SwiffColorTransform SwiffColorTransformIdentity;
+
 
 typedef struct SwiffColor {
     CGFloat red;
@@ -184,60 +169,66 @@ enum {
 };
 typedef NSInteger SwiffTag;
 
-typedef NSInteger SwiffTwips;
 
-extern NSInteger _SwiffLogEnabledCategoryCount;
-extern void (*_SwiffLogFunction)(NSString *format, ...);
-extern void _SwiffLog(NSString *category, NSInteger level, NSString *format, ...) NS_FORMAT_FUNCTION(3,4);
+enum {
+    SwiffMPEGVersion25 = 0,
+    SwiffMPEGVersion2  = 2,
+    SwiffMPEGVersion1  = 3,
+};
+typedef UInt8 SwiffMPEGVersion;
 
-extern void SwiffLogSetCategoryEnabled(NSString *category, BOOL enabled);
-extern BOOL SwiffLogIsCategoryEnabled(NSString *category);
 
-#define SwiffShouldLog(category) ((_SwiffLogEnabledCategoryCount > 0) && SwiffLogIsCategoryEnabled(category))
-#define SwiffLog(category, ...)  { if (SwiffShouldLog(category)) _SwiffLog(category, 6, __VA_ARGS__); }
-#define SwiffWarn(category, ...) { _SwiffLog(category, 4, __VA_ARGS__); }
+enum {
+    SwiffMPEGLayer3 = 1,
+    SwiffMPEGLayer2 = 2,
+    SwiffMPEGLayer1 = 3
+};
+typedef UInt8 SwiffMPEGLayer;
 
-#define SwiffFloatFromTwips(TWIPS) ((TWIPS) / 20.0)
 
-#if CGFLOAT_IS_DOUBLE
-#define SwiffGetTwipsFromCGFloat(FLOAT) (NSInteger)lround((FLOAT) * 20.0)
-#define SwiffGetCGFloatFromTwips(TWIPS) ((TWIPS) / 20.0)
-#else
-#define SwiffGetTwipsFromCGFloat(FLOAT) (NSInteger)lroundf((FLOAT) * 20.0f)
-#define SwiffGetCGFloatFromTwips(TWIPS) ((TWIPS) / 20.0f)
-#endif
+enum {
+    SwiffMPEGEmphasisNone     = 0,
+    SwiffMPEGEmphasis50_15ms  = 1,
+    SwiffMPEGEmphasisCCIT_J17 = 3
+};
+typedef UInt8 SwiffMPEGEmphasis;
 
-// The encoding to use when the specification calls for "ANSI" encoding
-// Defaults to NSWindowsCP1252StringEncoding
-extern NSStringEncoding SwiffGetANSIStringEncoding(void);
-extern void SwiffSetANSIStringEncoding(NSStringEncoding encoding);
 
-// The encoding to used for STRINGs in old (< v5) .swf files
-// Defaults to NSWindowsCP1252StringEncoding
-extern NSStringEncoding SwiffGetLegacyStringEncoding(void);
-extern void SwiffSetLegacyStringEncoding(NSStringEncoding encoding);
+enum {
+    SwiffMPEGChannelModeStereo      = 0,
+    SwiffMPEGChannelModeJointStereo = 1,
+    SwiffMPEGChannelModeDual        = 2,
+    SwiffMPEGChannelModeMono        = 3
 
-extern SwiffColor SwiffColorFromCGColor(CGColorRef cgColor);
-extern CGColorRef SwiffColorCopyCGColor(SwiffColor color) CF_RETURNS_RETAINED;
+};
+typedef UInt8 SwiffMPEGChannelMode;
 
-extern SwiffColor SwiffColorApplyColorTransform(SwiffColor color, const SwiffColorTransform *transform);
 
-extern BOOL SwiffColorTransformIsIdentity(const SwiffColorTransform *transform);
-extern BOOL SwiffColorTransformEqualToTransform(const SwiffColorTransform *a, const SwiffColorTransform *b);
+enum {
+    SwiffMPEGErrorNone                 =  0,
+    SwiffMPEGErrorInvalidFrameSync     = -1,
+    SwiffMPEGErrorBadBitrate           = -2,
 
-extern NSString *SwiffStringFromColor(SwiffColor color);
+    SwiffMPEGErrorReservedVersion      =  1,
+    SwiffMPEGErrorReservedLayer        =  2,
+    SwiffMPEGErrorReservedSamplingRate =  3,
+    SwiffMPEGErrorReservedEmphasis     =  4
+};
+typedef NSInteger SwiffMPEGError;
 
-// CFArrayRef values must be valid (SwiffColorTransform *).  If stack is NULL, color is returned
-extern SwiffColor SwiffColorApplyColorTransformStack(SwiffColor color, CFArrayRef stack);
 
-extern NSString *SwiffStringFromColorTransform(const SwiffColorTransform *transform);
-extern NSString *SwiffStringFromColorTransformStack(CFArrayRef stack);
+typedef struct SwiffMPEGHeader {
+    SwiffMPEGVersion     version;
+    SwiffMPEGLayer       layer;
+    UInt16               samplingRate;
+    UInt32               bitrate;
+    SwiffMPEGChannelMode channelMode;
+    UInt8                modeExtension;
+    BOOL                 hasCRC;
+    BOOL                 hasPadding;
+    BOOL                 hasCopyright;
+    BOOL                 isOriginal;
+    SwiffMPEGEmphasis    emphasis;
+    UInt32               frameSize;
+} SwiffMPEGHeader;
 
-extern BOOL SwiffTagSplit(SwiffTag inTag, SwiffTag *outTag, NSInteger *outVersion);
-extern BOOL SwiffTagJoin(SwiffTag inTag, NSInteger inVersion, SwiffTag *outTag);
-
-extern void  SwiffSparseArrayFree(SwiffSparseArray *array);
-extern void  SwiffSparseArrayEnumerateValues(SwiffSparseArray *array, void (^)(void *value));
-extern void  SwiffSparseArraySetConsumedObjectAtIndex(SwiffSparseArray *array, UInt16 index, id object CF_CONSUMED);
-extern void  SwiffSparseArraySetValueAtIndex(SwiffSparseArray *array, UInt16 index, void *object);
-extern void *SwiffSparseArrayGetValueAtIndex(SwiffSparseArray *array, UInt16 index);
