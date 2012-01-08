@@ -46,6 +46,7 @@
     NSUInteger             m_sublayerCount;
     SwiffSparseArray       m_sublayers;
 
+    CGFloat              m_scaleFactor;
     CGAffineTransform    m_baseAffineTransform;
     CGAffineTransform    m_scaledAffineTransform;
 

@@ -144,7 +144,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     transform = CGAffineTransformConcat(transform, m_scaledAffineTransform);
     
     CGAffineTransform scaleFactorTransform = CGAffineTransformMakeScale(scaleFactor, scaleFactor);
-    
+
     CGRect bounds = [definition renderBounds];
     bounds = sExpandRect(CGRectApplyAffineTransform(bounds, scaleFactorTransform));
     transform = CGAffineTransformConcat(CGAffineTransformInvert(scaleFactorTransform), transform);
@@ -190,7 +190,6 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 {
     CGAffineTransform t = CGAffineTransformIdentity;
     t = CGAffineTransformConcat(t, [placedObject affineTransform]);
-    t = CGAffineTransformConcat(t, m_scaledAffineTransform);
 
     // Take a 1x1 square at (0,0) and apply the transform to it.
     //
@@ -212,7 +211,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     CGFloat max2 = MAX(leftLineLength, rightLineLength);
     CGFloat max3 = MAX(max1, max2);
 
-    return SwiffScaleCeil(max3, hairlineWidth);
+    CGFloat contentsScale = [self contentsScale];
+    return SwiffScaleCeil(max3, 1) * (contentsScale * m_scaleFactor);
 }
 
 
@@ -362,14 +362,16 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
         [sublayer setBounds:bounds];
         [sublayer setAnchorPoint:CGPointMake((-bounds.origin.x / bounds.size.width), (-bounds.origin.y / bounds.size.height))];
-        [sublayer setContentsScale:[self contentsScale]];
+        [sublayer setContentsScale:1];
         [sublayer setDelegate:self];
         [sublayer setZPosition:depth];
         [sublayer setNeedsDisplay];
 
         // Toggle geometry flipped flag until [self addSublayer:sublayer] in _updateGeometryForSublayer:withPlacedObject:
-        [sublayer setGeometryFlipped:YES];
-        
+        if ([sublayer contentsAreFlipped] != [self contentsAreFlipped]) {
+            [sublayer setGeometryFlipped:YES];
+        }
+
         SwiffLog(@"View", @"adding sublayer at depth %d", (int)depth);
 
         CALayer *existing = SwiffSparseArrayGetValueAtIndex(&self->m_sublayers, depth);
@@ -410,7 +412,6 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         CALayer *sublayer = SwiffSparseArrayGetValueAtIndex(&m_sublayers, depth);
 
         if (!sublayer) {
-            NSLog(@"nothing to update!");
             continue;
         }
 
@@ -525,7 +526,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     [self _addSublayersForPlacedObjects:sublayerAdds];
     [self _invalidatePlacedObjects:rectInvalidates];
 
-    // Do updates last, as it calls +[CATransaction flush]
+    // Do updates last
     [sublayerUpdates addObjectsFromArray:sublayerAdds];
     [self _updateSublayersForPlacedObjects:sublayerUpdates];
 
@@ -554,7 +555,11 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
     CGSize movieSize = [m_movie stageRect].size;
 
-    m_scaledAffineTransform = CGAffineTransformMakeScale(bounds.size.width /  movieSize.width, bounds.size.height / movieSize.height);
+    CGFloat sx = bounds.size.width /  movieSize.width;
+    CGFloat sy = bounds.size.height / movieSize.height;
+
+    m_scaleFactor = sx > sy ? sx : sy;
+    m_scaledAffineTransform = CGAffineTransformMakeScale(sx, sy);
 
     [m_contentLayer setContentsScale:[self contentsScale]];
     [m_contentLayer setFrame:bounds];
@@ -610,6 +615,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
             CGContextFillRect(context, [layer bounds]);
         }
 
+        SwiffRendererSetScaleFactorHint(m_renderer, [self contentsScale]);
         SwiffRendererSetBaseAffineTransform(m_renderer, &m_scaledAffineTransform);
         SwiffRendererSetPlacedObjects(m_renderer, filteredObjects ? filteredObjects : placedObjects);
         SwiffRendererRender(m_renderer, context);
@@ -666,9 +672,6 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 //      CGContextSetCTM() is private, so immitate it with concatenation
         CGContextConcatCTM(context, CGAffineTransformInvert(base)); // CGContextSetCTM(context, CGAffineTransformIdentity)
         
-        // Refactor in contentScale
-        CGFloat contentsScale = [layer contentsScale];
-
         CGFloat renderTranslationX = [[layer valueForKey:SwiffRenderTranslationXKey] doubleValue];
         CGFloat renderTranslationY = [[layer valueForKey:SwiffRenderTranslationYKey] doubleValue];
         CGFloat renderScaleFactor  = [[layer valueForKey:SwiffRenderScaleFactorKey]  doubleValue];
@@ -689,9 +692,11 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         CGFloat hairlineWidth     = SwiffRendererGetHairlineWidth(m_renderer);
         CGFloat fillHairlineWidth = SwiffRendererGetFillHairlineWidth(m_renderer);
 
+        CGFloat contentsScale = [self contentsScale];
         SwiffRendererSetHairlineWidth(m_renderer, hairlineWidth * contentsScale);
         SwiffRendererSetFillHairlineWidth(m_renderer, fillHairlineWidth * contentsScale);
 
+        SwiffRendererSetScaleFactorHint(m_renderer, 1.0);
         SwiffRendererSetBaseAffineTransform(m_renderer, &base);
         SwiffRendererSetPlacedObjects(m_renderer, placedObjects);
         SwiffRendererRender(m_renderer, context);

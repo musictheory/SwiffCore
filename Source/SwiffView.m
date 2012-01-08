@@ -72,6 +72,7 @@
 
     if ((self = [super initWithFrame:frame])) {
         m_layer = [[SwiffLayer alloc] initWithMovie:movie];
+        [m_layer setContentsScale:[[UIScreen mainScreen] scale]];
         [[self layer] addSublayer:m_layer];
         [self _layoutMovieLayer];
     }
