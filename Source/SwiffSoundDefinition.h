@@ -33,9 +33,9 @@
 @class SwiffMovie, SwiffSoundDefinition;
 
 // C-based API, for audio callbacks
-extern CFDataRef  SwiffSoundDefinitionGetData(SwiffSoundDefinition *definition);
-extern NSUInteger SwiffSoundDefinitionGetOffsetForFrame(SwiffSoundDefinition *definition, CFIndex frame);
-extern NSUInteger SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *definition, CFIndex frame);
+extern CFDataRef SwiffSoundDefinitionGetData(SwiffSoundDefinition *definition);
+extern CFIndex   SwiffSoundDefinitionGetOffsetForFrame(SwiffSoundDefinition *definition, CFIndex frame);
+extern CFIndex   SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *definition, CFIndex frame);
 
 @class SwiffSoundStreamBlock;
 

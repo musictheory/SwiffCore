@@ -152,23 +152,23 @@ CFDataRef SwiffSoundDefinitionGetData(SwiffSoundDefinition *self)
 }
 
 
-extern NSUInteger SwiffSoundDefinitionGetOffsetForFrame(SwiffSoundDefinition *self, CFIndex frame)
+extern CFIndex SwiffSoundDefinitionGetOffsetForFrame(SwiffSoundDefinition *self, CFIndex frame)
 {
     if ((frame >= 0) && (frame < self->m_framesCount)) {
         return self->m_frames[frame];
     }
     
-    return NSNotFound;
+    return kCFNotFound;
 }
 
 
-extern NSUInteger SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *self, CFIndex frame)
+extern CFIndex SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *self, CFIndex frame)
 {
-    NSUInteger offset1 = SwiffSoundDefinitionGetOffsetForFrame(self, frame);
-    if (offset1 == NSNotFound) return 0;
+    CFIndex offset1 = SwiffSoundDefinitionGetOffsetForFrame(self, frame);
+    if (offset1 == kCFNotFound) return 0;
 
-    NSUInteger offset2 = SwiffSoundDefinitionGetOffsetForFrame(self, frame + 1);
-    if (offset2 == NSNotFound) {
+    CFIndex offset2 = SwiffSoundDefinitionGetOffsetForFrame(self, frame + 1);
+    if (offset2 == kCFNotFound) {
         offset2 = CFDataGetLength(SwiffSoundDefinitionGetData(self));
     }
     

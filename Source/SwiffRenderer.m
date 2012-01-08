@@ -150,12 +150,12 @@ static void sTracePathStrokeAdvanced(
     CGContextRef context = state->context;
 
     CGFloat scale  = state->scaleFactorHint;
-    CGFloat offset = (lround(width) % 2) ? (scale / 2) : 0;
+    CGFloat offset = (lround(width * state->scaleFactorHint) % 2) ? ((1.0 / state->scaleFactorHint) / 2) : 0;
 
     CGFloat x = NAN, y = NAN, controlX = NAN, controlY = NAN, moveX = NAN, moveY = NAN;
 
     SwiffPathOperation prevOp = SwiffPathOperationMove;
-    SwiffPathOperation op;
+    SwiffPathOperation op     = SwiffPathOperationMove;
     SwiffPathOperation nextOp = *operations++;
 
 nextOperation:
