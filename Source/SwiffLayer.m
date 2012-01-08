@@ -298,8 +298,11 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     if (!existingAnimation) existingAnimation = [masterLayer animationForKey:@"position"];
 
     if (!existingAnimation && needsDisplayForScaleFactor) {
+        [CATransaction flush];
+
         [CATransaction begin];
         [CATransaction setDisableActions:YES];
+        [CATransaction setAnimationDuration:0];
 
         // Old placed object but new scale factor
         [sublayer setValue:oldPlacedObject forKey:SwiffPlacedObjectKey];
@@ -326,7 +329,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         [CATransaction setAnimationDuration:existingAnimation ? [existingAnimation duration] : (1.0 / [m_movie frameRate])];
         [CATransaction setAnimationTimingFunction:existingAnimation ? [existingAnimation timingFunction] : [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]];
     } else {
-        [CATransaction disableActions];
+        [CATransaction setDisableActions:YES];
         [CATransaction setAnimationDuration:0];
     }
     {
