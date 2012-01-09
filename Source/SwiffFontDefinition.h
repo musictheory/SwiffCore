@@ -40,7 +40,7 @@ typedef struct SwiffFontKerningRecord {
 extern const CGFloat SwiffFontEmSquareHeight;           // 1024
 
 
-@class SwiffMovie, SwiffShapeDefinition;
+@class SwiffMovie;
 
 @interface SwiffFontDefinition : NSObject <SwiffDefinition> {
 @private
