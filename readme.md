@@ -85,8 +85,12 @@ Ultimately, performance depends on the source movie and the use of `SwiffPlacedO
 
 For [Theory Lessons](http://itunes.apple.com/us/app/theory-lessons/id493157418?ls=1&mt=8) on an iPhone 3GS, SwiffCore rendered all of my movies at a full 20fps (the original frame rate) without using wantsLayer.  I then promoted specific SwiffPlacedObject instances to have their own layer (wantsLayer=YES) to create fluid 60fps animations.
 
-## References
 
+## Resources
 
+Here are some resources that were helpful during SwiffCore development:
 
+[SWF File Format Specification (version 10, PDF)](http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/swf/pdf/swf_file_format_spec_v10.pdf)
+[Converting Flash Shapes to WPF](http://blogs.msdn.com/b/mswanson/archive/2006/02/27/539749.aspx) - An article on SWF shape parsing
+[Hacking SWF ... Shapes](http://wahlers.com.br/claus/blog/hacking-swf-1-shapes-in-flash/) - Another article on SWF shape parsing
 
