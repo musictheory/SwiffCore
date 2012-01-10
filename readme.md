@@ -54,10 +54,39 @@ For more information, read the SwiffCore Architecture wiki article.
 
 ## What's supported?
 
+* Sprites / Movie Clips
+* Shapes
+  * Line styles ([#9](https://github.com/musictheory/SwiffCore/issues/9), [#10](https://github.com/musictheory/SwiffCore/issues/10))
+  * Solid color fills
+  * Gradient fills
+  * Bitmap fills (all formats) ([#11](https://github.com/musictheory/SwiffCore/issues/11), [#12](https://github.com/musictheory/SwiffCore/issues/12), [#14](https://github.com/musictheory/SwiffCore/issues/14))
+  * Mask layers
+* Scenes and frame labels
+* Animation / Tweens (both motion and classic)
+* Text fields (both dynamic and static)
+* Embedded fonts
+* Color effects
+* Event sounds (MP3 only)
+* Stream sounds (MP3 only)
+* Basic layer blend modes ([#7](https://github.com/musictheory/SwiffCore/issues/7))
+
+
+## What's not supported?
+
+* Any kind of scripting or interaction ([#2](https://github.com/musictheory/SwiffCore/issues/2), [#4](https://github.com/musictheory/SwiffCore/issues/4), [#5](https://github.com/musictheory/SwiffCore/issues/5))
+* Filters ([#13](https://github.com/musictheory/SwiffCore/issues/13))
+* Morph Shapes ([#1](https://github.com/musictheory/SwiffCore/issues/1))
+* Video ([#3](https://github.com/musictheory/SwiffCore/issues/3))
+
 
 ## Performance
 
 Ultimately, performance depends on the source movie and the use of `SwiffPlacedObject.wantsLayer`.  If SwiffCore has to redraw several objects per frame, and those frames contain gradients and/or complex paths, it's easy to saturate the CPU and drop frames.  CPU usage is greatly reduced when `SwiffPlacedObject.wantsLayer` is set to YES, but memory footprint increases.
 
-For Theory Lessons on an iPhone 3GS, SwiffCore rendered all of my movies at a full 20fps (the original frame rate) without using wantsLayer.  I then promoted specific SwiffPlacedObject instances to have their own layer (wantsLayer=YES) to create fluid 60fps animations.
+For [Theory Lessons](http://itunes.apple.com/us/app/theory-lessons/id493157418?ls=1&mt=8) on an iPhone 3GS, SwiffCore rendered all of my movies at a full 20fps (the original frame rate) without using wantsLayer.  I then promoted specific SwiffPlacedObject instances to have their own layer (wantsLayer=YES) to create fluid 60fps animations.
+
+## References
+
+
+
 
