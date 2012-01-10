@@ -90,7 +90,7 @@ For [Theory Lessons](http://itunes.apple.com/us/app/theory-lessons/id493157418?l
 
 Here are some resources that were helpful during SwiffCore development:
 
-[SWF File Format Specification (version 10, PDF)](http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/swf/pdf/swf_file_format_spec_v10.pdf)
-[Converting Flash Shapes to WPF](http://blogs.msdn.com/b/mswanson/archive/2006/02/27/539749.aspx) - An article on SWF shape parsing
-[Hacking SWF ... Shapes](http://wahlers.com.br/claus/blog/hacking-swf-1-shapes-in-flash/) - Another article on SWF shape parsing
+* [SWF File Format Specification (version 10, PDF)](http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/swf/pdf/swf_file_format_spec_v10.pdf)
+* [Converting Flash Shapes to WPF](http://blogs.msdn.com/b/mswanson/archive/2006/02/27/539749.aspx) - An article on SWF shape parsing
+* [Hacking SWF ... Shapes](http://wahlers.com.br/claus/blog/hacking-swf-1-shapes-in-flash/) - Another article on SWF shape parsing
 
