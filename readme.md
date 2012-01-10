@@ -49,7 +49,7 @@ contained in a UIView or NSView.
 Optionally, multiple CALayers can be used (via `-[SwiffPlacedObject setWantsLayer:YES]`) to reduce redrawing.
 Placed objects promoted to layers also animate at a full 60fps (even when the source movie is less than 60fps).
 
-For more information, read the SwiffCore Architecture wiki article.
+For more information, read the [SwiffCore Architecture wiki article](https://github.com/musictheory/SwiffCore/wiki/Architecture).
 
 
 ## What's supported?
