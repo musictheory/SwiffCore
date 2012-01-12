@@ -1,19 +1,19 @@
 # SwiffCore
 
-SwiffCore is a Mac OS X and iOS framework that renders vector shapes and animations stored in the SWF format.  It also provides basic support for the accompanying bitmaps, fonts, text, and MP3 streams.
+SwiffCore is a Mac OS X and iOS framework that renders vector shapes and animations stored in the SWF format.  It also provides basic support for bitmaps, fonts, text, and MP3 streams.
 
 It **isn't** a Flash runtime.  It doesn't enable you to run your interactive Flash games on iOS.  It will, however, accurately render your existing vector graphics and animations.
 
 
 ## Why?
 
-I needed a solution for bringing my music theory lessons (http://www.musictheory.net/lessons) to the iPhone
-and iPad.  Each lesson contains several hundred frames of vector information.  
+I needed a solution for [Theory Lessons](http://itunes.apple.com/us/app/theory-lessons/id493157418?ls=1&mt=8), the iOS version of my music theory lessons (http://www.musictheory.net/lessons).
+Each lesson contains several hundred frames of vector graphics and accompanying music examples.  
 
 During initial development, I explored several options:
 
 1. **Use Adobe Flash Professional's export-to-iOS feature**  
-This creates a standalone .ipa file of your entire Flash project.  I couldn't find a safe, supported way of accessing these from my app.  Also, I would rather not inject a blob of Adobe-quality binary code into my app.
+This creates a standalone .ipa file of your entire Flash project.  I couldn't find a safe, supported way of accessing these from my app.  Also, I would rather not inject a blob of Adobe-quality binary code into my product.
 
 2. **Generate PNG files for each frame, in various resolutions**  
 I had already written a SWF->PNG converter for Mac OS X .  It used WebKit to load the Flash Player plug-in, seek to a specific frame, then capture the frame using the screenshot APIs).  While the resulting images were accurate, they also used a large amount of space on disk (~45MB).
@@ -25,7 +25,7 @@ While iOS supports both the H.264 and MPEG-4 formats, neither is well suited for
 This resulted in a very large binary size.
 
 5. **Write my own shape exported into a proprietery data format, then render it**  
-This is basically an abstraction layer on #4.  At some point, the data format begins to look like SWF.
+This is basically an abstraction layer on #4.  At some point, the data format begins to look like SWF.  Why create a new data format when I can just:
 
 6. **Read the SWF file and render it myself.**
 
@@ -53,6 +53,7 @@ For more information, read the [SwiffCore Architecture wiki article](https://git
 
 
 ## What's supported?
+(outstanding issues in parentheses)
 
 * Sprites / Movie Clips
 * Shapes
