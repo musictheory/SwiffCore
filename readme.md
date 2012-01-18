@@ -4,6 +4,8 @@ SwiffCore is a Mac OS X and iOS framework that renders vector shapes and animati
 
 It **isn't** a Flash runtime.  It doesn't enable you to run your interactive Flash games on iOS.  It will, however, accurately render your existing vector graphics and animations.
 
+SwiffCore is open source and freely available via a [BSD-style license](https://github.com/musictheory/SwiffCore/blob/master/license).
+
 
 ## Why?
 
@@ -82,10 +84,34 @@ For more information, read the [SwiffCore Overview wiki article](https://github.
 
 ## Performance
 
-Ultimately, performance depends on the source movie and the use of `SwiffPlacedObject.wantsLayer`.  If SwiffCore has to redraw several objects per frame, and those frames contain gradients and/or complex paths, it's easy to saturate the CPU and drop frames.  CPU usage is greatly reduced when `SwiffPlacedObject.wantsLayer` is set to YES, but memory footprint increases.
+Ultimately, performance depends on the source movie.  If SwiffCore has to redraw several objects per frame, and those frames contain gradients and/or complex paths, it's easy to saturate the CPU and drop frames (even on A5 devices).  After a few migraine-inducing Instruments sessions, I am **very** grateful that Apple never allowed Flash on the original iPhone.
+
+Redrawing is reduced when `SwiffPlacedObject.wantsLayer` is set to YES, but memory footprint increases.  Also, several moving CALayers can saturate the GPU.  Ultimately, you will want to keep some movie clips in the main content layer, while promoting frequently-moving ones to their own layers.
 
 For [Theory Lessons](http://itunes.apple.com/us/app/theory-lessons/id493157418?ls=1&mt=8) on an iPhone 3GS, SwiffCore rendered all of my movies at a full 20fps (the original frame rate) without using wantsLayer.  I then promoted specific SwiffPlacedObject instances to have their own layer (wantsLayer=YES) to create fluid 60fps animations.
 
+I did this by using running UpgradeToLayers.jsfl on my source movies.  This assigns an instance name of `_layer_X` (X increments) to each movie clip involved in a motion tween.  At runtime, in the `-swiffView:willUpdateCurrentFrame:` delegate callback, I promote these placed objects to wantsLayer=YES:
+
+    - (void) swiffView:(SwiffView *)swiffView willUpdateCurrentFrame:(SwiffFrame *)frame
+    {
+        for (SwiffPlacedObject *placedObject in [frame placedObjects]) {
+            NSString *name = [placedObject name];
+    
+            if ([name hasPrefix:@"_layer"]) {
+                [placedObject setWantsLayer:YES];
+                [placedObject setLayerIdentifier:name];
+            }
+        }
+    }
+
+An alternate approach would be to promote movie clips that have "Cache as bitmap" checked:
+
+    - (void) swiffView:(SwiffView *)swiffView willUpdateCurrentFrame:(SwiffFrame *)frame
+    {
+        for (SwiffPlacedObject *placedObject in [frame placedObjects]) {
+            [placedObject setWantsLayer:[placedObject cachesAsBitmap]];
+        }
+    }
 
 ## Resources
 
@@ -94,4 +120,6 @@ Here are some resources that were helpful during SwiffCore development:
 * [SWF File Format Specification (version 10, PDF)](http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/swf/pdf/swf_file_format_spec_v10.pdf)
 * [Converting Flash Shapes to WPF](http://blogs.msdn.com/b/mswanson/archive/2006/02/27/539749.aspx) - An article on SWF shape parsing
 * [Hacking SWF ... Shapes](http://wahlers.com.br/claus/blog/hacking-swf-1-shapes-in-flash/) - Another article on SWF shape parsing
-
+* [Adobe Flex SDK Source](http://opensource.adobe.com/svn/opensource/flex/sdk/) - Includes a .swf parsing implementation in Java
+* [as3swf](https://github.com/claus/as3swf) - A .swf parsing implementation in ActionScript
+* [gameswf](http://tulrich.com/textweb.pl?path=geekstuff/gameswf.txt) - An older public domain .swf parser in C++
