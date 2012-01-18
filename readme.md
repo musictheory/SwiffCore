@@ -90,7 +90,7 @@ Redrawing is reduced when `SwiffPlacedObject.wantsLayer` is set to YES, but memo
 
 For [Theory Lessons](http://itunes.apple.com/us/app/theory-lessons/id493157418?ls=1&mt=8) on an iPhone 3GS, SwiffCore rendered all of my movies at a full 20fps (the original frame rate) without using wantsLayer.  I then promoted specific SwiffPlacedObject instances to have their own layer (wantsLayer=YES) to create fluid 60fps animations.
 
-I did this by using running [UpgradeToLayers.jsfl](https://github.com/musictheory/SwiffCore/blob/master/Examples/UpgradeToLayers.jsfl) on my source movies.  This assigns an instance name of `_layer_X` (X increments) to each movie clip involved in a motion tween.  At runtime, in the `-swiffView:willUpdateCurrentFrame:` delegate callback, I promote these placed objects to wantsLayer=YES:
+I did this by running [UpgradeToLayers.jsfl](https://github.com/musictheory/SwiffCore/blob/master/Examples/UpgradeToLayers.jsfl) on my source movies.  This assigns an instance name of `_layer_X` (X increments) to each movie clip involved in a motion tween.  At runtime, in the `-swiffView:willUpdateCurrentFrame:` delegate callback, I promote these placed objects to wantsLayer=YES:
 
     - (void) swiffView:(SwiffView *)swiffView willUpdateCurrentFrame:(SwiffFrame *)frame
     {
