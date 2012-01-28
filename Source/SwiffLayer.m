@@ -70,6 +70,8 @@ static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";
 
 - (void) dealloc
 {
+    [[SwiffSoundPlayer sharedInstance] stopAllSoundsForMovie:m_movie];
+
     [m_playhead setDelegate:nil];
 
     SwiffRendererFree(m_renderer);
@@ -934,7 +936,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
             playhead               = m_playhead,
             currentFrame           = m_currentFrame,
             drawsBackground        = m_drawsBackground,
-            shouldFlattenSublayers = shouldFlattenSublayers,
+            shouldFlattenSublayers = m_shouldFlattenSublayers,
             shouldDrawDebugColors  = m_shouldDrawDebugColors;
 
 @end

@@ -33,7 +33,7 @@
 
 @interface SwiffSoundPlayer : NSObject {
 @private
-    NSMutableDictionary *m_libraryIDTChannelArrayMap;
+    NSMutableArray      *m_eventChannels;
     SwiffSoundChannel   *m_currentStreamChannel;
 }
 
@@ -41,6 +41,7 @@
 
 - (void) processMovie:(SwiffMovie *)movie frame:(SwiffFrame *)frame;
 
+- (void) stopAllSoundsForMovie:(SwiffMovie *)movie;
 - (void) stopAllSounds;
 - (void) stopStream;
 

@@ -31,6 +31,7 @@
 #import "SwiffMovie.h"
 #import "SwiffScene.h"
 #import "SwiffUtils.h"
+#import "SwiffSoundPlayer.h"
 
 #import <QuartzCore/QuartzCore.h>
 
@@ -103,6 +104,10 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
     BOOL isPlaying   = [self isPlaying];
     BOOL needsUpdate = NO;
     
+    if (isPlaying) {
+        [[SwiffSoundPlayer sharedInstance] stopAllSoundsForMovie:m_movie];
+    }
+
     if (play && isPlaying) {
         m_frameIndexForNextStep = frameIndex;
         m_hasFrameIndexForNextStep = YES;
@@ -125,7 +130,9 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
             [invocation setTarget:self];
             [invocation setSelector:@selector(_tick)];
             
-            m_timer = [[NSTimer scheduledTimerWithTimeInterval:(1 / 60.0) invocation:invocation repeats:YES] retain];
+            m_timer = [[NSTimer timerWithTimeInterval:(1 / 60.0) invocation:invocation repeats:YES] retain];
+            [[NSRunLoop currentRunLoop] addTimer:m_timer forMode:NSRunLoopCommonModes];
+            
             m_timerPlayStart = CACurrentMediaTime();
             m_timerPlayIndex = 0;
         }
