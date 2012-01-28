@@ -527,12 +527,17 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         m_interpolateCurrentFrame = NO;
     }
     
+    [CATransaction begin];
+    [CATransaction setDisableActions:YES];
+    [CATransaction setAnimationDuration:0];
+    
     [self _removeSublayersForPlacedObjects:sublayerRemoves];
     [self _addSublayersForPlacedObjects:sublayerAdds];
+    [self _updateSublayersForPlacedObjects:sublayerAdds];
     [self _invalidatePlacedObjects:rectInvalidates];
 
-    // Do updates last
-    [sublayerUpdates addObjectsFromArray:sublayerAdds];
+    [CATransaction commit];
+
     [self _updateSublayersForPlacedObjects:sublayerUpdates];
 
     [sublayerRemoves release];
