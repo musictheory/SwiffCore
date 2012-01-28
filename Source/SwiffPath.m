@@ -28,6 +28,8 @@
 
 #import "SwiffPath.h"
 #import "SwiffUtils.h"
+#import "SwiffFillStyle.h"
+#import "SwiffLineStyle.h"
 
 static const NSUInteger sGrowthForOperations = 64;
 static const NSUInteger sGrowthForFloats     = 256;

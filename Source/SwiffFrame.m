@@ -29,7 +29,8 @@
 #import "SwiffFrame.h"
 #import "SwiffPlacedObject.h"
 #import "SwiffScene.h"
-
+#import "SwiffSoundDefinition.h"
+#import "SwiffSoundStreamBlock.h"
 
 @interface SwiffFrame (FriendMethods)
 - (void) _updateLabel:(NSString *)label;

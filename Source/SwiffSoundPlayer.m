@@ -126,7 +126,7 @@ static void sFillASBDForSoundDefinition(AudioStreamBasicDescription *asbd, Swiff
 
 static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer)
 {
-    SwiffSoundChannel    *channel    = (SwiffSoundChannel *)inUserData;
+    SwiffSoundChannel    *channel    = (__bridge SwiffSoundChannel *)inUserData;
     SwiffSoundDefinition *definition = channel->m_definition;
     
     AudioStreamPacketDescription *aspd = inBuffer->mUserData;
@@ -179,7 +179,7 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
 
 static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, AudioQueuePropertyID inID)
 {
-    SwiffSoundChannel *channel = (SwiffSoundChannel *)inUserData;
+    SwiffSoundChannel *channel = (__bridge SwiffSoundChannel *)inUserData;
 
     if (inID == kAudioQueueProperty_IsRunning) {
         UInt32 isRunning = 0;

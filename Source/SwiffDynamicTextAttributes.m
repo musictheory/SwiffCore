@@ -51,7 +51,7 @@ CGFloat SwiffTextGetMaximumVerticalOffset(CFAttributedStringRef as, CFRange rang
     while (i < endI) {
 
         CFRange effectiveRange;
-        CFNumberRef type = CFAttributedStringGetAttribute(as, i, (CFStringRef)SwiffTextVerticalOffsetAttributeName, &effectiveRange);
+        CFNumberRef type = CFAttributedStringGetAttribute(as, i, (__bridge CFStringRef)SwiffTextVerticalOffsetAttributeName, &effectiveRange);
     
         if (type) {
             CGFloat value;
@@ -101,7 +101,7 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
             }
             
             if (mapType == SwiffFontMapTypeDirect) {
-                CTFontRef font = CTFontCreateWithName((CFStringRef)component, 12.0, NULL);
+                CTFontRef font = CTFontCreateWithName((__bridge CFStringRef)component, 12.0, NULL);
 
                 if (font) {
                     name = [component retain];
@@ -164,7 +164,7 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
 {
     CGFloat   fontSize = SwiffGetCGFloatFromTwips(m_fontSizeInTwips);
 
-    CTFontRef base   = CTFontCreateWithName((CFStringRef)m_mappedFontName, fontSize, NULL);
+    CTFontRef base   = CTFontCreateWithName((__bridge CFStringRef)m_mappedFontName, fontSize, NULL);
     CTFontRef result = NULL;
 
     if (base) {
@@ -222,7 +222,7 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
     }
 
     if (font) {
-        [result setObject:(id)font forKey:(id)kCTFontAttributeName];
+        [result setObject:(__bridge id)font forKey:(id)kCTFontAttributeName];
         CFRelease(font);
     } 
 
@@ -230,7 +230,7 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
     if (m_hasFontColor) {
         CGColorRef cgColor = SwiffColorCopyCGColor(m_fontColor);
         if (cgColor) {
-            [result setObject:(id)cgColor forKey:(id)kCTForegroundColorAttributeName];
+            [result setObject:(__bridge id)cgColor forKey:(id)kCTForegroundColorAttributeName];
             CFRelease(cgColor);
         }
     }
@@ -255,7 +255,7 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
 
     CTParagraphStyleRef ps = CTParagraphStyleCreate(settings, 7);
     if (ps) {
-        [result setObject:(id)ps forKey:(id)kCTParagraphStyleAttributeName];
+        [result setObject:(__bridge id)ps forKey:(id)kCTParagraphStyleAttributeName];
         CFRelease(ps);
     }
     

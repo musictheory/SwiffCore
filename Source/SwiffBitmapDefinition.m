@@ -222,7 +222,7 @@ static CGImageRef sCreateImage(size_t width, size_t height, size_t bitsPerCompon
 {
     CGColorSpaceRef rgb = CGColorSpaceCreateDeviceRGB();
     
-    CGDataProviderRef provider = CGDataProviderCreateWithCFData((CFDataRef)data);
+    CGDataProviderRef provider = CGDataProviderCreateWithCFData((__bridge CFDataRef)data);
     
     size_t bytesPerRow = (width * bitsPerPixel + 7) / 8;
 
@@ -414,7 +414,7 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
                 size_t width = CGImageGetWidth(image);
                 size_t height = CGImageGetHeight(image);
 
-                CGDataProviderRef provider = CGDataProviderCreateWithCFData((CFDataRef)alphaData);
+                CGDataProviderRef provider = CGDataProviderCreateWithCFData((__bridge CFDataRef)alphaData);
 
                 CGColorSpaceRef space = CGColorSpaceCreateDeviceGray();
                 CGImageRef alphaImage = CGImageCreate(width, height, 8, 8, width, space, kCGImageAlphaNone, provider, NULL, NO, kCGRenderingIntentDefault);
