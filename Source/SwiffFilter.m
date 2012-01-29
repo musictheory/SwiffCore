@@ -30,187 +30,6 @@
 #import "SwiffGradient.h"
 
 
-struct SwiffFilterInternal {
-    float      bias;
-    float      divisor;
-    CGFloat    angle;
-    CGFloat    blurX;
-    CGFloat    blurY;
-    CGFloat    distance;
-    CGFloat    strength;
-    float     *matrixValues;
-    id         gradient;
-    SwiffColor color1;          // color and shadowColor
-    SwiffColor color2;          // highlightColor
-    UInt8      filterType;
-    UInt8      matrixHeight;
-    UInt8      matrixWidth;
-    UInt8      numberOfPasses;
-    BOOL       clamp;
-    BOOL       inner;
-    BOOL       knockout;
-    BOOL       flag1;           // preservesAlpha and onTop
-};
-
-
-static void sReadColorMatrixFilter(SwiffParser *parser, SwiffFilterInternal *internal)
-{
-    internal->matrixValues = malloc(sizeof(float) * 20);
-    for (NSInteger i = 0; i < 20; i++) {
-        SwiffParserReadFloat(parser, &internal->matrixValues[i]);
-    }
-}
-
-
-static void sReadConvolutionFilter(SwiffParser *parser, SwiffFilterInternal *internal)
-{
-    SwiffParserReadUInt8(parser, &internal->matrixWidth);
-    SwiffParserReadUInt8(parser, &internal->matrixHeight);
-    SwiffParserReadFloat(parser, &internal->divisor);
-    SwiffParserReadFloat(parser, &internal->bias);
-
-    NSInteger count = internal->matrixWidth * internal->matrixHeight;
-
-    internal->matrixValues = malloc(sizeof(float) * count);
-    for (NSInteger i = 0; i < count; i++) {
-        SwiffParserReadFloat(parser, &internal->matrixValues[i]);
-    }
-
-    UInt32 tmp;
-    SwiffParserReadUBits(parser, 6, &tmp);  // Reserved UB[6]
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->clamp = tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->flag1 = tmp;
-}
-
-
-static void sReadBlurFilter(SwiffParser *parser, SwiffFilterInternal *internal)
-{
-    SwiffParserReadFixed(parser, &internal->blurX);
-    SwiffParserReadFixed(parser, &internal->blurY);
-
-    UInt32 tmp;
-    SwiffParserReadUBits(parser, 5, &tmp);  internal->numberOfPasses = tmp;
-    SwiffParserReadUBits(parser, 3, &tmp);  // Reserved UB[3]
-}
-
-
-static void sReadDropShadowFilter(SwiffParser *parser, SwiffFilterInternal *internal)
-{
-    SwiffParserReadColorRGBA(parser, &internal->color1);
-    SwiffParserReadFixed(parser, &internal->blurX);
-    SwiffParserReadFixed(parser, &internal->blurY);
-    SwiffParserReadFixed(parser, &internal->angle);
-    SwiffParserReadFixed(parser, &internal->distance);
-    SwiffParserReadFixed8(parser, &internal->strength);
-
-    UInt32 tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->inner = tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->knockout = tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
-    SwiffParserReadUBits(parser, 5, &tmp);  internal->numberOfPasses = tmp;
-}
-
-
-static void sReadGlowFilter(SwiffParser *parser, SwiffFilterInternal *internal)
-{
-    SwiffParserReadColorRGBA(parser, &internal->color1);
-    SwiffParserReadFixed(parser, &internal->blurX);
-    SwiffParserReadFixed(parser, &internal->blurY);
-    SwiffParserReadFixed8(parser, &internal->strength);
-
-    UInt32 tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->inner = tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->knockout = tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
-    SwiffParserReadUBits(parser, 5, &tmp);  internal->numberOfPasses = tmp;
-}
-
-
-static void sReadBevelFilter(SwiffParser *parser, SwiffFilterInternal *internal)
-{
-    SwiffParserReadColorRGBA(parser, &internal->color1);
-    SwiffParserReadColorRGBA(parser, &internal->color2);
-    SwiffParserReadFixed(parser, &internal->blurX);
-    SwiffParserReadFixed(parser, &internal->blurY);
-    SwiffParserReadFixed(parser, &internal->angle);
-    SwiffParserReadFixed(parser, &internal->distance);
-    SwiffParserReadFixed8(parser, &internal->strength);
-
-    UInt32 tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->inner = tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->knockout = tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->flag1 = tmp;
-    SwiffParserReadUBits(parser, 4, &tmp);  internal->numberOfPasses = tmp;
-}
-
-
-static void sReadGradientGlowFilter(SwiffParser *parser, SwiffFilterInternal *internal)
-{
-    internal->gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:NO];
-
-    SwiffParserReadFixed(parser, &internal->blurX);
-    SwiffParserReadFixed(parser, &internal->blurY);
-    SwiffParserReadFixed(parser, &internal->angle);
-    SwiffParserReadFixed(parser, &internal->distance);
-    SwiffParserReadFixed8(parser, &internal->strength);
-
-    UInt32 tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->inner = tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->knockout = tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->flag1 = tmp;
-    SwiffParserReadUBits(parser, 4, &tmp);  internal->numberOfPasses = tmp;
-}
-
-
-static void sReadGradientBevelFilter(SwiffParser *parser, SwiffFilterInternal *internal)
-{
-    internal->gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:NO];
-
-    SwiffParserReadFixed(parser, &internal->blurX);
-    SwiffParserReadFixed(parser, &internal->blurY);
-    SwiffParserReadFixed(parser, &internal->angle);
-    SwiffParserReadFixed(parser, &internal->distance);
-    SwiffParserReadFixed8(parser, &internal->strength);
-
-    UInt32 tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->inner = tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->knockout = tmp;
-    SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
-    SwiffParserReadUBits(parser, 1, &tmp);  internal->flag1 = tmp;
-    SwiffParserReadUBits(parser, 4, &tmp);  internal->numberOfPasses = tmp;
-}
-
-
-@interface SwiffFilter ()
-
-@property (nonatomic, assign, readonly) CGFloat bias;
-@property (nonatomic, assign, readonly) CGFloat divisor;
-@property (nonatomic, assign, readonly) CGFloat angle;
-@property (nonatomic, assign, readonly) CGFloat blurX;
-@property (nonatomic, assign, readonly) CGFloat blurY;
-@property (nonatomic, assign, readonly) CGFloat distance;
-@property (nonatomic, assign, readonly) CGFloat strength;
-
-@property (nonatomic, assign, readonly) float *matrixValues;
-@property (nonatomic, retain, readonly) SwiffGradient *gradient;
-@property (nonatomic, assign, readonly) SwiffColor color;
-@property (nonatomic, assign, readonly) SwiffColor shadowColor;
-@property (nonatomic, assign, readonly) SwiffColor highlightColor;
-
-@property (nonatomic, assign, readonly) UInt8 matrixHeight;
-@property (nonatomic, assign, readonly) UInt8 matrixWidth;
-@property (nonatomic, assign, readonly) UInt8 numberOfPasses;
-
-@property (nonatomic, assign, readonly, getter=isClamp) BOOL clamp;
-@property (nonatomic, assign, readonly, getter=isInnerGlow) BOOL innerGlow;
-@property (nonatomic, assign, readonly, getter=isInnerShadow) BOOL innerShadow;
-@property (nonatomic, assign, readonly, getter=isKnockout) BOOL knockout;
-@property (nonatomic, assign, readonly, getter=isOnTop) BOOL onTop;
-@property (nonatomic, assign, readonly) BOOL preservesAlpha;
-
-@end
 
 @implementation SwiffFilter
 
@@ -226,62 +45,352 @@ static void sReadGradientBevelFilter(SwiffParser *parser, SwiffFilterInternal *i
         UInt8 filterID;
         SwiffParserReadUInt8(parser, &filterID);
 
-        SwiffFilterInternal *internal = calloc(1, sizeof(SwiffFilterInternal));
-        internal->filterType = filterID;
+        Class cls = nil;
 
-        if      (filterID == SwiffFilterTypeDropShadow)    sReadDropShadowFilter(parser, internal);
-        else if (filterID == SwiffFilterTypeBlur)          sReadBlurFilter(parser, internal);
-        else if (filterID == SwiffFilterTypeGlow)          sReadGlowFilter(parser, internal);
-        else if (filterID == SwiffFilterTypeBevel)         sReadBevelFilter(parser, internal);
-        else if (filterID == SwiffFilterTypeGradientGlow)  sReadGradientGlowFilter(parser, internal);
-        else if (filterID == SwiffFilterTypeConvolution)   sReadConvolutionFilter(parser, internal);
-        else if (filterID == SwiffFilterTypeColorMatrix)   sReadColorMatrixFilter(parser, internal);
-        else if (filterID == SwiffFilterTypeGradientBevel) sReadGradientBevelFilter(parser, internal);
+        if      (filterID == 0)  cls = [SwiffDropShadowFilter    class];
+        else if (filterID == 1)  cls = [SwiffBlurFilter          class];
+        else if (filterID == 2)  cls = [SwiffGlowFilter          class];
+        else if (filterID == 3)  cls = [SwiffBevelFilter         class];
+        else if (filterID == 4)  cls = [SwiffGradientGlowFilter  class];
+        else if (filterID == 5)  cls = [SwiffConvolutionFilter   class];
+        else if (filterID == 6)  cls = [SwiffColorMatrixFilter   class];
+        else if (filterID == 7)  cls = [SwiffGradientBevelFilter class];
             
-        SwiffFilter *filter = [[SwiffFilter alloc] init];
-        filter->m_internal = internal;
-        [filterList addObject:filter];
-        [filter release];
+        if (cls) {
+            SwiffFilter *filter = [[cls alloc] initWithParser:parser];
+            [filterList addObject:filter];
+            [filter release];
+        }
     }
 
     return filterList;
 }
 
 
+- (id) initWithParser:(SwiffParser *)parser
+{
+    return [super init];
+}
+
+
+@end
+
+
+#pragma mark -
+#pragma mark Blur Filter
+
+@implementation SwiffBlurFilter
+
+- (id) initWithParser:(SwiffParser *)parser
+{
+    if ((self = [super init])) {
+        SwiffParserReadFixed(parser, &m_blurX);
+        SwiffParserReadFixed(parser, &m_blurY);
+
+        UInt32 tmp;
+        SwiffParserReadUBits(parser, 5, &tmp);  m_numberOfPasses = tmp;
+        SwiffParserReadUBits(parser, 3, &tmp);  // Reserved UB[3]
+    }
+
+    return self;
+}
+
+
+@synthesize blurX          = m_blurX,
+            blurY          = m_blurY,
+            numberOfPasses = m_numberOfPasses;
+
+@end
+
+
+#pragma mark -
+#pragma mark Color Matrix Filter
+
+@implementation SwiffColorMatrixFilter
+
+- (id) initWithParser:(SwiffParser *)parser
+{
+    if ((self = [super init])) {
+        for (NSInteger i = 0; i < 20; i++) {
+            SwiffParserReadFloat(parser, &m_matrixValues[i]);
+        }
+    }
+
+    return self;
+}
+
+
+- (UInt8)   matrixHeight { return 5; }
+- (UInt8)   matrixWidth  { return 4; }
+- (float *) matrixValues { return &m_matrixValues[0]; }
+
+@end
+
+
+#pragma mark -
+#pragma mark Convolution Filter
+
+@implementation SwiffConvolutionFilter
+
+- (id) initWithParser:(SwiffParser *)parser
+{
+    if ((self = [super init])) {
+        SwiffParserReadUInt8(parser, &m_matrixWidth);
+        SwiffParserReadUInt8(parser, &m_matrixHeight);
+        SwiffParserReadFloat(parser, &m_divisor);
+        SwiffParserReadFloat(parser, &m_bias);
+
+        NSInteger count = m_matrixWidth * m_matrixHeight;
+
+        m_matrixValues = malloc(sizeof(float) * count);
+        for (NSInteger i = 0; i < count; i++) {
+            SwiffParserReadFloat(parser, &m_matrixValues[i]);
+        }
+
+        UInt32 tmp;
+        SwiffParserReadUBits(parser, 6, &tmp);  // Reserved UB[6]
+        SwiffParserReadUBits(parser, 1, &tmp);  m_clamp = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  m_preservesAlpha = tmp;
+
+    }
+
+    return self;
+}
+
+
 - (void) dealloc
 {
-    free(m_internal->matrixValues);
-
-    [m_internal->gradient release];
-    m_internal->gradient = nil;
-
-    free(m_internal);
+    free(m_matrixValues);
+    m_matrixValues = NULL;
     
     [super dealloc];
 }
 
 
-- (CGFloat)         bias           { return m_internal->bias;           }
-- (CGFloat)         divisor        { return m_internal->divisor;        }
-- (CGFloat)         angle          { return m_internal->angle;          }
-- (CGFloat)         blurX          { return m_internal->blurX;          }
-- (CGFloat)         blurY          { return m_internal->blurY;          }
-- (CGFloat)         distance       { return m_internal->distance;       }
-- (CGFloat)         strength       { return m_internal->strength;       }
-- (float *)         matrixValues   { return m_internal->matrixValues;   }
-- (SwiffGradient *) gradient       { return m_internal->gradient;       }
-- (SwiffColor)      color          { return m_internal->color1;         }
-- (SwiffColor)      shadowColor    { return m_internal->color1;         }
-- (SwiffColor)      highlightColor { return m_internal->color2;         }
-- (SwiffFilterType) filterType     { return m_internal->filterType;     }
-- (UInt8)           matrixHeight   { return m_internal->matrixHeight;   }
-- (UInt8)           matrixWidth    { return m_internal->matrixWidth;    }
-- (UInt8)           numberOfPasses { return m_internal->numberOfPasses; }
-- (BOOL)            isClamp        { return m_internal->clamp;          }
-- (BOOL)            isInnerGlow    { return m_internal->inner;          }
-- (BOOL)            isInnerShadow  { return m_internal->inner;          }
-- (BOOL)            isKnockout     { return m_internal->knockout;       }
-- (BOOL)            isOnTop        { return m_internal->flag1;          }
-- (BOOL)            preservesAlpha { return m_internal->flag1;          }
+@synthesize matrixWidth    = m_matrixWidth,
+            matrixHeight   = m_matrixHeight,
+            matrixValues   = m_matrixValues,
+            divisor        = m_divisor,
+            bias           = m_bias,
+            color          = m_color,
+            clamp          = m_clamp,
+            preservesAlpha = m_preservesAlpha;
+
+@end
+
+
+#pragma mark -
+#pragma mark Drop Shadow Filter
+
+@implementation SwiffDropShadowFilter
+
+- (id) initWithParser:(SwiffParser *)parser
+{
+    if ((self = [super init])) {
+        SwiffParserReadColorRGBA(parser, &m_color);
+        SwiffParserReadFixed(parser, &m_blurX);
+        SwiffParserReadFixed(parser, &m_blurY);
+        SwiffParserReadFixed(parser, &m_angle);
+        SwiffParserReadFixed(parser, &m_distance);
+        SwiffParserReadFixed8(parser, &m_strength);
+
+        UInt32 tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  m_innerShadow = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  m_knockout = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
+        SwiffParserReadUBits(parser, 5, &tmp);  m_numberOfPasses = tmp;
+    }
+
+    return self;
+}
+
+@synthesize color          = m_color,
+            blurX          = m_blurX,
+            blurY          = m_blurY,
+            angle          = m_angle,
+            distance       = m_distance,
+            strength       = m_strength,
+            innerShadow    = m_innerShadow,
+            knockout       = m_knockout,
+            numberOfPasses = m_numberOfPasses;
+
+@end
+
+#pragma mark -
+#pragma mark Glow Filter
+
+@implementation SwiffGlowFilter
+
+- (id) initWithParser:(SwiffParser *)parser
+{
+    if ((self = [super init])) {
+        SwiffParserReadColorRGBA(parser, &m_color);
+        SwiffParserReadFixed(parser, &m_blurX);
+        SwiffParserReadFixed(parser, &m_blurY);
+        SwiffParserReadFixed8(parser, &m_strength);
+
+        UInt32 tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  m_innerGlow = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  m_knockout = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
+        SwiffParserReadUBits(parser, 5, &tmp);  m_numberOfPasses = tmp;
+    }
+    
+    return self;
+}
+
+
+@synthesize color = m_color,
+            blurX = m_blurX,
+            blurY = m_blurY,
+            strength = m_strength,
+            innerGlow = m_innerGlow,
+            knockout = m_knockout,
+            numberOfPasses = m_numberOfPasses;
+
+@end
+
+
+#pragma mark -
+#pragma mark Bevel Filter
+
+@implementation SwiffBevelFilter
+
+- (id) initWithParser:(SwiffParser *)parser
+{
+    if ((self = [super init])) {
+        SwiffParserReadColorRGBA(parser, &m_shadowColor);
+        SwiffParserReadColorRGBA(parser, &m_highlightColor);
+        SwiffParserReadFixed(parser, &m_blurX);
+        SwiffParserReadFixed(parser, &m_blurY);
+        SwiffParserReadFixed(parser, &m_angle);
+        SwiffParserReadFixed(parser, &m_distance);
+        SwiffParserReadFixed8(parser, &m_strength);
+
+        UInt32 tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  m_innerShadow = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  m_knockout = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
+        SwiffParserReadUBits(parser, 1, &tmp);  m_onTop = tmp;
+        SwiffParserReadUBits(parser, 4, &tmp);  m_numberOfPasses = tmp;
+    }
+    
+    return self;
+}
+
+
+@synthesize shadowColor = m_shadowColor,
+            highlightColor = m_highlightColor,
+            blurX = m_blurX,
+            blurY = m_blurY,
+            angle = m_angle,
+            distance = m_distance,
+            strength = m_strength,
+            innerShadow = m_innerShadow,
+            knockout = m_knockout,
+            onTop = m_onTop,
+            numberOfPasses = m_numberOfPasses;
+
+@end
+
+
+#pragma mark -
+#pragma mark Gradient Glow Filter
+
+@implementation SwiffGradientGlowFilter
+
+- (id) initWithParser:(SwiffParser *)parser
+{
+    if ((self = [super init])) {
+        m_gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:NO];
+
+        SwiffParserReadFixed(parser, &m_blurX);
+        SwiffParserReadFixed(parser, &m_blurY);
+        SwiffParserReadFixed(parser, &m_angle);
+        SwiffParserReadFixed(parser, &m_distance);
+        SwiffParserReadFixed8(parser, &m_strength);
+
+        UInt32 tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  m_innerGlow = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  m_knockout = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
+        SwiffParserReadUBits(parser, 1, &tmp);  m_onTop = tmp;
+        SwiffParserReadUBits(parser, 4, &tmp);  m_numberOfPasses = tmp;
+    }
+
+    return self;
+}
+
+
+- (void) dealloc
+{
+    [m_gradient release];
+    m_gradient = nil;
+
+    [super dealloc];
+}
+
+
+@synthesize gradient       = m_gradient,
+            blurX          = m_blurX,
+            blurY          = m_blurY,
+            angle          = m_angle,
+            distance       = m_distance,
+            strength       = m_strength,
+            innerGlow      = m_innerGlow,
+            knockout       = m_knockout,
+            onTop          = m_onTop,
+            numberOfPasses = m_numberOfPasses;
+
+@end
+
+
+#pragma mark -
+#pragma mark Gradient Bevel Filter
+
+@implementation SwiffGradientBevelFilter 
+
+- (id) initWithParser:(SwiffParser *)parser
+{
+    if ((self = [super init])) {
+        m_gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:NO];
+
+        SwiffParserReadFixed(parser, &m_blurX);
+        SwiffParserReadFixed(parser, &m_blurY);
+        SwiffParserReadFixed(parser, &m_angle);
+        SwiffParserReadFixed(parser, &m_distance);
+        SwiffParserReadFixed8(parser, &m_strength);
+
+        UInt32 tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  m_innerShadow = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  m_knockout = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
+        SwiffParserReadUBits(parser, 1, &tmp);  m_onTop = tmp;
+        SwiffParserReadUBits(parser, 4, &tmp);  m_numberOfPasses = tmp;
+    }
+    
+    return self;
+}
+
+
+- (void) dealloc
+{
+    [m_gradient release];
+    m_gradient = nil;
+
+    [super dealloc];
+}
+
+
+@synthesize gradient       = m_gradient,
+            blurX          = m_blurX,
+            blurY          = m_blurY,
+            angle          = m_angle,
+            distance       = m_distance,
+            strength       = m_strength,
+            innerShadow    = m_innerShadow,
+            knockout       = m_knockout,
+            onTop          = m_onTop,
+            numberOfPasses = m_numberOfPasses;
 
 @end
