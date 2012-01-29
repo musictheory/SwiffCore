@@ -56,7 +56,7 @@ typedef NSInteger SwiffFillStyleType;
             SwiffColor color;
         };
         struct {
-            SwiffGradient *gradient;
+            CFTypeRef gradient;
             CGAffineTransform  gradientTransform;
         };
         struct {

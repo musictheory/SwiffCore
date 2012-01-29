@@ -32,10 +32,10 @@
 
 typedef struct SwiffPlacedObjectAdditionalStorage
 {
-    NSString *name;
-    NSString *className;
-    NSArray  *filters;
-    NSString *layerID;
+    CFStringRef name;
+    CFStringRef className;
+    CFArrayRef  filters;
+    CFStringRef layerID;
     SwiffColorTransform colorTransform;
     SwiffBlendMode blendMode;
     UInt16 clipDepth;
@@ -48,7 +48,7 @@ typedef struct SwiffPlacedObjectAdditionalStorage
 } SwiffPlacedObjectAdditionalStorage;
 
 #define ADDITIONAL ((SwiffPlacedObjectAdditionalStorage *)m_additional)
-#define MAKE_ADDITIONAL { if (!m_additional) m_additional = calloc(sizeof(SwiffPlacedObjectAdditionalStorage), 1); }
+#define MAKE_ADDITIONAL { if (!m_additional) m_additional = calloc(1, sizeof(SwiffPlacedObjectAdditionalStorage)); }
 
 SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, SwiffPlacedObject *existingPlacedObject)
 {
@@ -107,10 +107,10 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
             memcpy(m_additional, placedObject->m_additional, sizeof(SwiffPlacedObjectAdditionalStorage));
             
             SwiffPlacedObjectAdditionalStorage *other = placedObject->m_additional;
-            ADDITIONAL->name      = [other->name      copy];
-            ADDITIONAL->className = [other->className copy];
-            ADDITIONAL->filters   = [other->filters   copy];
-            ADDITIONAL->layerID   = [other->layerID   copy];
+            ADDITIONAL->name      = other->name      ? CFStringCreateCopy(NULL, other->name)      : NULL;
+            ADDITIONAL->className = other->className ? CFStringCreateCopy(NULL, other->className) : NULL;
+            ADDITIONAL->filters   = other->filters   ? CFArrayCreateCopy (NULL, other->filters)   : NULL;
+            ADDITIONAL->layerID   = other->layerID   ? CFStringCreateCopy(NULL, other->layerID)   : NULL;
         }
     }
     
@@ -121,10 +121,10 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 - (void) dealloc
 {
     if (m_additional) {
-        [ADDITIONAL->name      release];
-        [ADDITIONAL->className release];
-        [ADDITIONAL->filters   release];
-        [ADDITIONAL->layerID   release];
+        if (ADDITIONAL->name)      CFRelease(ADDITIONAL->name);
+        if (ADDITIONAL->className) CFRelease(ADDITIONAL->className);
+        if (ADDITIONAL->filters)   CFRelease(ADDITIONAL->filters);
+        if (ADDITIONAL->layerID)   CFRelease(ADDITIONAL->layerID);
 
         free(m_additional);
         m_additional = NULL;
@@ -188,15 +188,15 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 {
     if (layerID != [self layerIdentifier]) {
         MAKE_ADDITIONAL;
-        [ADDITIONAL->layerID release];
-        ADDITIONAL->layerID = [layerID copy];
+        if (ADDITIONAL->layerID) CFRelease(ADDITIONAL->layerID);
+        ADDITIONAL->layerID = CFStringCreateCopy(NULL, (__bridge CFStringRef) layerID);
     }
 }
 
 
 - (NSString *) layerIdentifier
 {
-    return m_additional ? ADDITIONAL->layerID : nil;
+    return m_additional ? (__bridge NSString *) ADDITIONAL->layerID : nil;
 }
 
 
@@ -264,15 +264,16 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 {
     if (name != [self name]) {
         MAKE_ADDITIONAL;
-        [ADDITIONAL->name release];
-        ADDITIONAL->name = [name copy];
+
+        if (ADDITIONAL->name) CFRelease(ADDITIONAL->name);
+        ADDITIONAL->name = CFStringCreateCopy(NULL, (__bridge CFStringRef) name);
     }
 }
 
 
 - (NSString *) name
 {
-    return m_additional ? ADDITIONAL->name : nil;
+    return m_additional ? (__bridge NSString *) ADDITIONAL->name : nil;
 }
 
 
@@ -295,15 +296,16 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 {
     if (className != [self className]) {
         MAKE_ADDITIONAL;
-        [ADDITIONAL->className release];
-        ADDITIONAL->className = [className copy];
+
+        if (ADDITIONAL->className) CFRelease(ADDITIONAL->className);
+        ADDITIONAL->className = CFStringCreateCopy(NULL, (__bridge CFStringRef) className);
     }
 }
 
 
 - (NSString *) className
 {
-    return m_additional ? ADDITIONAL->className : nil;
+    return m_additional ? (__bridge NSString *) ADDITIONAL->className : nil;
 }
 
 
@@ -412,15 +414,16 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 {
     if (filters != [self filters]) {
         MAKE_ADDITIONAL;
-        [ADDITIONAL->filters release];
-        ADDITIONAL->filters = [filters retain];
+        
+        if (ADDITIONAL->filters) CFRelease(ADDITIONAL->filters);
+        ADDITIONAL->filters = (filters ? CFBridgingRetain(filters) : NULL);
     }
 }
 
 
 - (NSArray *) filters
 {
-    return m_additional ? ADDITIONAL->filters : nil;
+    return m_additional ? (__bridge NSArray *)ADDITIONAL->filters : nil;
 }
 
 

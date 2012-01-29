@@ -30,45 +30,47 @@
 
 @class SwiffMovie;
 
-typedef struct SwiffRenderer SwiffRenderer;
 
-extern SwiffRenderer *SwiffRendererCreate(SwiffMovie *movie);
-extern void SwiffRendererFree(SwiffRenderer *renderer);
+@interface SwiffRenderer : NSObject {
+@private
+    SwiffMovie       *m_movie;
 
-extern void SwiffRendererRender(SwiffRenderer *renderer, CGContextRef context);
+    CGFloat           m_scaleFactorHint;
+    CGFloat           m_hairlineWidth;
+    CGFloat           m_fillHairlineWidth;
 
-extern void SwiffRendererSetPlacedObjects(SwiffRenderer *renderer, NSArray *placedObjects);
-extern NSArray *SwiffRendererGetPlacedObjects(SwiffRenderer *renderer);
+    CGAffineTransform m_baseAffineTransform;
+    SwiffColor        m_multiplyColor;
+    BOOL              m_hasBaseAffineTransform;
+    BOOL              m_hasMultiplyColor;
 
-extern void SwiffRendererSetBaseAffineTransform(SwiffRenderer *renderer, CGAffineTransform *transform);
-extern CGAffineTransform *SwiffRendererGetBaseAffineTransform(SwiffRenderer *renderer);
+    BOOL              m_shouldAntialias;
+    BOOL              m_shouldSmoothFonts;
+    BOOL              m_shouldSubpixelPositionFonts;
+    BOOL              m_shouldSubpixelQuantizeFonts;
+}
+
+- (id) initWithMovie:(SwiffMovie *)movie;
+
+- (void) renderPlacedObjects:(NSArray *)placedObjects inContext:(CGContextRef)context;
+
+@property (nonatomic, retain, readonly) SwiffMovie *movie;
+
+@property (nonatomic, assign) CGAffineTransform *baseAffineTransform;
 
 // Hint to renderer about the original contentsScale of the context.  Used only for pixel-snapping, not scaling
-extern void SwiffRendererSetScaleFactorHint(SwiffRenderer *renderer, CGFloat hint);
-extern CGFloat SwiffRendererGetScaleFactorHint(SwiffRenderer *renderer);
+@property (nonatomic, assign) CGFloat scaleFactorHint;
 
-// When set, all rendered colors are multiplied by the specified color
-extern void SwiffRendererSetMultiplyColor(SwiffRenderer *renderer, SwiffColor *color);
-extern SwiffColor *SwiffRendererGetMultiplyColor(SwiffRenderer *renderer);
+// When non-NULL, all rendered colors are multiplied by the specified color
+@property (nonatomic, assign) SwiffColor *multiplyColor;
 
-extern void SwiffRendererSetHairlineWidth(SwiffRenderer *renderer, CGFloat hairlineWidth);
-extern CGFloat SwiffRendererGetHairlineWidth(SwiffRenderer *renderer);
+@property (nonatomic, assign) CGFloat hairlineWidth;
+@property (nonatomic, assign) CGFloat fillHairlineWidth;
 
-extern void SwiffRendererSetFillHairlineWidth(SwiffRenderer *renderer, CGFloat hairlineWidth);
-extern CGFloat SwiffRendererGetFillHairlineWidth(SwiffRenderer *renderer);
+@property (nonatomic, assign) BOOL shouldAntialias;
+@property (nonatomic, assign) BOOL shouldSmoothFonts;
+@property (nonatomic, assign) BOOL shouldSubpixelPositionFonts;
+@property (nonatomic, assign) BOOL shouldSubpixelQuantizeFonts;
 
-// Maps to CGContextSetShouldAntialias()
-extern void SwiffRendererSetShouldAntialias(SwiffRenderer *renderer, BOOL yn);
-extern BOOL SwiffRendererGetShouldAntialias(SwiffRenderer *renderer);
+@end
 
-// Maps to CGContextSetShouldSmoothFonts()
-extern void SwiffRendererSetShouldSmoothFonts(SwiffRenderer *renderer, BOOL yn);
-extern BOOL SwiffRendererGetShouldSmoothFonts(SwiffRenderer *renderer);
-
-// Maps to CGContextSetShouldSubpixelPositionFonts()
-extern void SwiffRendererSetShouldSubpixelPositionFonts(SwiffRenderer *renderer, BOOL yn);
-extern BOOL SwiffRendererGetShouldSubpixelPositionFonts(SwiffRenderer *renderer);
-
-// Maps to CGContextSetShouldSubpixelQuantizeFonts()
-extern void SwiffRendererSetShouldSubpixelQuantizeFonts(SwiffRenderer *renderer, BOOL yn);
-extern BOOL SwiffRendererGetShouldSubpixelQuantizeFonts(SwiffRenderer *renderer);

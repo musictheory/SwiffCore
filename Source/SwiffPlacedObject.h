@@ -52,13 +52,13 @@
 @property (nonatomic, assign) CGAffineTransform affineTransform;
 @property (nonatomic, assign) SwiffColorTransform colorTransform;
 
-@property (nonatomic, retain) NSString *className;
+@property (nonatomic, copy)   NSString *className;
 @property (nonatomic, assign) SwiffBlendMode blendMode;
 @property (nonatomic, assign) CGBlendMode CGBlendMode;
 @property (nonatomic, retain) NSArray *filters;
 
 @property (nonatomic, assign) BOOL wantsLayer;
-@property (nonatomic, retain) NSString *layerIdentifier;
+@property (nonatomic, copy)   NSString *layerIdentifier;
 
 @property (nonatomic, assign, getter=isHidden) BOOL hidden;
 @property (nonatomic, assign) BOOL placesImage;

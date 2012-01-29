@@ -75,6 +75,8 @@
 		55F65C8B14AFC61B00DA2DDB /* SwiffFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65C8914AFC61B00DA2DDB /* SwiffFilter.m */; };
 		55F65C8C14AFC61B00DA2DDB /* SwiffFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F65C8914AFC61B00DA2DDB /* SwiffFilter.m */; };
 		55F9C75814464B1300FE8E4F /* SwiffSceneAndFrameLabelData.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F9C75714464B1300FE8E4F /* SwiffSceneAndFrameLabelData.m */; };
+		55FE9B5614D40CBA00CF505B /* SwiffSparseArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 55FE9B5514D40CBA00CF505B /* SwiffSparseArray.m */; };
+		55FE9B5814D413B600CF505B /* SwiffSparseArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 55FE9B5514D40CBA00CF505B /* SwiffSparseArray.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -164,6 +166,8 @@
 		55F65C8914AFC61B00DA2DDB /* SwiffFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffFilter.m; path = Source/SwiffFilter.m; sourceTree = "<group>"; };
 		55F9C75614464B1200FE8E4F /* SwiffSceneAndFrameLabelData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffSceneAndFrameLabelData.h; path = Source/SwiffSceneAndFrameLabelData.h; sourceTree = "<group>"; };
 		55F9C75714464B1300FE8E4F /* SwiffSceneAndFrameLabelData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffSceneAndFrameLabelData.m; path = Source/SwiffSceneAndFrameLabelData.m; sourceTree = "<group>"; };
+		55FE9B5414D40CBA00CF505B /* SwiffSparseArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffSparseArray.h; path = Source/SwiffSparseArray.h; sourceTree = "<group>"; };
+		55FE9B5514D40CBA00CF505B /* SwiffSparseArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffSparseArray.m; path = Source/SwiffSparseArray.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -226,6 +230,8 @@
 				55F65A7414429C9E00E12C27 /* SwiffPath.m */,
 				55F9C75614464B1200FE8E4F /* SwiffSceneAndFrameLabelData.h */,
 				55F9C75714464B1300FE8E4F /* SwiffSceneAndFrameLabelData.m */,
+				55FE9B5414D40CBA00CF505B /* SwiffSparseArray.h */,
+				55FE9B5514D40CBA00CF505B /* SwiffSparseArray.m */,
 				55261BEC14B4160E004C6DA4 /* SwiffSoundStreamBlock.h */,
 				55261BED14B4160E004C6DA4 /* SwiffSoundStreamBlock.m */,
 				5539A639148DA57A00E8FA86 /* SwiffStaticTextRecord.h */,
@@ -494,6 +500,7 @@
 				55261BF114B431B2004C6DA4 /* SwiffSoundStreamBlock.m in Sources */,
 				557082E114B7B3410072C19A /* SwiffUtils.m in Sources */,
 				557082E214B7B67D0072C19A /* SwiffTypes.m in Sources */,
+				55FE9B5814D413B600CF505B /* SwiffSparseArray.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -533,6 +540,7 @@
 				55261BEE14B4160E004C6DA4 /* SwiffSoundStreamBlock.m in Sources */,
 				557082E014B7B3410072C19A /* SwiffUtils.m in Sources */,
 				557082E314B7B67E0072C19A /* SwiffTypes.m in Sources */,
+				55FE9B5614D40CBA00CF505B /* SwiffSparseArray.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

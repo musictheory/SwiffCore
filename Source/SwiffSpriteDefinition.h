@@ -29,25 +29,25 @@
 #import <SwiffParser.h>
 #import <SwiffDefinition.h>
 
-@class SwiffFrame, SwiffScene, SwiffMovie, SwiffSceneAndFrameLabelData, SwiffSoundDefinition, SwiffSoundStreamData;
+@class SwiffFrame, SwiffScene, SwiffMovie, SwiffSceneAndFrameLabelData, SwiffSparseArray, SwiffSoundDefinition, SwiffSoundStreamData;
 
 
 @interface SwiffSpriteDefinition : NSObject <SwiffDefinition> {
 @private
-    NSMutableArray  *m_frames;
-    NSDictionary    *m_labelToFrameMap;
-    SwiffFrame      *m_lastFrame;
-    NSArray         *m_scenes;
-    NSDictionary    *m_sceneNameToSceneMap;
+    NSMutableArray   *m_frames;
+    NSDictionary     *m_labelToFrameMap;
+    SwiffFrame       *m_lastFrame;
+    NSArray          *m_scenes;
+    NSDictionary     *m_sceneNameToSceneMap;
 
-    SwiffSparseArray m_placedObjects;
+    SwiffSparseArray *m_placedObjects;
 
-    UInt16           m_libraryID;
-    CGRect           m_bounds;
-    CGRect           m_renderBounds;
+    UInt16            m_libraryID;
+    CGRect            m_bounds;
+    CGRect            m_renderBounds;
 
 @protected
-    SwiffMovie      *m_movie;
+    SwiffUnretained SwiffMovie *m_movie;
 }
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie;

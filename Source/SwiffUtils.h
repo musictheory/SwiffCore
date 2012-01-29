@@ -130,16 +130,6 @@ extern BOOL SwiffTagJoin(SwiffTag inTag, NSInteger inVersion, SwiffTag *outTag);
 
 
 #pragma mark -
-#pragma mark Sparse Array
-
-extern void  SwiffSparseArrayFree(SwiffSparseArray *array);
-extern void  SwiffSparseArrayEnumerateValues(SwiffSparseArray *array, void (^)(void *value));
-extern void  SwiffSparseArraySetConsumedObjectAtIndex(SwiffSparseArray *array, UInt16 index, id object CF_CONSUMED);
-extern void  SwiffSparseArraySetValueAtIndex(SwiffSparseArray *array, UInt16 index, void *object);
-extern void *SwiffSparseArrayGetValueAtIndex(SwiffSparseArray *array, UInt16 index);
-
-
-#pragma mark -
 #pragma mark MPEG
 
 SwiffMPEGError SwiffMPEGReadHeader(const UInt8 *inBuffer, SwiffMPEGHeader *outHeader);

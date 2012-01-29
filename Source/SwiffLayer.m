@@ -33,6 +33,7 @@
 #import "SwiffPlayhead.h"
 #import "SwiffRenderer.h"
 #import "SwiffSoundPlayer.h"
+#import "SwiffSparseArray.h"
 #import "SwiffUtils.h"
 #import "SwiffView.h"
 
@@ -52,8 +53,8 @@ static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";
     if ((self = [self init])) {
         m_movie = [movie retain];
 
-        m_renderer = SwiffRendererCreate(movie);
-
+        m_renderer = [[SwiffRenderer alloc] initWithMovie:movie];
+        
         m_contentLayer = [[CALayer alloc] init];
         [m_contentLayer setDelegate:self];
         [self addSublayer:m_contentLayer];
@@ -74,16 +75,12 @@ static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";
 
     [m_playhead setDelegate:nil];
 
-    SwiffRendererFree(m_renderer);
-    m_renderer = NULL;
-
     [m_movie        release];  m_movie        = nil;
+    [m_renderer     release];  m_renderer     = nil;
     [m_currentFrame release];  m_currentFrame = nil;
     [m_playhead     release];  m_playhead     = nil;
+    [m_sublayers    release];  m_sublayers    = nil;
     [m_contentLayer release];  m_contentLayer = nil;
-
-    SwiffSparseArrayEnumerateValues(&m_sublayers, ^(void *v) { [(id)v release]; });
-    SwiffSparseArrayFree(&m_sublayers);
 
     [super dealloc];
 }
@@ -361,7 +358,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         UInt16 libraryID = [placedObject libraryID];
         
         id<SwiffDefinition> definition = [m_movie definitionWithLibraryID:libraryID];
-        CALayer *sublayer = [[CALayer alloc] init];
+        CALayer *sublayer = [CALayer layer];
 
         CGRect bounds = [definition renderBounds];
 
@@ -379,15 +376,18 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
         SwiffLog(@"View", @"adding sublayer at depth %d", (int)depth);
 
-        CALayer *existing = SwiffSparseArrayGetValueAtIndex(&self->m_sublayers, depth);
+        if (!m_sublayers) {
+            m_sublayers = [[SwiffSparseArray alloc] init];
+        }
+
+        CALayer *existing = SwiffSparseArrayGetObjectAtIndex(m_sublayers, depth);
         if (existing) {
             [existing removeFromSuperlayer];
-            [existing release];
         } else {
             m_sublayerCount++;
         }
 
-        SwiffSparseArraySetConsumedObjectAtIndex(&m_sublayers, depth, sublayer);
+        SwiffSparseArraySetObjectAtIndex(m_sublayers, depth, sublayer);
     }
 }
 
@@ -397,14 +397,13 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     for (SwiffPlacedObject *placedObject in placedObjects) {
         UInt16 depth = [placedObject depth];
 
-        CALayer *sublayer = SwiffSparseArrayGetValueAtIndex(&m_sublayers, depth);
+        CALayer *sublayer = SwiffSparseArrayGetObjectAtIndex(m_sublayers, depth);
         if (!sublayer) continue;
 
         SwiffLog(@"View", @"removing sublayer at depth %d", (int)depth);
         [sublayer removeFromSuperlayer];
-        [sublayer release];
 
-        SwiffSparseArraySetValueAtIndex(&self->m_sublayers, depth, nil);
+        SwiffSparseArraySetObjectAtIndex(m_sublayers, depth, nil);
         m_sublayerCount--;
     }
 }
@@ -414,11 +413,9 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 {
     for (SwiffPlacedObject *placedObject in placedObjects) {
         UInt16 depth = [placedObject depth];
-        CALayer *sublayer = SwiffSparseArrayGetValueAtIndex(&m_sublayers, depth);
 
-        if (!sublayer) {
-            continue;
-        }
+        CALayer *sublayer = SwiffSparseArrayGetObjectAtIndex(m_sublayers, depth);
+        if (!sublayer) continue;
 
         [self _updateGeometryForSublayer:sublayer withPlacedObject:placedObject];
     }
@@ -483,7 +480,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
                     newWantsLayer = NO;
                 }
 
-                if (oldWantsLayer && !SwiffSparseArrayGetValueAtIndex(&m_sublayers, oldDepth)) {
+                if (oldWantsLayer && !SwiffSparseArrayGetObjectAtIndex(m_sublayers, oldDepth)) {
                     oldWantsLayer = NO;
                 }
             
@@ -513,7 +510,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
                 oldWantsLayer = NO;
             }
 
-            if (oldWantsLayer && !SwiffSparseArrayGetValueAtIndex(&m_sublayers, oldDepth)) {
+            if (oldWantsLayer && !SwiffSparseArrayGetObjectAtIndex(m_sublayers, oldDepth)) {
                 oldWantsLayer = NO;
             }
 
@@ -576,14 +573,13 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
     if (!CGSizeEqualToSize(oldBounds.size, bounds.size)) {
         [m_contentLayer setNeedsDisplay];
-        SwiffSparseArrayEnumerateValues(&m_sublayers, ^(void *value) {
-            CALayer *sublayer = (CALayer *)value;
-
+        
+        for (CALayer *sublayer in m_sublayers) {
             SwiffPlacedObject *placedObject = [sublayer valueForKey:SwiffPlacedObjectKey];
             if (placedObject) {
                 [self _updateGeometryForSublayer:sublayer withPlacedObject:placedObject];
             }
-        });
+        };
     }
 }
 
@@ -607,7 +603,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
             
             for (SwiffPlacedObject *object in placedObjects) {
                 UInt16 depth = object->m_depth;
-                if (!SwiffSparseArrayGetValueAtIndex(&m_sublayers, depth)) {
+                if (!SwiffSparseArrayGetObjectAtIndex(m_sublayers, depth)) {
                     [filteredObjects addObject:object];
                 }
             }
@@ -625,10 +621,9 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
             CGContextFillRect(context, [layer bounds]);
         }
 
-        SwiffRendererSetScaleFactorHint(m_renderer, [self contentsScale]);
-        SwiffRendererSetBaseAffineTransform(m_renderer, &m_scaledAffineTransform);
-        SwiffRendererSetPlacedObjects(m_renderer, filteredObjects ? filteredObjects : placedObjects);
-        SwiffRendererRender(m_renderer, context);
+        [m_renderer setScaleFactorHint:[self contentsScale]];
+        [m_renderer setBaseAffineTransform:&m_scaledAffineTransform];
+        [m_renderer renderPlacedObjects:(filteredObjects ? filteredObjects : placedObjects) inContext:context];
 
         CGContextRestoreGState(context);
         
@@ -699,21 +694,21 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
             );
         }
 
-        CGFloat hairlineWidth     = SwiffRendererGetHairlineWidth(m_renderer);
-        CGFloat fillHairlineWidth = SwiffRendererGetFillHairlineWidth(m_renderer);
+        CGFloat hairlineWidth     = [m_renderer hairlineWidth];
+        CGFloat fillHairlineWidth = [m_renderer fillHairlineWidth];
 
         CGFloat contentsScale = [self contentsScale];
-        SwiffRendererSetHairlineWidth(m_renderer, hairlineWidth * contentsScale);
-        SwiffRendererSetFillHairlineWidth(m_renderer, fillHairlineWidth * contentsScale);
 
-        SwiffRendererSetScaleFactorHint(m_renderer, 1.0);
-        SwiffRendererSetBaseAffineTransform(m_renderer, &base);
-        SwiffRendererSetPlacedObjects(m_renderer, placedObjects);
-        SwiffRendererRender(m_renderer, context);
+        [m_renderer setHairlineWidth:(hairlineWidth * contentsScale)];
+        [m_renderer setFillHairlineWidth:(fillHairlineWidth * contentsScale)];
+        [m_renderer setScaleFactorHint:1.0];
+        [m_renderer setBaseAffineTransform:&base];
 
-        SwiffRendererSetHairlineWidth(m_renderer, hairlineWidth);
-        SwiffRendererSetFillHairlineWidth(m_renderer, fillHairlineWidth);
+        [m_renderer renderPlacedObjects:placedObjects inContext:context];
 
+        [m_renderer setHairlineWidth:hairlineWidth];
+        [m_renderer setFillHairlineWidth:fillHairlineWidth];
+        
         CGContextRestoreGState(context);
 
         [placedObjects release];
@@ -801,13 +796,12 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) redisplay
 {
-    SwiffSparseArrayEnumerateValues(&m_sublayers, ^(void *value) {
-        CALayer *layer = value;
+    for (CALayer *layer in m_sublayers) {
         [layer removeFromSuperlayer];
-        [layer release];
-    });
+    };
     
-    SwiffSparseArrayFree(&m_sublayers);
+    [m_sublayers release];
+    m_sublayers = nil;
     m_sublayerCount = 0;
 
     [self _transitionToFrame:m_currentFrame fromFrame:nil];
@@ -818,9 +812,10 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 - (void) _setNeedsRedisplay
 {
     [m_contentLayer setNeedsDisplay];
-    SwiffSparseArrayEnumerateValues(&m_sublayers, ^(void *value) {
-        [(id)value setNeedsDisplay];
-    });
+
+    for (CALayer *layer in m_sublayers) {
+        [layer setNeedsDisplay];
+    };
 }
 
 
@@ -860,15 +855,16 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setMultiplyColor:(SwiffColor *)color
 {
-    SwiffRendererSetMultiplyColor(m_renderer, color);
+    [m_renderer setMultiplyColor:color];
+    [self _setNeedsRedisplay];
 }
 
 
 
 - (void) setHairlineWidth:(CGFloat)width
 {
-    if (width != SwiffRendererGetHairlineWidth(m_renderer)) {
-        SwiffRendererSetHairlineWidth(m_renderer, width);
+    if (width != [m_renderer hairlineWidth]) {
+        [m_renderer setHairlineWidth:width];
         [self _setNeedsRedisplay];
     }
 }
@@ -876,8 +872,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setFillHairlineWidth:(CGFloat)width
 {
-    if (width != SwiffRendererGetFillHairlineWidth(m_renderer)) {
-        SwiffRendererSetFillHairlineWidth(m_renderer, width);
+    if (width != [m_renderer fillHairlineWidth]) {
+        [m_renderer setFillHairlineWidth:width];
         [self _setNeedsRedisplay];
     }
 }
@@ -885,8 +881,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setShouldAntialias:(BOOL)yn
 {
-    if (yn != SwiffRendererGetShouldAntialias(m_renderer)) {
-        SwiffRendererSetShouldAntialias(m_renderer, yn);
+    if (yn != [m_renderer shouldAntialias]) {
+        [m_renderer setShouldAntialias:yn];
         [self _setNeedsRedisplay];
     }
 }
@@ -894,8 +890,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setShouldSmoothFonts:(BOOL)yn
 {
-    if (yn != SwiffRendererGetShouldSmoothFonts(m_renderer)) {
-        SwiffRendererSetShouldSmoothFonts(m_renderer, yn);
+    if (yn != [m_renderer shouldSmoothFonts]) {
+        [m_renderer setShouldSmoothFonts:yn];
         [self _setNeedsRedisplay];
     }
 }
@@ -903,8 +899,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setShouldSubpixelPositionFonts:(BOOL)yn
 {
-    if (yn != SwiffRendererGetShouldSubpixelPositionFonts(m_renderer)) {
-        SwiffRendererSetShouldSubpixelPositionFonts(m_renderer, yn);
+    if (yn != [m_renderer shouldSubpixelPositionFonts]) {
+        [m_renderer setShouldSubpixelPositionFonts:yn];
         [self _setNeedsRedisplay];
     }
 }
@@ -912,8 +908,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setShouldSubpixelQuantizeFonts:(BOOL)yn
 {
-    if (yn != SwiffRendererGetShouldSubpixelQuantizeFonts(m_renderer)) {
-        SwiffRendererSetShouldSubpixelQuantizeFonts(m_renderer, yn);
+    if (yn != [m_renderer shouldSubpixelQuantizeFonts]) {
+        [m_renderer setShouldSubpixelQuantizeFonts:yn];
         [self _setNeedsRedisplay];
     }
 }
@@ -928,13 +924,13 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 }
 
 
-- (SwiffColor *) multiplyColor          { return SwiffRendererGetMultiplyColor(m_renderer);               }
-- (CGFloat) hairlineWidth               { return SwiffRendererGetHairlineWidth(m_renderer);               }
-- (CGFloat) fillHairlineWidth           { return SwiffRendererGetFillHairlineWidth(m_renderer);           }
-- (BOOL)    shouldAntialias             { return SwiffRendererGetShouldAntialias(m_renderer);             }
-- (BOOL)    shouldSmoothFonts           { return SwiffRendererGetShouldSmoothFonts(m_renderer);           }
-- (BOOL)    shouldSubpixelPositionFonts { return SwiffRendererGetShouldSubpixelPositionFonts(m_renderer); }
-- (BOOL)    shouldSubpixelQuantizeFonts { return SwiffRendererGetShouldSubpixelQuantizeFonts(m_renderer); }
+- (SwiffColor *) multiplyColor          { return [m_renderer multiplyColor];               }
+- (CGFloat) hairlineWidth               { return [m_renderer hairlineWidth];               }
+- (CGFloat) fillHairlineWidth           { return [m_renderer fillHairlineWidth];           }
+- (BOOL)    shouldAntialias             { return [m_renderer shouldAntialias];             }
+- (BOOL)    shouldSmoothFonts           { return [m_renderer shouldSmoothFonts];           }
+- (BOOL)    shouldSubpixelPositionFonts { return [m_renderer shouldSubpixelPositionFonts]; }
+- (BOOL)    shouldSubpixelQuantizeFonts { return [m_renderer shouldSubpixelQuantizeFonts]; }
 
 @synthesize swiffLayerDelegate     = m_delegate,
             movie                  = m_movie,

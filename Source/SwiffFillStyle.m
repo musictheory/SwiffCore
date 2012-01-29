@@ -91,7 +91,10 @@
         } else if (IS_GRADIENT_TYPE) {
             SwiffParserReadMatrix(parser, &m_content.gradientTransform);
             BOOL isFocalGradient = (m_type == SwiffFillStyleTypeFocalRadialGradient);
-            m_content.gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:isFocalGradient];
+
+            SwiffGradient *gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:isFocalGradient];
+            m_content.gradient = CFBridgingRetain(gradient);
+            [gradient release];
 
         } else if (IS_BITMAP_TYPE) {
             UInt16 bitmapID;
@@ -120,9 +123,9 @@
 
 - (void) dealloc
 {
-    if (IS_GRADIENT_TYPE) {
-        [m_content.gradient release];
-        m_content.gradient = nil;
+    if (IS_GRADIENT_TYPE && m_content.gradient) {
+        CFRelease(m_content.gradient);
+        m_content.gradient = NULL;
     }
 
     [super dealloc];
@@ -189,7 +192,7 @@
 - (SwiffGradient *) gradient
 {
     if (IS_GRADIENT_TYPE) {
-        return m_content.gradient;
+        return (__bridge SwiffGradient *)m_content.gradient;
     } else {
         return nil;
     }

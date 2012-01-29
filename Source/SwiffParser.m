@@ -229,16 +229,19 @@ NSStringEncoding SwiffParserGetStringEncoding(SwiffParser *parser)
 
 extern void SwiffParserSetAssociatedValue(SwiffParser *parser, NSString *key, id value)
 {
+    CFStringRef cfKey   = (__bridge CFStringRef)key;
+    CFTypeRef   cfValue = (__bridge CFTypeRef)value;
+
     if (value) {
         if (!parser->values) {
             parser->values = CFDictionaryCreateMutable(NULL, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         }
 
-        CFDictionarySetValue(parser->values, key, value);
+        CFDictionarySetValue(parser->values, cfKey, cfValue);
 
     } else {
         if (parser->values) {
-            CFDictionaryRemoveValue(parser->values, key);
+            CFDictionaryRemoveValue(parser->values, cfKey);
         }
     }
 }
@@ -246,7 +249,7 @@ extern void SwiffParserSetAssociatedValue(SwiffParser *parser, NSString *key, id
 
 id SwiffParserGetAssociatedValue(SwiffParser *parser, NSString *key)
 {
-    return parser->values ? CFDictionaryGetValue(parser->values, key) : nil;
+    return parser->values ? (__bridge id) CFDictionaryGetValue(parser->values, (__bridge CFTypeRef) key) : nil;
 }
 
 

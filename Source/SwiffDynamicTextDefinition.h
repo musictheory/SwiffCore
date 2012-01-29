@@ -35,7 +35,8 @@
 
 @interface SwiffDynamicTextDefinition : NSObject <SwiffDefinition> {
 @private
-    SwiffMovie *m_movie;
+    SwiffUnretained SwiffMovie *m_movie;
+
     UInt16      m_libraryID;
     CGRect      m_bounds;
     

@@ -46,25 +46,9 @@
 #import "SwiffUtils.h"
 
 
-struct SwiffRenderer {
-    SwiffMovie       *movie;
-    NSArray          *placedObjects;
-    CGFloat           hairlineWidth;
-    CGFloat           fillHairlineWidth;
-    CGFloat           scaleFactorHint;
-    CGAffineTransform baseAffineTransform;
-    SwiffColor        multiplyColor;
-    BOOL              hasBaseAffineTransform;
-    BOOL              hasMultiplyColor;
-    BOOL              shouldAntialias;
-    BOOL              shouldSmoothFonts;
-    BOOL              shouldSubpixelPositionFonts;
-    BOOL              shouldSubpixelQuantizeFonts;
-};
-
-
 typedef struct SwiffRenderState {
-    SwiffMovie       *movie;
+    SwiffUnretained SwiffMovie *movie;
+
     CGContextRef      context;
     CGRect            clipBoundingBox;
     CGAffineTransform affineTransform;
@@ -851,68 +835,67 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
 
 
 #pragma mark -
-#pragma mark Public Methods
+#pragma mark SwiffRenderer Class
 
-SwiffRenderer *SwiffRendererCreate(SwiffMovie *movie)
+@implementation SwiffRenderer
+
+- (id) initWithMovie:(SwiffMovie *)movie
 {
-    SwiffRenderer *renderer = calloc(sizeof(SwiffRenderer), 1);
+    if ((self = [super init])) {
+        m_movie = [movie retain];
+        m_shouldAntialias = YES;
+        m_scaleFactorHint = 1.0;
+    }
 
-    renderer->movie = [movie retain];
-    renderer->shouldAntialias = YES;
-    renderer->scaleFactorHint = 1.0;
-    
-    return renderer;
+    return self;
 }
 
 
-void SwiffRendererFree(SwiffRenderer *renderer)
+- (void) dealloc
 {
-    [renderer->movie release];
-    renderer->movie = nil;
+    [m_movie release];
+    m_movie = nil;
 
-    [renderer->placedObjects release];
-    renderer->placedObjects = nil;
-    
-    free(renderer);
+    [super dealloc];
 }
 
 
-void SwiffRendererRender(SwiffRenderer *renderer, CGContextRef context)
+- (void) renderPlacedObjects:(NSArray *)placedObjects inContext:(CGContextRef)context
 {
     SwiffRenderState state;
     memset(&state, 0, sizeof(SwiffRenderState));
 
-    state.movie   = renderer->movie;
+    state.movie   = m_movie;
     state.context = context;
 
-    if (renderer->hasMultiplyColor && (renderer->multiplyColor.alpha > 0)) {
-        state.multiplyRed   = (renderer->multiplyColor.red   * renderer->multiplyColor.alpha);
-        state.multiplyGreen = (renderer->multiplyColor.green * renderer->multiplyColor.alpha);
-        state.multiplyBlue  = (renderer->multiplyColor.blue  * renderer->multiplyColor.alpha);
+    if (m_hasMultiplyColor && (m_multiplyColor.alpha > 0)) {
+        state.multiplyRed   = (m_multiplyColor.red   * m_multiplyColor.alpha);
+        state.multiplyGreen = (m_multiplyColor.green * m_multiplyColor.alpha);
+        state.multiplyBlue  = (m_multiplyColor.blue  * m_multiplyColor.alpha);
         state.hasMultiplyColor = YES;
     }
     
-    if (renderer->hasBaseAffineTransform) {
-        state.affineTransform = renderer->baseAffineTransform;
+    if (m_hasBaseAffineTransform) {
+        state.affineTransform = m_baseAffineTransform;
     } else {
         state.affineTransform = CGAffineTransformIdentity;
     }
 
     state.ceilX = CGContextGetCTM(context).a < 0;
     state.ceilY = CGContextGetCTM(context).d > 0;
-    state.hairlineWidth = renderer->hairlineWidth ? renderer->hairlineWidth : 1.0;
-    state.fillHairlineWidth = renderer->fillHairlineWidth;
-    state.scaleFactorHint = renderer->scaleFactorHint;
-    state.clipBoundingBox = CGContextGetClipBoundingBox(context);
+    state.hairlineWidth     = m_hairlineWidth ? m_hairlineWidth : 1.0;
+    state.fillHairlineWidth = m_fillHairlineWidth;
+    state.scaleFactorHint   = m_scaleFactorHint;
+    state.clipBoundingBox   = CGContextGetClipBoundingBox(context);
 
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 
     CGContextSetInterpolationQuality(context, kCGInterpolationDefault);
 
-    CGContextSetShouldAntialias(context, renderer->shouldAntialias);
-    CGContextSetShouldSmoothFonts(context, renderer->shouldSmoothFonts);
-    CGContextSetShouldSubpixelPositionFonts(context, renderer->shouldSubpixelPositionFonts);
-    CGContextSetShouldSubpixelQuantizeFonts(context, renderer->shouldSubpixelQuantizeFonts);
+    CGContextSetShouldAntialias(context, m_shouldAntialias);
+    CGContextSetShouldSmoothFonts(context, m_shouldSmoothFonts);
+    CGContextSetShouldSubpixelPositionFonts(context, m_shouldSubpixelPositionFonts);
+    CGContextSetShouldSubpixelQuantizeFonts(context, m_shouldSubpixelQuantizeFonts);
 
     CGContextSetLineCap(context, kCGLineCapRound);
     CGContextSetLineJoin(context, kCGLineJoinRound);
@@ -921,7 +904,7 @@ void SwiffRendererRender(SwiffRenderer *renderer, CGContextRef context)
 
     CGColorSpaceRelease(colorSpace);
 
-    for (SwiffPlacedObject *object in renderer->placedObjects) {
+    for (SwiffPlacedObject *object in placedObjects) {
         sDrawPlacedObject(&state, object);
     }
 
@@ -936,143 +919,59 @@ void SwiffRendererRender(SwiffRenderer *renderer, CGContextRef context)
 }
 
 
-void SwiffRendererSetPlacedObjects(SwiffRenderer *renderer, NSArray *placedObjects)
-{
-    if (placedObjects != renderer->placedObjects) {
-        [renderer->placedObjects release];
-        renderer->placedObjects = [placedObjects retain];
-    }
-}
-
-
-NSArray *SwiffRendererGetPlacedObjects(SwiffRenderer *renderer)
-{
-    return renderer->placedObjects;
-}
-
-
-void SwiffRendererSetBaseAffineTransform(SwiffRenderer *renderer, CGAffineTransform *transform)
+- (void) setBaseAffineTransform:(CGAffineTransform *)transform
 {
     if (transform && !CGAffineTransformIsIdentity(*transform)) {
-        renderer->baseAffineTransform = *transform;
-        renderer->hasBaseAffineTransform = YES;
+        m_baseAffineTransform = *transform;
+        m_hasBaseAffineTransform = YES;
     } else {
-        renderer->hasBaseAffineTransform = NO;
+        m_hasBaseAffineTransform = NO;
     }
 }
 
 
-CGAffineTransform *SwiffRendererGetBaseAffineTransform(SwiffRenderer *renderer)
+- (CGAffineTransform *) baseAffineTransform
 {
-    if (renderer->hasBaseAffineTransform) {
-        return &renderer->baseAffineTransform;
+    if (m_hasBaseAffineTransform) {
+        return &m_baseAffineTransform;
     } else {
         return NULL;
     }
 }
 
 
-void SwiffRendererSetScaleFactorHint(SwiffRenderer *renderer, CGFloat hint)
-{
-    renderer->scaleFactorHint = hint;
-}
-
-
-CGFloat SwiffRendererGetScaleFactorHint(SwiffRenderer *renderer)
-{
-    return renderer->scaleFactorHint;
-}
-
-
-void SwiffRendererSetMultiplyColor(SwiffRenderer *renderer, SwiffColor *color)
+- (void) setMultiplyColor:(SwiffColor *)color
 {
     if (color && (color->alpha > 0)) {
-        renderer->multiplyColor = *color;
-        renderer->hasMultiplyColor = YES;
+        m_multiplyColor = *color;
+        m_hasMultiplyColor = YES;
     } else {
-        renderer->hasMultiplyColor = NO;
+        m_hasMultiplyColor = NO;
     }
 }
 
 
-SwiffColor *SwiffRendererGetMultiplyColor(SwiffRenderer *renderer)
+- (SwiffColor *) multiplyColor
 {
-    if (renderer->hasMultiplyColor) {
-        return &renderer->multiplyColor;
+    if (m_hasMultiplyColor) {
+        return &m_multiplyColor;
     } else {
         return NULL;
     }
-}
+} 
 
 
-void SwiffRendererSetHairlineWidth(SwiffRenderer *renderer, CGFloat hairlineWidth)
-{
-    renderer->hairlineWidth = hairlineWidth;
-}
+@synthesize movie                       = m_movie,
+            scaleFactorHint             = m_scaleFactorHint,
+            hairlineWidth               = m_hairlineWidth,
+            fillHairlineWidth           = m_fillHairlineWidth,
+            shouldAntialias             = m_shouldAntialias,
+            shouldSmoothFonts           = m_shouldSmoothFonts,
+            shouldSubpixelPositionFonts = m_shouldSubpixelPositionFonts,
+            shouldSubpixelQuantizeFonts = m_shouldSubpixelQuantizeFonts;
 
 
-CGFloat SwiffRendererGetHairlineWidth(SwiffRenderer *renderer)
-{
-    return renderer->hairlineWidth;
-}
+@end
 
-
-void SwiffRendererSetFillHairlineWidth(SwiffRenderer *renderer, CGFloat hairlineWidth)
-{
-    renderer->fillHairlineWidth = hairlineWidth;
-}
-
-
-CGFloat SwiffRendererGetFillHairlineWidth(SwiffRenderer *renderer)
-{
-    return renderer->fillHairlineWidth;
-}
-
-
-void SwiffRendererSetShouldAntialias(SwiffRenderer *renderer, BOOL yn)
-{
-    renderer->shouldAntialias = yn;
-}
-
-
-BOOL SwiffRendererGetShouldAntialias(SwiffRenderer *renderer)
-{
-    return renderer->shouldAntialias;
-}
-
-
-void SwiffRendererSetShouldSmoothFonts(SwiffRenderer *renderer, BOOL yn)
-{
-    renderer->shouldSmoothFonts = yn;
-}
-
-
-BOOL SwiffRendererGetShouldSmoothFonts(SwiffRenderer *renderer)
-{
-    return renderer->shouldSmoothFonts;
-}
-
-void SwiffRendererSetShouldSubpixelPositionFonts(SwiffRenderer *renderer, BOOL yn)
-{
-    renderer->shouldSubpixelPositionFonts = yn;
-}
-
-
-BOOL SwiffRendererGetShouldSubpixelPositionFonts(SwiffRenderer *renderer)
-{
-    return renderer->shouldSubpixelPositionFonts;
-}
-
-
-void SwiffRendererSetShouldSubpixelQuantizeFonts(SwiffRenderer *renderer, BOOL yn)
-{
-    renderer->shouldSubpixelQuantizeFonts = yn;
-}
-
-
-BOOL SwiffRendererGetShouldSubpixelQuantizeFonts(SwiffRenderer *renderer)
-{
-    return renderer->shouldSubpixelQuantizeFonts;
-}
 
 

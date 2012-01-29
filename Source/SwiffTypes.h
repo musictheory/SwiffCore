@@ -68,11 +68,6 @@ typedef struct SwiffHeader {
 } SwiffHeader;
 
 
-typedef struct SwiffSparseArray {
-    id      **values;
-} SwiffSparseArray;
-
-
 enum {
 //                                                     Description                      Minimum .swf version
     SwiffSoundFormatUncompressedNativeEndian = 0,   // Uncompressed, native-endian      1

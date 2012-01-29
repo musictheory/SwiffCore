@@ -1,5 +1,5 @@
 /*
-    SwiffMovie.h
+    SwiffSparseArray.h
     Copyright (c) 2011-2012, musictheory.net, LLC.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,46 +26,18 @@
 */
 
 #import <SwiffImport.h>
-#import <SwiffTypes.h>
-#import <SwiffSpriteDefinition.h>
 
-@class SwiffBitmapDefinition, SwiffDynamicTextDefinition, SwiffFontDefinition,
-       SwiffShapeDefinition, SwiffStaticTextDefinition, SwiffSoundDefinition,
-       SwiffSparseArray;
+@class SwiffSparseArrayBucket;
 
-@protocol SwiffMovieDecoder;
-
-
-@interface SwiffMovie : SwiffSpriteDefinition {
+@interface SwiffSparseArray : NSObject <NSFastEnumeration> {
 @private
-    SwiffSparseArray *m_definitions;
-    
-    NSInteger   m_version;
-    CGRect      m_stageRect;
-    CGFloat     m_frameRate;
-    SwiffColor  m_backgroundColor;
+    SwiffSparseArrayBucket *m_buckets[256];
 }
 
-- (id) initWithData:(NSData *)data;
-
-- (id<SwiffDefinition>) definitionWithLibraryID:(UInt16)libraryID;
-
-- (SwiffBitmapDefinition      *) bitmapDefinitionWithLibraryID:(UInt16)libraryID;
-- (SwiffDynamicTextDefinition *) dynamicTextDefinitionWithLibraryID:(UInt16)libraryID;
-- (SwiffFontDefinition        *) fontDefinitionWithLibraryID:(UInt16)libraryID;
-- (SwiffShapeDefinition       *) shapeDefinitionWithLibraryID:(UInt16)libraryID;
-- (SwiffSoundDefinition       *) soundDefinitionWithLibraryID:(UInt16)libraryID;
-- (SwiffSpriteDefinition      *) spriteDefinitionWithLibraryID:(UInt16)libraryID;
-- (SwiffStaticTextDefinition  *) staticTextDefinitionWithLibraryID:(UInt16)libraryID;
-
-@property (nonatomic, assign) NSInteger version;
-@property (nonatomic, assign) CGRect stageRect;
-
-@property (nonatomic, assign) CGFloat frameRate;
-
-@property (nonatomic, assign) SwiffColor backgroundColor;
-@property (nonatomic, assign, readonly) SwiffColor *backgroundColorPointer;
+- (void) setObject:(id)object atIndex:(UInt16)index;
+- (id) objectAtIndex:(UInt16)index;
 
 @end
 
-extern id<SwiffDefinition> SwiffMovieGetDefinition(SwiffMovie *movie, UInt16 libraryID);
+extern void SwiffSparseArraySetObjectAtIndex(SwiffSparseArray *array, UInt16 index, id object);
+extern id SwiffSparseArrayGetObjectAtIndex(SwiffSparseArray *array, UInt16 index);

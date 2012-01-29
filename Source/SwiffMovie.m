@@ -34,6 +34,7 @@
 #import "SwiffParser.h"
 #import "SwiffShapeDefinition.h"
 #import "SwiffSoundDefinition.h"
+#import "SwiffSparseArray.h"
 #import "SwiffSpriteDefinition.h"
 #import "SwiffStaticTextDefinition.h"
 #import "SwiffUtils.h"
@@ -63,8 +64,10 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 {
     if ((self = [self init])) {
         SwiffColor white = { 1.0, 1.0, 1.0, 1.0 };
+
         m_backgroundColor = white;
-        
+        m_definitions = [[SwiffSparseArray alloc] init];
+
         [self _decodeData:data];
     }
 
@@ -74,8 +77,8 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 
 - (void) dealloc
 {
-    SwiffSparseArrayEnumerateValues(&m_definitions, ^(void *v) { [(id)v release]; });
-    SwiffSparseArrayFree(&m_definitions);
+    [m_definitions release];
+    m_definitions = nil;
 
     [super dealloc];
 }
@@ -224,12 +227,10 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 
     if (definitionToAdd) {
         UInt16 libraryID = [definitionToAdd libraryID];
-
-        id existingValue = SwiffSparseArrayGetValueAtIndex(&m_definitions, libraryID);
-        if (existingValue) [existingValue release];
-
-        SwiffSparseArraySetConsumedObjectAtIndex(&m_definitions, libraryID, definitionToAdd);
+        SwiffSparseArraySetObjectAtIndex(m_definitions, libraryID, definitionToAdd);
     }
+    
+    [definitionToAdd release];
 }
 
 
@@ -238,7 +239,7 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 
 id<SwiffDefinition> SwiffMovieGetDefinition(SwiffMovie *movie, UInt16 libraryID)
 {
-    return SwiffSparseArrayGetValueAtIndex(&movie->m_definitions, libraryID);
+    return SwiffSparseArrayGetObjectAtIndex(movie->m_definitions, libraryID);
 }
 
 

@@ -75,46 +75,43 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
     SwiffFontMapType mapType = SwiffFontMapTypeDirect;
     NSString *name = nil;
 
-    @autoreleasepool {
-        NSCharacterSet *whitespace = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-        NSArray        *components = [inName componentsSeparatedByString:@","];
-        
-        for (NSString *component in components) {
-            component = [component stringByTrimmingCharactersInSet:whitespace];
+    NSCharacterSet *whitespace = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    NSArray        *components = [inName componentsSeparatedByString:@","];
+    
+    for (NSString *component in components) {
+        component = [component stringByTrimmingCharactersInSet:whitespace];
 
-            if ([inName hasPrefix:@"_"]) {
-                if ([inName isEqualToString:@"_sans"]) {
-                    mapType = SwiffFontMapTypeIndirectSans;
-                    name = @"Helvetica";
+        if ([inName hasPrefix:@"_"]) {
+            if ([inName isEqualToString:@"_sans"]) {
+                mapType = SwiffFontMapTypeIndirectSans;
+                name = @"Helvetica";
 
-                } else if ([inName isEqualToString:@"_serif"]) {
-                    mapType = SwiffFontMapTypeIndirectSerif;
-                    name = @"Times";
+            } else if ([inName isEqualToString:@"_serif"]) {
+                mapType = SwiffFontMapTypeIndirectSerif;
+                name = @"Times";
 
-                } else if ([inName isEqualToString:@"_typewriter"]) {
-                    mapType = SwiffFontMapTypeIndirectTypewriter;
-                    name = @"Courier";
+            } else if ([inName isEqualToString:@"_typewriter"]) {
+                mapType = SwiffFontMapTypeIndirectTypewriter;
+                name = @"Courier";
 
-                } else {
-                    mapType = SwiffFontMapTypeIndirectUnknown;
-                }
+            } else {
+                mapType = SwiffFontMapTypeIndirectUnknown;
             }
-            
-            if (mapType == SwiffFontMapTypeDirect) {
-                CTFontRef font = CTFontCreateWithName((__bridge CFStringRef)component, 12.0, NULL);
-
-                if (font) {
-                    name = [component retain];
-                    CFRelease(font);
-                }
-            }
-
-            if (name) break;
         }
+        
+        if (mapType == SwiffFontMapTypeDirect) {
+            CTFontRef font = CTFontCreateWithName((__bridge CFStringRef)component, 12.0, NULL);
+
+            if (font) {
+                name = [[component retain] autorelease];
+                CFRelease(font);
+            }
+        }
+
+        if (name) break;
     }
     
     if (!name) name = @"Helvetica";
-    [name autorelease];
 
     if (outName)    *outName    = name;
     if (outMapType) *outMapType = mapType;

@@ -34,6 +34,7 @@
 #import "SwiffPlacedDynamicText.h"
 #import "SwiffScene.h"
 #import "SwiffSceneAndFrameLabelData.h"
+#import "SwiffSparseArray.h"
 #import "SwiffSoundDefinition.h"
 #import "SwiffSoundEvent.h"
 #import "SwiffSoundStreamBlock.h"
@@ -74,6 +75,7 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
 {
     if ((self = [super init])) {
         m_frames = [[NSMutableArray alloc] init];
+        m_placedObjects = [[SwiffSparseArray alloc] init];
     }
     
     return self;
@@ -108,8 +110,8 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
 
         [self _parserDidEnd:subparser];
 
-        SwiffSparseArrayEnumerateValues(&m_placedObjects, ^(void *v) { [(id)v release]; });
-        SwiffSparseArrayFree(&m_placedObjects);
+        [m_placedObjects release];
+        m_placedObjects = nil;
 
         SwiffParserFree(subparser);
 
@@ -127,14 +129,12 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
 
 - (void) dealloc
 {
-    SwiffSparseArrayEnumerateValues(&m_placedObjects, ^(void *v) { [(id)v release]; });
-    SwiffSparseArrayFree(&m_placedObjects);
-
     [m_frames              release];  m_frames              = nil;
     [m_labelToFrameMap     release];  m_labelToFrameMap     = nil;
                                       m_lastFrame           = nil;
     [m_scenes              release];  m_scenes              = nil;
     [m_sceneNameToSceneMap release];  m_sceneNameToSceneMap = nil;
+    [m_placedObjects       release];  m_placedObjects       = nil;
 
     [super dealloc];
 }
@@ -260,7 +260,7 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
         }
     }
 
-    SwiffPlacedObject *existingPlacedObject = SwiffSparseArrayGetValueAtIndex(&m_placedObjects, depth);
+    SwiffPlacedObject *existingPlacedObject = SwiffSparseArrayGetObjectAtIndex(m_placedObjects, depth);
     SwiffPlacedObject *placedObject = SwiffPlacedObjectCreate(m_movie, hasLibraryID ? libraryID : 0, move ? existingPlacedObject : nil);
 
     [placedObject setDepth:depth];
@@ -291,8 +291,10 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
         }
     }
 
-    [existingPlacedObject release];
-    SwiffSparseArraySetConsumedObjectAtIndex(&m_placedObjects, depth, placedObject);
+    SwiffSparseArraySetObjectAtIndex(m_placedObjects, depth, placedObject);
+
+    [placedObject release];
+
     m_lastFrame = nil;
 }
 
@@ -316,10 +318,7 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
         }
     }
 
-    SwiffPlacedObject *placedObject = SwiffSparseArrayGetValueAtIndex(&m_placedObjects, depth);
-    [placedObject release];
-
-    SwiffSparseArraySetValueAtIndex(&m_placedObjects, depth, nil);
+    SwiffSparseArraySetObjectAtIndex(m_placedObjects, depth, nil);
     m_lastFrame = nil;
 }
 
@@ -339,11 +338,10 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
         NSMutableArray *sortedPlacedObjects = [[NSMutableArray alloc] init];
         NSMutableArray *sortedPlacedObjectsWithNames = [[NSMutableArray alloc] init];         
         
-        SwiffSparseArrayEnumerateValues(&m_placedObjects, ^(void *value) {
-            SwiffPlacedObject *po = value;
+        for (SwiffPlacedObject *po in m_placedObjects) {
             [sortedPlacedObjects addObject:po];
             if ([po name]) [sortedPlacedObjectsWithNames addObject:po];
-        });
+        };
 
         if ([sortedPlacedObjects count]) {
             placedObjects          = sortedPlacedObjects;

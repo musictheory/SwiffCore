@@ -29,9 +29,9 @@
 #import <SwiffImport.h>
 #import <QuartzCore/QuartzCore.h>
 #import <SwiffPlayhead.h>
-#import <SwiffRenderer.h>
 
-@class SwiffMovie, SwiffFrame, SwiffPlacedObject, SwiffPlayhead;
+
+@class SwiffMovie, SwiffFrame, SwiffPlacedObject, SwiffPlayhead, SwiffRenderer, SwiffSparseArray;
 @protocol SwiffLayerDelegate;
 
 
@@ -39,12 +39,12 @@
     id<SwiffLayerDelegate> m_delegate;
 
     SwiffMovie            *m_movie;
+    SwiffRenderer         *m_renderer;
     SwiffFrame            *m_currentFrame;
     SwiffPlayhead         *m_playhead;
-    SwiffRenderer         *m_renderer;
+    SwiffSparseArray      *m_sublayers;
     CALayer               *m_contentLayer;
     NSUInteger             m_sublayerCount;
-    SwiffSparseArray       m_sublayers;
 
     CGFloat              m_scaleFactor;
     CGAffineTransform    m_baseAffineTransform;
