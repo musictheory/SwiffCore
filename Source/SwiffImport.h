@@ -25,6 +25,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#define SwiffUnretained __unsafe_unretained
+
+
 #import <Foundation/Foundation.h>
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR

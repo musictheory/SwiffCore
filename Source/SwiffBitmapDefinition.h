@@ -33,7 +33,8 @@
 
 @interface SwiffBitmapDefinition : NSObject <SwiffDefinition> {
 @private
-    SwiffMovie *m_movie;
+    SwiffUnretained SwiffMovie *m_movie;
+
     UInt16      m_libraryID;
     
     SwiffTag    m_tag;

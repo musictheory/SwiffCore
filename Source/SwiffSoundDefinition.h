@@ -41,7 +41,8 @@ extern CFIndex   SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *def
 
 @interface SwiffSoundDefinition : NSObject <SwiffDefinition> {
 @private
-    SwiffMovie    *m_movie;
+    SwiffUnretained SwiffMovie *m_movie;
+
     NSMutableData *m_data;
 
     NSUInteger    *m_frames;

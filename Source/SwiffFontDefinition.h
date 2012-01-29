@@ -44,7 +44,7 @@ extern const CGFloat SwiffFontEmSquareHeight;           // 1024
 
 @interface SwiffFontDefinition : NSObject <SwiffDefinition> {
 @private
-    SwiffMovie       *m_movie;
+    SwiffUnretained SwiffMovie *m_movie;
  
     NSString         *m_name;
     NSString         *m_fullName;

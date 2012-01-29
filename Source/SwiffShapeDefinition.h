@@ -34,7 +34,8 @@
 
 @interface SwiffShapeDefinition : NSObject <SwiffDefinition> {
 @private
-    SwiffMovie *m_movie;
+    SwiffUnretained SwiffMovie *m_movie;
+
     UInt16      m_libraryID;
     CFArrayRef  m_groups;
     NSArray    *m_fillStyles;

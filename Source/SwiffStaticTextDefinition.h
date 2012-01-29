@@ -34,7 +34,8 @@
 
 @interface SwiffStaticTextDefinition : NSObject <SwiffDefinition> {
 @private
-    SwiffMovie       *m_movie;
+    SwiffUnretained SwiffMovie *m_movie;
+
     NSArray          *m_textRecords;
     UInt16            m_libraryID;
     CGRect            m_bounds;
