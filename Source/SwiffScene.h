@@ -32,7 +32,8 @@
 
 @interface SwiffScene : NSObject {
 @private
-    SwiffMovie   *m_movie;
+    SwiffUnretained SwiffMovie *m_movie;
+
     NSString     *m_name;
     NSArray      *m_frames;
     NSDictionary *m_labelToFrameMap;
@@ -56,7 +57,7 @@
 @property (nonatomic, assign, readonly) NSUInteger index1InMovie;
 
 @property (nonatomic, assign, readonly) SwiffMovie *movie;
-@property (nonatomic, assign, readonly) NSString *name;
-@property (nonatomic, assign, readonly) NSArray *frames;
+@property (nonatomic, strong, readonly) NSString *name;
+@property (nonatomic, strong, readonly) NSArray *frames;
 
 @end

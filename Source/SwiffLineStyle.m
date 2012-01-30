@@ -56,7 +56,6 @@ const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
 
         if (lineStyle) {
             [array addObject:lineStyle];
-            [lineStyle release];
         } else {
             return nil;
         }
@@ -150,21 +149,11 @@ const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
         }
 
         if (!SwiffParserIsValid(parser)) {
-            [self release];
             return nil;
         }
     }
     
     return self;
-}
-
-
-- (void) dealloc
-{
-    [m_fillStyle release];
-    m_fillStyle = nil;
-    
-    [super dealloc];
 }
 
 

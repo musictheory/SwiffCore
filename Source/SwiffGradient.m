@@ -93,7 +93,6 @@
         m_recordCount       = count;
 
         if (!SwiffParserIsValid(parser)) {
-            [self release];
             return nil;
         }
     }

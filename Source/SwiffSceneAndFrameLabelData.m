@@ -92,15 +92,6 @@
 }
 
 
-- (void) dealloc
-{
-    [m_offsetToSceneNameMap  release];  m_offsetToSceneNameMap  = nil;
-    [m_numberToFrameLabelMap release];  m_numberToFrameLabelMap = nil;
-
-    [super dealloc];
-}
-
-
 - (void) clearWeakReferences
 {
     m_movie = nil;
@@ -121,7 +112,6 @@
 
         SwiffScene *scene = [[SwiffScene alloc] initWithMovie:m_movie name:name indexInMovie:startOffset frames:sceneFrames];
         [result addObject:scene];
-        [scene release];
     };
 
     for (NSNumber *key in keys) {

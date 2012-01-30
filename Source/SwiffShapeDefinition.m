@@ -354,12 +354,6 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
         CFRelease(m_groups);
         m_groups = NULL;
     }
-
-    [m_fillStyles release];  m_fillStyles = nil;
-    [m_lineStyles release];  m_lineStyles = nil;
-    [m_paths      release];  m_paths      = nil;
-
-    [super dealloc];
 }
 
 
@@ -417,7 +411,6 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
             SwiffPathAddOperationEnd(path);
 
             [result addObject:path];
-            [path release];
         }
     }
     
@@ -535,7 +528,6 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
                 SwiffPathAddOperationEnd(path);
 
                 [results addObject:path];
-                [path release];
             }
         }
 

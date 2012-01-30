@@ -58,18 +58,10 @@
 
 - (void) dealloc
 {
-    [m_definition release];
-    m_definition = nil;
-
-    [m_text release];
-    m_text = nil;
-
     if (m_attributedText) {
         CFRelease(m_attributedText);
         m_attributedText = NULL;
     }
-
-    [super dealloc];
 }
 
 
@@ -100,11 +92,10 @@
 - (void) setupWithDefinition:(id<SwiffDefinition>)definition
 {
     if (m_definition != definition) {
-        [m_definition release];
         m_definition = nil;
         
         if ([definition isKindOfClass:[SwiffDynamicTextDefinition class]]) {
-            m_definition = (SwiffDynamicTextDefinition *)[definition retain];
+            m_definition = (SwiffDynamicTextDefinition *)definition;
             [self setText:[m_definition initialText] HTML:[m_definition isHTML]]; 
         }
     }
@@ -115,7 +106,6 @@
 {
     if ((m_text != text) || (isHTML != m_HTML)) {
         if (m_text != text) {
-            [m_text release];
             m_text = [text copy];
         }
 
@@ -142,16 +132,12 @@
             
             SwiffDynamicTextAttributes *baseAttributes = [self _newBaseAttributes];
             m_attributedText = [converter copyAttributedStringForHTML:m_text baseAttributes:baseAttributes];
-            [baseAttributes release];
 
         } else {
             SwiffDynamicTextAttributes *attributes = [self _newBaseAttributes];
             NSDictionary *dictionary = [attributes copyCoreTextAttributes];
 
             m_attributedText = CFAttributedStringCreate(NULL, (__bridge CFStringRef)m_text, (__bridge CFDictionaryRef)dictionary);
-
-            [dictionary release];
-            [attributes release];
         }
     }
 

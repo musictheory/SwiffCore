@@ -41,8 +41,8 @@
 {
     if ((self = [super init])) {
         m_movie        = movie;
-        m_name         = [name   retain];
-        m_frames       = [frames retain];
+        m_name         = name;
+        m_frames       = frames;
         m_indexInMovie = indexInMovie;
         
         NSInteger i = 0;
@@ -58,12 +58,6 @@
 - (void) dealloc
 {
     [m_frames makeObjectsPerformSelector:@selector(clearWeakReferences) withObject:nil];
-
-    [m_name            release];  m_name            = nil;
-    [m_frames          release];  m_frames          = nil;
-    [m_labelToFrameMap release];  m_labelToFrameMap = nil;
-    
-    [super dealloc];
 }
 
 
@@ -71,6 +65,7 @@
 {
     m_movie = nil;
 }
+
 
 - (NSString *) description
 {

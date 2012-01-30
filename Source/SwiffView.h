@@ -50,7 +50,7 @@
 
 @interface SwiffView : SwiffViewSuperclass <SwiffLayerDelegate> {
 @private
-    id<SwiffViewDelegate> m_delegate;
+    SwiffUnretained id<SwiffViewDelegate> m_delegate;
     SwiffLayer           *m_layer;
     
     BOOL m_delegate_swiffView_willUpdateCurrentFrame;
@@ -64,8 +64,8 @@
 
 @property (nonatomic, assign) id<SwiffViewDelegate> delegate;
 
-@property (nonatomic, retain, readonly) SwiffMovie *movie;
-@property (nonatomic, retain, readonly) SwiffPlayhead *playhead;
+@property (nonatomic, strong, readonly) SwiffMovie *movie;
+@property (nonatomic, strong, readonly) SwiffPlayhead *playhead;
 
 @property (nonatomic, assign) BOOL drawsBackground;
 

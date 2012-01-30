@@ -44,26 +44,16 @@ enum {
     SwiffFillStyleTypeNonSmoothedRepeatingBitmap = 0x42,
     SwiffFillStyleTypeNonSmoothedClippedBitmap   = 0x43
 };
-typedef NSInteger SwiffFillStyleType;
+typedef UInt8 SwiffFillStyleType;
 
 
 @interface SwiffFillStyle : NSObject {
 @private
-    SwiffFillStyleType m_type;
-    
-    union {
-        struct {
-            SwiffColor color;
-        };
-        struct {
-            CFTypeRef gradient;
-            CGAffineTransform  gradientTransform;
-        };
-        struct {
-            NSUInteger bitmapID;
-            CGAffineTransform bitmapTransform;
-        };
-    } m_content;
+    UInt8              m_type;
+    UInt16             m_bitmapID;
+    SwiffColor         m_color;
+    SwiffGradient     *m_gradient;
+    CGAffineTransform  m_transform;
 }
 
 // Reads a FILLSTYLEARRAY from the parser
@@ -79,7 +69,7 @@ typedef NSInteger SwiffFillStyleType;
 @property (nonatomic, assign, readonly) SwiffColor *colorPointer;  // Inside pointer, valid for lifetime of the SwiffFillStyle
 
 // These properties are valid when type is SwiffFillStyleType...Gradient
-@property (nonatomic, readonly, retain) SwiffGradient *gradient;
+@property (nonatomic, readonly, strong) SwiffGradient *gradient;
 @property (nonatomic, readonly, assign) CGAffineTransform gradientTransform;
 
 // These properties are valid when type is SwiffFillStyleType...Bitmap

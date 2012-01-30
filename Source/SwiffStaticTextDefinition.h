@@ -44,6 +44,6 @@
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie;
 
-@property (nonatomic, retain, readonly) NSArray *textRecords;
+@property (nonatomic, strong, readonly) NSArray *textRecords;
 @property (nonatomic, assign, readonly) CGAffineTransform textTransform;
 @end

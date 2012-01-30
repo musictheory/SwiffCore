@@ -69,7 +69,7 @@ void SwiffWriterFree(SwiffWriter *writer)
 
 NSData *SwiffWriterGetData(SwiffWriter *writer)
 {
-    return [[(__bridge NSData *)writer->data retain] autorelease];
+    return (__bridge NSData *)writer->data;
 }
 
 
@@ -129,7 +129,6 @@ NSData *SwiffWriterGetDataWithHeader(SwiffWriter *writer, SwiffHeader header)
             [result appendData:(__bridge NSData *)subwriter->data];
         }
 
-        [compressedData release];
 
     } else {
         [result appendData:(__bridge NSData *)subwriter->data];

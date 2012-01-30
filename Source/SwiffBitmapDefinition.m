@@ -134,8 +134,6 @@ static void sEnumerateJPEG(NSData *data, void (^callback)(UInt8, const UInt8 *, 
 }
 
 
-static NSData *sCreateValidJPEG(NSData *inData, NSData *inTableData) CF_RETURNS_RETAINED;
-
 static NSData *sCreateValidJPEG(NSData *inData, NSData *inTableData)
 {
     NSMutableData *tableData   = [[NSMutableData alloc] initWithCapacity:[inData length]];
@@ -177,10 +175,6 @@ static NSData *sCreateValidJPEG(NSData *inData, NSData *inTableData)
     [resultData appendData:tableData];
     [resultData appendData:scanData];
     [resultData appendBytes:"\xFF\xD9" length:2];
-
-    [tableData   release];
-    [preScanData release];
-    [scanData    release];
 
     return resultData;
 }
@@ -262,7 +256,6 @@ static CGImageRef sCreateImage_Bytes(const UInt8 *bytes, NSUInteger length, NSDa
     if (sIsJPEG(bytes, length)) {
         NSData *tmp = [[NSData alloc] initWithBytesNoCopy:(void *)bytes length:length freeWhenDone:NO];
         data = sCreateValidJPEG(tmp, jpegTables);
-        [tmp release];
 
     } else {
         data = [[NSData alloc] initWithBytes:bytes length:length];
@@ -277,8 +270,6 @@ static CGImageRef sCreateImage_Bytes(const UInt8 *bytes, NSUInteger length, NSDa
     CGImageRef result = [image CGImage];
     CGImageRetain(result);
     
-    [image release];
-    [data release];
 
     return result;
 }
@@ -332,7 +323,6 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
     
     NSData *outData = [[NSData alloc] initWithBytesNoCopy:outBytes length:outLength freeWhenDone:YES];
     CGImageRef result = (alpha ? sCreateImage_ARGB_8888 : sCreateImage_XRGB_8888)(width, height, outData);
-    [outData release];
     
     free(table);
 
@@ -356,10 +346,9 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
         UInt32 remainingBytes = SwiffParserGetBytesRemainingInCurrentTag(parser);
         SwiffParserReadData(parser, remainingBytes, &tagData);
         
-        m_tagData = [tagData retain];
+        m_tagData = tagData;
         
         if (!SwiffParserIsValid(parser)) {
-            [self release];
             return nil;
         }
     }
@@ -370,11 +359,10 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
 
 - (void) dealloc
 {
-    [m_tagData        release];  m_tagData        = nil;
-    [m_jpegTablesData release];  m_jpegTablesData = nil;
+      m_tagData        = nil;
+      m_jpegTablesData = nil;
     CGImageRelease(m_CGImage);   m_CGImage        = NULL;
 
-    [super dealloc];
 }
 
 
@@ -428,7 +416,6 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
                 CGImageRelease(alphaImage);
             }
 
-            [alphaData release];
         }
 
         if (m_CGImage) {
@@ -457,13 +444,10 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
             m_CGImage = (alpha ? sCreateImage_ARGB_8888 : sCreateImage_XRGB_8888)(width, height, imageData);
         }
 
-        [imageData release];
     }
 
-    [m_tagData release];
     m_tagData = nil;
     
-    [m_jpegTablesData release];
     m_jpegTablesData = nil;
 }
 
@@ -474,8 +458,7 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
 - (void) _setJPEGTablesData:(NSData *)data
 {
     if (m_jpegTablesData != data) {
-        [m_jpegTablesData release];
-        m_jpegTablesData = [data retain];
+        m_jpegTablesData = data;
     }
 }
 

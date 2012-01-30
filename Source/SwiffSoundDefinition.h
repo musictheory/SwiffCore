@@ -64,7 +64,7 @@ extern CFIndex   SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *def
 
 @property (nonatomic, assign, readonly) SwiffSoundFormat format;
 
-@property (nonatomic, readonly, retain) NSData *data;
+@property (nonatomic, readonly, strong) NSData *data;
 @property (nonatomic, readonly, assign) UInt32  sampleCount;
 
 @property (nonatomic, assign, readonly) NSInteger latencySeek;

@@ -50,7 +50,6 @@
         SwiffParserReadUInt16(parser, &libraryID);
 
         if (m_libraryID == 0) {
-            [self release];
             return nil;
         }
     }
@@ -67,7 +66,7 @@
         SwiffParserReadUBits(parser, 1, &hasInPoint);
 
         m_libraryID      = libraryID;
-        m_className      = [className retain];
+        m_className      = className;
         m_shouldStop     = syncStop;
         m_allowsMultiple = !syncNoMultiple;
 
@@ -124,8 +123,6 @@
 {
     free(m_envelopes);
     m_envelopes = NULL;
-    
-    [super dealloc];    
 }
 
 

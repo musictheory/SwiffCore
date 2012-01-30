@@ -36,7 +36,7 @@
 
 
 @interface SwiffLayer : CALayer <SwiffPlayheadDelegate> {
-    id<SwiffLayerDelegate> m_delegate;
+    SwiffUnretained id<SwiffLayerDelegate> m_delegate;
 
     SwiffMovie            *m_movie;
     SwiffRenderer         *m_renderer;
@@ -63,10 +63,10 @@
 
 @property (nonatomic, assign) id<SwiffLayerDelegate> swiffLayerDelegate;
 
-@property (nonatomic, retain, readonly) SwiffMovie *movie;
-@property (nonatomic, retain, readonly) SwiffPlayhead *playhead;
+@property (nonatomic, strong, readonly) SwiffMovie *movie;
+@property (nonatomic, strong, readonly) SwiffPlayhead *playhead;
 
-@property (nonatomic, retain, readonly) SwiffFrame *currentFrame;
+@property (nonatomic, strong, readonly) SwiffFrame *currentFrame;
 
 @property (nonatomic, assign) BOOL drawsBackground;
 

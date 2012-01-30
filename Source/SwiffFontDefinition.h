@@ -89,9 +89,9 @@ extern const CGFloat SwiffFontEmSquareHeight;           // 1024
 @property (nonatomic, assign, readonly) UInt16 libraryID;
 
 @property (nonatomic, assign, readonly) SwiffLanguageCode languageCode;
-@property (nonatomic, retain, readonly) NSString *name;
-@property (nonatomic, retain, readonly) NSString *fullName;
-@property (nonatomic, retain, readonly) NSString *copyright;
+@property (nonatomic, strong, readonly) NSString *name;
+@property (nonatomic, strong, readonly) NSString *fullName;
+@property (nonatomic, strong, readonly) NSString *copyright;
 
 @property (nonatomic, assign, readonly) NSUInteger glyphCount;
 @property (nonatomic, readonly /*strong*/) CGPathRef *glyphPaths;   // CGPathRef[glyphCount]

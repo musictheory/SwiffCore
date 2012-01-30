@@ -110,33 +110,16 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
 
         [self _parserDidEnd:subparser];
 
-        [m_placedObjects release];
-        m_placedObjects = nil;
-
         SwiffParserFree(subparser);
 
         SwiffLog(@"Sprite", @"END");
     
         if (!SwiffParserIsValid(parser)) {
-            [self release];
             return nil;
         }
     }
     
     return self;
-}
-
-
-- (void) dealloc
-{
-    [m_frames              release];  m_frames              = nil;
-    [m_labelToFrameMap     release];  m_labelToFrameMap     = nil;
-                                      m_lastFrame           = nil;
-    [m_scenes              release];  m_scenes              = nil;
-    [m_sceneNameToSceneMap release];  m_sceneNameToSceneMap = nil;
-    [m_placedObjects       release];  m_placedObjects       = nil;
-
-    [super dealloc];
 }
 
 
@@ -155,14 +138,13 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
 
     if (frameLabelData) {
         [frameLabelData applyLabelsToFrames:m_frames];
-        m_scenes = [[frameLabelData scenesForFrames:m_frames] retain];
+        m_scenes = [frameLabelData scenesForFrames:m_frames];
 
         [frameLabelData clearWeakReferences];
 
     } else {
         SwiffScene *scene = [[SwiffScene alloc] initWithMovie:nil name:nil indexInMovie:0 frames:m_frames];
         m_scenes = [[NSArray alloc] initWithObjects:scene, nil];
-        [scene release];
     }
 }
 
@@ -293,8 +275,6 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
 
     SwiffSparseArraySetObjectAtIndex(m_placedObjects, depth, placedObject);
 
-    [placedObject release];
-
     m_lastFrame = nil;
 }
 
@@ -331,8 +311,8 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
     // If _lastFrame is still valid, there were no modifications to it, use the same placed objects array
     //
     if (m_lastFrame) {
-        placedObjects = [[m_lastFrame placedObjects] retain];
-        placedObjectsWithNames = [[m_lastFrame placedObjectsWithNames] retain];
+        placedObjects = [m_lastFrame placedObjects];
+        placedObjectsWithNames = [m_lastFrame placedObjectsWithNames];
 
     } else {
         NSMutableArray *sortedPlacedObjects = [[NSMutableArray alloc] init];
@@ -347,8 +327,6 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
             placedObjects          = sortedPlacedObjects;
             placedObjectsWithNames = sortedPlacedObjectsWithNames;
         } else {
-            [sortedPlacedObjects release];
-            [sortedPlacedObjectsWithNames release];
         }
     }
 
@@ -369,9 +347,6 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
     [m_frames addObject:frame];
     m_lastFrame = frame;
 
-    [frame release];
-    [placedObjects release];
-    [placedObjectsWithNames release];
 
     SwiffLog(@"Sprite", @"SHOWFRAME");
 }
@@ -394,7 +369,6 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
         
         SwiffSceneAndFrameLabelData *data = [[SwiffSceneAndFrameLabelData alloc] initWithParser:parser movie:m_movie];
         SwiffParserSetAssociatedValue(parser, SwiffSpriteDefinitionSceneAndFrameLabelDataKey, data);
-        [data release];
 
     } else if (tag == SwiffTagPlaceObject) {
         [self _parser:parser didFindPlaceObjectTag:tag version:version];
@@ -415,7 +389,6 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
     } else if (tag == SwiffTagSoundStreamHead) {
         SwiffSoundDefinition *definition = [[SwiffSoundDefinition alloc] initWithParser:parser movie:m_movie];
         SwiffParserSetAssociatedValue(parser, SwiffSpriteDefinitionStreamSoundDefinitionKey, definition);
-        [definition release];
 
     } else if (tag == SwiffTagSoundStreamBlock) {
         SwiffSoundDefinition *definition = SwiffParserGetAssociatedValue(parser, SwiffSpriteDefinitionStreamSoundDefinitionKey);
@@ -438,14 +411,10 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
                 SwiffParserSetAssociatedValue(parser, SwiffSpriteDefinitionSoundEventsKey, events);
                 [events addObject:event];
 
-                [events release];
-
             } else {
                 [events addObject:event];
             }
         }
-        
-        [event release];
     }
 }
 

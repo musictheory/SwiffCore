@@ -45,19 +45,10 @@
         SwiffParserReadUInt8(parser, &glyphBits);
         SwiffParserReadUInt8(parser, &advanceBits);
     
-        m_textRecords = [[SwiffStaticTextRecord textRecordArrayWithParser:parser glyphBits:glyphBits advanceBits:advanceBits] retain];
+        m_textRecords = [SwiffStaticTextRecord textRecordArrayWithParser:parser glyphBits:glyphBits advanceBits:advanceBits];
     }
     
     return self;
-}
-
-
-- (void) dealloc
-{
-    [m_textRecords release];
-    m_textRecords = nil;
-
-    [super dealloc];
 }
 
 

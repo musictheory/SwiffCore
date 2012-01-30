@@ -714,7 +714,7 @@ void SwiffParserReadData(SwiffParser *parser, UInt32 length, NSData **outValue)
     }
 
     if (outValue) {
-        *outValue = [[[NSData alloc] initWithBytes:parser->b length:length] autorelease];
+        *outValue = [[NSData alloc] initWithBytes:parser->b length:length];
     }
 
     SwiffParserAdvance(parser, length);
@@ -734,7 +734,7 @@ void SwiffParserReadString(SwiffParser *parser, NSString **outValue)
     if (outValue) {
         if (length) {
             length--;
-            *outValue = [[[NSString alloc] initWithBytes:start length:length encoding:parser->encoding] autorelease];
+            *outValue = [[NSString alloc] initWithBytes:start length:length encoding:parser->encoding];
         } else {
             *outValue = nil;
         }
@@ -762,7 +762,7 @@ void SwiffParserReadLengthPrefixedString(SwiffParser *parser, NSString **outValu
             lengthToUse--;
         }
 
-        *outValue = [[[NSString alloc] initWithBytes:parser->b length:lengthToUse encoding:parser->encoding] autorelease];
+        *outValue = [[NSString alloc] initWithBytes:parser->b length:lengthToUse encoding:parser->encoding];
     }
 
     SwiffParserAdvance(parser, length);

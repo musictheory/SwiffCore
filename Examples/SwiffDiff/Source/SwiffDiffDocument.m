@@ -78,14 +78,10 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
         [document saveState:state];
 
         [allState setObject:state forKey:key];
-
-        [state release];
     }
 
     [[NSUserDefaults standardUserDefaults] setObject:allState forKey:sDocumentStateKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
-
-    [allState release];
 }
 
 
@@ -93,7 +89,7 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
 {
     if ((self = [super init])) {
         if (!sInstances) {
-            sInstances = [[NSHashTable hashTableWithWeakObjects] retain];
+            sInstances = [NSHashTable hashTableWithWeakObjects];
         }
         
         [sInstances addObject:self];
@@ -114,7 +110,6 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
     [m_swiffView setDelegate:nil];
 
     [m_diffTimer invalidate];
-    [m_diffTimer release];
     m_diffTimer = nil;
 
     [o_modeSelect setTarget:nil];
@@ -143,25 +138,6 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
 
     [o_fillHairlineWidth setTarget:nil];
     [o_fillHairlineWidth setAction:NULL];
-
-    o_modeSelect            = nil;
-    o_currentFrameField     = nil;
-    o_totalFrameField       = nil;
-    o_frameSlider           = nil;
-    o_containerView         = nil;
-    o_smoothFonts           = nil;
-    o_subpixelPositionFonts = nil;
-    o_subpixelQuantizeFonts = nil;
-    o_hairlineWidth         = nil;
-    o_fillHairlineWidth     = nil;
-
-    [o_optionsWindow release];
-    o_optionsWindow = nil;
-
-    [m_swiffView release]; m_swiffView = nil;
-    [m_movie     release]; m_movie = nil;
-    
-    [super dealloc];
 }
 
 
@@ -204,7 +180,6 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
 
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
     [[m_webView mainFrame] loadRequest:request];
-    [request release];
     
     [o_containerView addSubview:m_webView];
 
@@ -223,7 +198,6 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
 
 - (BOOL) readFromData:(NSData *)data ofType:(NSString *)typeName error:(NSError **)outError
 {
-    [m_movie release];
     m_movie = [[SwiffMovie alloc] initWithData:data];
 
     return YES;
@@ -244,7 +218,6 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
 
     [state setObject:[NSNumber numberWithDouble:[o_hairlineWidth     doubleValue]] forKey:sHairlineWidthKey];
     [state setObject:[NSNumber numberWithDouble:[o_fillHairlineWidth doubleValue]] forKey:sFillHairlineWidthKey];
-    
 }
 
 
@@ -322,7 +295,6 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
     NSDisableScreenUpdates();
 
     [m_diffTimer invalidate];
-    [m_diffTimer release];
     m_diffTimer = nil;
 
     if ((mode == 0) || (mode == 1)) {
@@ -330,7 +302,7 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
         [m_webView   setHidden:(mode == 0)];
    
     } else if (mode == 2) {
-        m_diffTimer = [[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_handleDiffTick:) userInfo:nil repeats:YES] retain];
+        m_diffTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_handleDiffTick:) userInfo:nil repeats:YES];
         [self _handleDiffTick:m_diffTimer];
     }
     
@@ -500,7 +472,6 @@ static NSString * const sFillHairlineWidthKey     = @"FillHairlineWidth";
     WebScriptObject *wso = [m_webView windowScriptObject];
     [wso callWebScriptMethod:@"SetURL" withArguments:arguments];
     
-    [arguments release];
 }
 
 

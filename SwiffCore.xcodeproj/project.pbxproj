@@ -88,7 +88,7 @@
 		550C99B5145A03F200836C62 /* SwiffSoundPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffSoundPlayer.m; path = Source/SwiffSoundPlayer.m; sourceTree = "<group>"; };
 		550C99B8145A04FD00836C62 /* SwiffSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffSoundEvent.h; path = Source/SwiffSoundEvent.h; sourceTree = "<group>"; };
 		550C99B9145A04FD00836C62 /* SwiffSoundEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffSoundEvent.m; path = Source/SwiffSoundEvent.m; sourceTree = "<group>"; };
-		5516B4C41446D0EA00231D67 /* lib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = lib.a; path = libSwiffCoreMac.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		5516B4C41446D0EA00231D67 /* libSwiffCoreMac.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSwiffCoreMac.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		5516B4C51446D0EA00231D67 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		5516B4C81446D0EA00231D67 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		5516B4CA1446D0EA00231D67 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -114,7 +114,7 @@
 		55955E0B147089BC00BAB75E /* SwiffCore_Profile.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = SwiffCore_Profile.xcconfig; path = Config/SwiffCore_Profile.xcconfig; sourceTree = SOURCE_ROOT; };
 		55955E0D147089F000BAB75E /* SwiffCore_iOS_Profile.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = SwiffCore_iOS_Profile.xcconfig; sourceTree = "<group>"; };
 		55955E0E147089F000BAB75E /* SwiffCore_Mac_Profile.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = SwiffCore_Mac_Profile.xcconfig; sourceTree = "<group>"; };
-		5595A5E91442BFFA00DECD41 /* lib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = lib.a; path = libSwiffCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		5595A5E91442BFFA00DECD41 /* libSwiffCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSwiffCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B34CA014934E8900C67849 /* SwiffView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SwiffView.h; path = Source/SwiffView.h; sourceTree = "<group>"; };
 		55B34CA114934E8900C67849 /* SwiffView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SwiffView.m; path = Source/SwiffView.m; sourceTree = "<group>"; };
 		55C1B1EE14688E5B0010CB82 /* SwiffCore_iOS_Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = SwiffCore_iOS_Debug.xcconfig; sourceTree = "<group>"; };
@@ -371,8 +371,8 @@
 		55F65A8614429D1400E12C27 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5595A5E91442BFFA00DECD41 /* lib.a */,
-				5516B4C41446D0EA00231D67 /* lib.a */,
+				5595A5E91442BFFA00DECD41 /* libSwiffCore.a */,
+				5516B4C41446D0EA00231D67 /* libSwiffCoreMac.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -418,7 +418,7 @@
 			);
 			name = SwiffCoreMac;
 			productName = SwiffCoreMac;
-			productReference = 5516B4C41446D0EA00231D67 /* lib.a */;
+			productReference = 5516B4C41446D0EA00231D67 /* libSwiffCoreMac.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 		5595A5E81442BFFA00DECD41 /* SwiffCore */ = {
@@ -434,7 +434,7 @@
 			);
 			name = SwiffCore;
 			productName = SwiffCore;
-			productReference = 5595A5E91442BFFA00DECD41 /* lib.a */;
+			productReference = 5595A5E91442BFFA00DECD41 /* libSwiffCore.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */

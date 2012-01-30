@@ -35,31 +35,10 @@
 
 
 @implementation SwiffSparseArrayBucket
-
-- (void) dealloc
-{
-    for (NSInteger i = 0; i < 256; i++) {
-        [m_objects[i] release];
-        m_objects[i] = nil;
-    }
-    
-    [super dealloc];
-}
-
 @end
 
 
 @implementation SwiffSparseArray
-
-- (void) dealloc
-{
-    for (NSInteger i = 0; i < 256; i++) {
-        [m_buckets[i] release];
-        m_buckets[i] = nil;
-    }
-    
-    [super dealloc];
-}
 
 - (NSUInteger) countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id __unsafe_unretained [])buffer count:(NSUInteger)count
 {
@@ -137,8 +116,7 @@ void SwiffSparseArraySetObjectAtIndex(SwiffSparseArray *self, UInt16 index, id o
     }
 
     if (bucket) {
-        [bucket->m_objects[lowByte] release];
-        bucket->m_objects[lowByte] = [object retain];
+        bucket->m_objects[lowByte] = object;
     }
 }
 

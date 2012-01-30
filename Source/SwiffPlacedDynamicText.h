@@ -47,6 +47,6 @@
 @property (nonatomic, readonly /*strong*/) CFAttributedStringRef attributedText;
 @property (nonatomic, assign, readonly, getter=isHTML) BOOL HTML;
 
-@property (nonatomic, retain, readonly) SwiffDynamicTextDefinition *definition;
+@property (nonatomic, strong, readonly) SwiffDynamicTextDefinition *definition;
 
 @end

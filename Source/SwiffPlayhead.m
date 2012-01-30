@@ -55,7 +55,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 {
     if ((self = [super init])) {
         m_frameIndex = -1;
-        m_movie = [movie retain];
+        m_movie = movie;
         m_delegate = delegate;
     }
     
@@ -66,11 +66,6 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 - (void) dealloc
 {
     [self _cleanupTimer];
-
-    [m_movie release];
-    m_movie = nil;
-    
-    [super dealloc];
 }
 
 
@@ -80,7 +75,6 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 - (void) _cleanupTimer
 {
     [m_timer invalidate];
-    [m_timer release];
     m_timer = nil;
 }
 
@@ -130,7 +124,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
             [invocation setTarget:self];
             [invocation setSelector:@selector(_tick)];
             
-            m_timer = [[NSTimer timerWithTimeInterval:(1 / 60.0) invocation:invocation repeats:YES] retain];
+            m_timer = [NSTimer timerWithTimeInterval:(1 / 60.0) invocation:invocation repeats:YES];
             [[NSRunLoop currentRunLoop] addTimer:m_timer forMode:NSRunLoopCommonModes];
             
             m_timerPlayStart = CACurrentMediaTime();

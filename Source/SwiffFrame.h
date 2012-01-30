@@ -32,7 +32,8 @@
 
 @interface SwiffFrame : NSObject {
 @private
-    SwiffScene  *m_scene;
+    SwiffUnretained SwiffScene *m_scene;
+
     NSUInteger   m_indexInScene;
 
     NSString    *m_label;
@@ -56,12 +57,12 @@
 @property (nonatomic, assign, readonly) NSUInteger index1InMovie;
 @property (nonatomic, assign, readonly) NSUInteger indexInMovie;
 
-@property (nonatomic, retain, readonly) NSArray *soundEvents;
-@property (nonatomic, retain, readonly) SwiffSoundDefinition  *streamSound;
-@property (nonatomic, retain, readonly) SwiffSoundStreamBlock *streamBlock;
+@property (nonatomic, strong, readonly) NSArray *soundEvents;
+@property (nonatomic, strong, readonly) SwiffSoundDefinition  *streamSound;
+@property (nonatomic, strong, readonly) SwiffSoundStreamBlock *streamBlock;
 
 // Sorted by ascending depth 
-@property (nonatomic, retain, readonly) NSArray *placedObjects;
-@property (nonatomic, retain, readonly) NSArray *placedObjectsWithNames;
+@property (nonatomic, strong, readonly) NSArray *placedObjects;
+@property (nonatomic, strong, readonly) NSArray *placedObjectsWithNames;
 
 @end

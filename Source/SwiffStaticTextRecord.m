@@ -40,7 +40,6 @@
     do {
         record = [[SwiffStaticTextRecord alloc] initWithParser:parser glyphBits:glyphBits advanceBits:advanceBits];
         if (record) [result addObject:record];
-        [record release];
     } while (record);
 
     return result;
@@ -115,12 +114,10 @@
             }
             
         } else {
-            [self release];
             return nil;
         }
         
         if (!SwiffParserIsValid(parser)) {
-            [self release];
             return nil;
         }
     }
@@ -133,8 +130,6 @@
 {
     free(m_glyphEntries);
     m_glyphEntries = NULL;
-    
-    [super dealloc];
 }
 
 

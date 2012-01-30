@@ -31,20 +31,20 @@
 
 @interface SwiffDiffDocument : NSDocument <NSApplicationDelegate, SwiffViewDelegate> {
 @private
-    NSSegmentedControl *o_modeSelect;
-    NSTextField        *o_currentFrameField;
-    NSTextField        *o_totalFrameField;
-    NSSlider           *o_frameSlider;
-    NSView             *o_containerView;
-    NSButton           *o_wantsLayer;
+    NSSegmentedControl *__weak o_modeSelect;
+    NSTextField        *__weak o_currentFrameField;
+    NSTextField        *__weak o_totalFrameField;
+    NSSlider           *__weak o_frameSlider;
+    NSView             *__weak o_containerView;
+    NSButton           *__weak o_wantsLayer;
 
     NSWindow           *o_optionsWindow;
-    NSButton           *o_antialias;
-    NSButton           *o_smoothFonts;
-    NSButton           *o_subpixelPositionFonts;
-    NSButton           *o_subpixelQuantizeFonts;
-    NSTextField        *o_hairlineWidth;
-    NSTextField        *o_fillHairlineWidth;
+    NSButton           *__weak o_antialias;
+    NSButton           *__weak o_smoothFonts;
+    NSButton           *__weak o_subpixelPositionFonts;
+    NSButton           *__weak o_subpixelQuantizeFonts;
+    NSTextField        *__weak o_hairlineWidth;
+    NSTextField        *__weak o_fillHairlineWidth;
     
     NSTimer            *m_diffTimer;
     SwiffMovie         *m_movie;
@@ -72,19 +72,19 @@
 - (IBAction) viewZoomOut:(id)sender;
 - (IBAction) showOptions:(id)sender;
 
-@property (assign) IBOutlet NSSegmentedControl *modeSelect;
-@property (assign) IBOutlet NSTextField *currentFrameField;
-@property (assign) IBOutlet NSTextField *totalFrameField;
-@property (assign) IBOutlet NSSlider *frameSlider;
-@property (assign) IBOutlet NSView *containerView;
-@property (assign) IBOutlet NSButton *wantsLayerButton;
+@property (weak)   IBOutlet NSSegmentedControl *modeSelect;
+@property (weak)   IBOutlet NSTextField *currentFrameField;
+@property (weak)   IBOutlet NSTextField *totalFrameField;
+@property (weak)   IBOutlet NSSlider *frameSlider;
+@property (weak)   IBOutlet NSView *containerView;
+@property (weak)   IBOutlet NSButton *wantsLayerButton;
 
-@property (retain) IBOutlet NSWindow    *optionsWindow;
-@property (assign) IBOutlet NSButton    *antialias;
-@property (assign) IBOutlet NSButton    *smoothFonts;
-@property (assign) IBOutlet NSButton    *subpixelPositionFonts;
-@property (assign) IBOutlet NSButton    *subpixelQuantizeFonts;
-@property (assign) IBOutlet NSTextField *hairlineWidth;
-@property (assign) IBOutlet NSTextField *fillHairlineWidth;
+@property (strong) IBOutlet NSWindow    *optionsWindow;
+@property (weak)   IBOutlet NSButton    *antialias;
+@property (weak)   IBOutlet NSButton    *smoothFonts;
+@property (weak)   IBOutlet NSButton    *subpixelPositionFonts;
+@property (weak)   IBOutlet NSButton    *subpixelQuantizeFonts;
+@property (weak)   IBOutlet NSTextField *hairlineWidth;
+@property (weak)   IBOutlet NSTextField *fillHairlineWidth;
 
 @end

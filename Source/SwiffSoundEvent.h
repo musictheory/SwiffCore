@@ -60,8 +60,8 @@ typedef struct {
 - (void) getLeftLevel:(float *)outLeftLevel rightLevel:(float *)outRightLevel atPosition:(UInt32)position;
 
 @property (nonatomic, assign) UInt16 libraryID;
-@property (nonatomic, assign) NSString *className;
-@property (nonatomic, assign) SwiffSoundDefinition *definition;
+@property (nonatomic, strong) NSString *className;
+@property (nonatomic, strong) SwiffSoundDefinition *definition;
 
 @property (nonatomic, assign, readonly) NSInteger envelopeCount; 
 - (SwiffSoundEnvelope) envelopeAtIndex:(NSInteger)index;

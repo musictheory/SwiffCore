@@ -129,8 +129,6 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
         free(m_additional);
         m_additional = NULL;
     }
-
-    [super dealloc];
 }
 
 

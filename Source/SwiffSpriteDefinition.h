@@ -62,7 +62,7 @@
 
 - (SwiffScene *) sceneWithName:(NSString *)name;
 
-@property (nonatomic, retain, readonly) NSArray *scenes;
-@property (nonatomic, retain, readonly) NSArray *frames;
+@property (nonatomic, strong, readonly) NSArray *scenes;
+@property (nonatomic, strong, readonly) NSArray *frames;
 
 @end

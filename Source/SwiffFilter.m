@@ -59,7 +59,6 @@
         if (cls) {
             SwiffFilter *filter = [[cls alloc] initWithParser:parser];
             [filterList addObject:filter];
-            [filter release];
         }
     }
 
@@ -162,8 +161,6 @@
 {
     free(m_matrixValues);
     m_matrixValues = NULL;
-    
-    [super dealloc];
 }
 
 
@@ -322,15 +319,6 @@
 }
 
 
-- (void) dealloc
-{
-    [m_gradient release];
-    m_gradient = nil;
-
-    [super dealloc];
-}
-
-
 @synthesize gradient       = m_gradient,
             blurX          = m_blurX,
             blurY          = m_blurY,
@@ -370,15 +358,6 @@
     }
     
     return self;
-}
-
-
-- (void) dealloc
-{
-    [m_gradient release];
-    m_gradient = nil;
-
-    [super dealloc];
 }
 
 

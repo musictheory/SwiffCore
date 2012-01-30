@@ -79,7 +79,7 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
     NSArray        *components = [inName componentsSeparatedByString:@","];
     
     for (NSString *component in components) {
-        component = [component stringByTrimmingCharactersInSet:whitespace];
+        NSString *trimmedComponent = [component stringByTrimmingCharactersInSet:whitespace];
 
         if ([inName hasPrefix:@"_"]) {
             if ([inName isEqualToString:@"_sans"]) {
@@ -100,10 +100,10 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
         }
         
         if (mapType == SwiffFontMapTypeDirect) {
-            CTFontRef font = CTFontCreateWithName((__bridge CFStringRef)component, 12.0, NULL);
+            CTFontRef font = CTFontCreateWithName((__bridge CFStringRef)trimmedComponent, 12.0, NULL);
 
             if (font) {
-                name = [[component retain] autorelease];
+                name = trimmedComponent;
                 CFRelease(font);
             }
         }
@@ -119,16 +119,6 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
 
 
 @implementation SwiffDynamicTextAttributes
-
-- (void) dealloc
-{
-    [m_fontName       release];  m_fontName       = nil;
-    [m_mappedFontName release];  m_mappedFontName = nil;
-    [m_tabStopsString release];  m_tabStopsString = nil;
-
-    [super dealloc];
-}
-
 
 - (id) copyWithZone:(NSZone *)zone
 {
@@ -278,13 +268,11 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
 - (void) setFontName:(NSString *)fontName
 {
     if (m_fontName != fontName) {
-        [m_fontName release];
         m_fontName = [fontName copy];
         
         NSString *mappedName = nil;
         sGetMapTypeAndName(fontName, &mappedName, &m_mapType);
 
-        [m_mappedFontName release];
         m_mappedFontName = [mappedName copy];
     }
 }

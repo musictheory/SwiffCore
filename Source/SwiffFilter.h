@@ -184,7 +184,7 @@
     UInt8          m_numberOfPasses;
 }
 
-@property (nonatomic, retain, readonly) SwiffGradient *gradient;
+@property (nonatomic, strong, readonly) SwiffGradient *gradient;
 @property (nonatomic, assign, readonly) CGFloat blurX;
 @property (nonatomic, assign, readonly) CGFloat blurY;
 @property (nonatomic, assign, readonly) CGFloat angle;
@@ -212,7 +212,7 @@
     UInt8          m_numberOfPasses;
 }
 
-@property (nonatomic, retain, readonly) SwiffGradient *gradient;
+@property (nonatomic, strong, readonly) SwiffGradient *gradient;
 @property (nonatomic, assign, readonly) CGFloat blurX;
 @property (nonatomic, assign, readonly) CGFloat blurY;
 @property (nonatomic, assign, readonly) CGFloat angle;

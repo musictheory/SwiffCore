@@ -56,8 +56,8 @@
 - (OSStatus) _start;
 - (void) stop;
 
-@property (nonatomic, retain, readonly) SwiffSoundEvent *event;
-@property (nonatomic, retain, readonly) SwiffSoundDefinition *definition;
+@property (nonatomic, strong, readonly) SwiffSoundEvent *event;
+@property (nonatomic, strong, readonly) SwiffSoundDefinition *definition;
 
 @end
 
@@ -193,6 +193,7 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
             });
         }
 
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
     } else if (inID == kAudioQueueProperty_ConverterError) {
         SInt32 converterError = 0;
         UInt32 converterErrorSize = sizeof(converterError);
@@ -202,6 +203,7 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
         dispatch_async(dispatch_get_main_queue(), ^{
             SwiffWarn(@"Sound", @"%@ reported converter error: %@", inAQ, sGetStringForAudioError(converterError));
         });
+#endif
     }
 }
 
@@ -209,8 +211,8 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
 - (id) _initWithEvent:(SwiffSoundEvent *)event definition:(SwiffSoundDefinition *)definition streamBlock:(SwiffSoundStreamBlock *)streamBlock
 {
     if ((self = [super init])) {
-        m_event      = [event retain];
-        m_definition = [definition retain];
+        m_event      = event;
+        m_definition = definition;
         m_frameIndex = [streamBlock frameOffset];
 
         OSStatus err = noErr;
@@ -219,31 +221,33 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
         sFillASBDForSoundDefinition(&inFormat, definition);
 
         if (err == noErr) {
-            err = AudioQueueNewOutput(&inFormat, sAudioQueueCallback, self, CFRunLoopGetMain(), kCFRunLoopCommonModes, 0, &m_queue);
+            err = AudioQueueNewOutput(&inFormat, sAudioQueueCallback, (__bridge void *)(self), CFRunLoopGetMain(), kCFRunLoopCommonModes, 0, &m_queue);
             if (err != noErr) {
                 SwiffWarn(@"Sound", @"AudioQueueNewOutput() returned %@", sGetStringForAudioError(err));
             }
         }
 
         if (err == noErr) {
-            err = AudioQueueAddPropertyListener(m_queue, kAudioQueueProperty_IsRunning, sAudioQueuePropertyCallback, self);
+            err = AudioQueueAddPropertyListener(m_queue, kAudioQueueProperty_IsRunning, sAudioQueuePropertyCallback, (__bridge void *)(self));
             if (err != noErr) {
                 SwiffWarn(@"Sound", @"AudioQueueAddPropertyListener() for kAudioQueueProperty_IsRunning returned %@", sGetStringForAudioError(err));
             }
         }
 
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
         if (err == noErr) {
-            err = AudioQueueAddPropertyListener(m_queue, kAudioQueueProperty_ConverterError, sAudioQueuePropertyCallback, self);
+            err = AudioQueueAddPropertyListener(m_queue, kAudioQueueProperty_ConverterError, sAudioQueuePropertyCallback, (__bridge void *)(self));
             if (err != noErr) {
                 SwiffWarn(@"Sound", @"AudioQueueAddPropertyListener() for kAudioQueueProperty_ConverterError returned %@", sGetStringForAudioError(err));
             }
         }
-
+#endif
 
         if (err == noErr) {
             err = [self _start];
         }
-        
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
         if (err == kAudioConverterErr_HardwareInUse) {
             UInt32 policy = kAudioQueueHardwareCodecPolicy_PreferSoftware;
             err = AudioQueueSetProperty(m_queue, kAudioQueueProperty_HardwareCodecPolicy, &policy, sizeof(policy));
@@ -256,10 +260,10 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
                 SwiffWarn(@"Sound", @"AudioQueueSetProperty() for kAudioQueueProperty_HardwareCodecPolicy returned %@", sGetStringForAudioError(err));
             }
         }
+#endif
         
         if (err != noErr) {
             SwiffWarn(@"Sound", @"err is %@, returning nil for SoundChannelPlayer", sGetStringForAudioError(err));
-            [self release];
             return nil;
         }
     }
@@ -286,11 +290,6 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
         AudioQueueDispose(m_queue, false);
         m_queue = NULL;
     }
-
-    [m_event      release];  m_event      = nil;
-    [m_definition release];  m_definition = nil;
-
-    [super dealloc];
 }
 
 
@@ -309,7 +308,7 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
         if (err != noErr) {
             SwiffWarn(@"Sound", @"AudioQueueAllocateBuffer() returned %@", sGetStringForAudioError(err));
         } else {
-            sAudioQueueCallback(self, m_queue, m_buffer[i]);
+            sAudioQueueCallback((__bridge void *)(self), m_queue, m_buffer[i]);
         }
     }
 
@@ -323,7 +322,7 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
 
 - (void) stop
 {
-    AudioQueueStop(m_queue, false);
+    AudioQueueStop(m_queue, true);
 }
 
 
@@ -397,11 +396,8 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
             SwiffSoundChannel *channel = [[SwiffSoundChannel alloc] initWithEvent:event definition:[event definition]];
             if (channel) {
                 [m_eventChannels addObject:channel];
-                [channel release];
             }
         }
-        
-        [channels release];
     }
     
     SwiffSoundDefinition *streamSound = [frame streamSound];
@@ -417,7 +413,6 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
 - (void) stopStream
 {
     [m_currentStreamChannel stop];
-    [m_currentStreamChannel release];
     m_currentStreamChannel = nil;
 }
 
@@ -438,8 +433,6 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
     if ([[m_currentStreamChannel definition] movie] == movie) {
         [self stopStream];
     }
-
-    [channelsToRemove release];
 }
 
 

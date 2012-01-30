@@ -75,8 +75,8 @@ extern void SwiffPathAddOperationEnd(SwiffPath *path);
 @property (nonatomic, assign, readonly) UInt8   *operations; // Inside pointer, valid for lifetime of the SwiffPath
 @property (nonatomic, assign, readonly) CGFloat *floats;     // Inside pointer, valid for lifetime of the SwiffPath
 
-@property (nonatomic, retain, readonly) SwiffLineStyle *lineStyle;
-@property (nonatomic, retain, readonly) SwiffFillStyle *fillStyle;
+@property (nonatomic, strong, readonly) SwiffLineStyle *lineStyle;
+@property (nonatomic, strong, readonly) SwiffFillStyle *fillStyle;
 
 // If true, the path is a hairline, but also touched a fill 
 @property (nonatomic, assign) BOOL usesFillHairlineWidth;

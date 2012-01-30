@@ -58,7 +58,7 @@
 @property (nonatomic, assign, readonly) CGRect bounds;
 @property (nonatomic, assign, readonly) CGRect edgeBounds;
 
-@property (nonatomic, retain, readonly) NSArray *paths;
+@property (nonatomic, strong, readonly) NSArray *paths;
 
 @property (nonatomic, assign, readonly) BOOL usesFillWindingRule;
 @property (nonatomic, assign, readonly) BOOL usesNonScalingStrokes;

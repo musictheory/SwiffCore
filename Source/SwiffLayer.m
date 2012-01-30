@@ -51,7 +51,7 @@ static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";
 - (id) initWithMovie:(SwiffMovie *)movie
 {
     if ((self = [self init])) {
-        m_movie = [movie retain];
+        m_movie = movie;
 
         m_renderer = [[SwiffRenderer alloc] initWithMovie:movie];
         
@@ -72,17 +72,7 @@ static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";
 - (void) dealloc
 {
     [[SwiffSoundPlayer sharedInstance] stopAllSoundsForMovie:m_movie];
-
     [m_playhead setDelegate:nil];
-
-    [m_movie        release];  m_movie        = nil;
-    [m_renderer     release];  m_renderer     = nil;
-    [m_currentFrame release];  m_currentFrame = nil;
-    [m_playhead     release];  m_playhead     = nil;
-    [m_sublayers    release];  m_sublayers    = nil;
-    [m_contentLayer release];  m_contentLayer = nil;
-
-    [super dealloc];
 }
 
 
@@ -536,11 +526,6 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     [CATransaction commit];
 
     [self _updateSublayersForPlacedObjects:sublayerUpdates];
-
-    [sublayerRemoves release];
-    [sublayerAdds    release];
-    [sublayerUpdates release];
-    [rectInvalidates release];
 }
 
 
@@ -589,7 +574,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     if (layer == m_contentLayer) {
         if (!m_currentFrame) return;
 
-        SwiffFrame *frame = [m_currentFrame retain];
+        SwiffFrame *frame = m_currentFrame;
 
 #if WARN_ON_DROPPED_FRAMES        
         clock_t c = clock();
@@ -627,7 +612,6 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
         CGContextRestoreGState(context);
         
-        [filteredObjects release];
 
 #if WARN_ON_DROPPED_FRAMES        
         double msElapsed = (clock() - c) / (double)(CLOCKS_PER_SEC / 1000);
@@ -636,7 +620,6 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         }
 #endif
 
-        [frame release];
 
     } else {
         SwiffPlacedObject *layerPlacedObject = [layer valueForKey:SwiffPlacedObjectKey];
@@ -710,9 +693,6 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         [m_renderer setFillHairlineWidth:fillHairlineWidth];
         
         CGContextRestoreGState(context);
-
-        [placedObjects release];
-        [rendererPlacedObject release];
     }
 }
 
@@ -780,13 +760,11 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         m_interpolateCurrentFrame = [m_delegate layer:self shouldInterpolateFromFrame:m_currentFrame toFrame:frame];
 
         SwiffFrame *oldFrame = m_currentFrame;
-        m_currentFrame = [frame retain];
+        m_currentFrame = frame;
 
         [self _transitionToFrame:frame fromFrame:oldFrame];
-        [oldFrame release];
 
         [m_delegate layer:self didUpdateCurrentFrame:m_currentFrame];
-
     }
 }
 
@@ -800,7 +778,6 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         [layer removeFromSuperlayer];
     };
     
-    [m_sublayers release];
     m_sublayers = nil;
     m_sublayerCount = 0;
 

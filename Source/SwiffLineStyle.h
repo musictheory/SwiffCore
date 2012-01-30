@@ -58,7 +58,7 @@ extern const CGFloat SwiffLineStyleHairlineWidth;
 
 @property (nonatomic, readonly, assign) CGFloat width;
 @property (nonatomic, readonly, assign) SwiffColor color;
-@property (nonatomic, readonly, retain) SwiffFillStyle *fillStyle;
+@property (nonatomic, readonly, strong) SwiffFillStyle *fillStyle;
 
 // Inside pointer, valid for lifetime of the SwiffLineStyle
 @property (nonatomic, assign, readonly) SwiffColor *colorPointer;

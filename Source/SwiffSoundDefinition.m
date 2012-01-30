@@ -100,11 +100,6 @@
 {
     free(m_frames);
     m_frames = NULL;
-
-    [m_data release];
-    m_data = nil;
-
-    [super dealloc];
 }
 
 
@@ -200,7 +195,7 @@ extern CFIndex SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *self,
         [self _readMP3FramesFromParser:parser];
     }
 
-    return [result autorelease];
+    return result;
 }
 
 

@@ -88,8 +88,8 @@ void SwiffPathAddOperationEnd(SwiffPath *path)
 - (id) initWithLineStyle:(SwiffLineStyle *)lineStyle fillStyle:(SwiffFillStyle *)fillStyle
 {
     if ((self = [super init])) {
-        m_fillStyle = [fillStyle  retain];
-        m_lineStyle = [lineStyle  retain];
+        m_fillStyle = fillStyle;
+        m_lineStyle = lineStyle;
     }
     
     return self;
@@ -107,11 +107,6 @@ void SwiffPathAddOperationEnd(SwiffPath *path)
         free(m_floats);
         m_floats = NULL;
     }
-
-    [m_fillStyle  release];  m_fillStyle  = nil;
-    [m_lineStyle  release];  m_lineStyle  = nil;
-    
-    [super dealloc];
 }
 
 

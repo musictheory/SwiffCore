@@ -80,9 +80,6 @@ typedef NSInteger SwiffHTMLToCoreTextConverterTag;
         CFAttributedStringReplaceAttributedString(m_output, CFRangeMake(CFAttributedStringGetLength(m_output), 0), replacement);
         CFRelease(replacement);
         
-        [coreTextAttributes release];
-        
-        [m_characters release];
         m_characters = [[NSMutableString alloc] init];
     }
 }
@@ -90,9 +87,7 @@ typedef NSInteger SwiffHTMLToCoreTextConverterTag;
 
 - (void) _cloneAttributes
 {
-    SwiffDynamicTextAttributes *oldAttributes = m_attributes;
     m_attributes = [m_attributes copy];
-    [oldAttributes release]; 
 }
 
 
@@ -128,7 +123,6 @@ static void sStartFontElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr 
         if (faceCString) {
             NSString *fontName = [[NSString alloc] initWithBytesNoCopy:faceCString length:strlen(faceCString) encoding:NSUTF8StringEncoding freeWhenDone:YES];
             [attributes setFontName:fontName];
-            [fontName release];
         }
     }
 
@@ -243,7 +237,6 @@ static void sStartTextFormatElement(SwiffHTMLToCoreTextConverter *self, xmlEleme
     if (tabStopsCString) {
         NSString *tabStops = [[NSString alloc] initWithBytesNoCopy:tabStopsCString length:strlen(tabStopsCString) encoding:NSUTF8StringEncoding freeWhenDone:YES];
         [attributes setTabStopsString:tabStops];
-        [tabStops release];
     }
 
     // What is the difference between block indent and left margin?
@@ -340,7 +333,7 @@ static void sEndElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr elemen
 
 static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
 {
-    SwiffDynamicTextAttributes *savedAttributes = [self->m_attributes retain];
+    SwiffDynamicTextAttributes *savedAttributes = self->m_attributes;
     
     xmlElementType type    = node->type;
     xmlElementPtr  element = (type == XML_ELEMENT_NODE) ? (xmlElementPtr)node : NULL;
@@ -364,7 +357,6 @@ static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
 
             NSString *string = [[NSString alloc] initWithBytesNoCopy:(void *)content length:length encoding:NSUTF8StringEncoding freeWhenDone:YES];
             [self->m_characters appendString:string];
-            [string release];
         }
     }
 
@@ -373,7 +365,6 @@ static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
     }
 
     // Restore parser state from stack
-    [self->m_attributes release];
     self->m_attributes = savedAttributes;
 }
 
@@ -395,7 +386,7 @@ static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
    
     m_characters     = [[NSMutableString alloc] init];
     m_output         = CFAttributedStringCreateMutable(NULL, 0);
-    m_attributes     = [baseAttributes retain];
+    m_attributes     = baseAttributes;
     m_boldCount      = [baseAttributes isBold]      ? 1 : 0;
     m_italicCount    = [baseAttributes isItalic]    ? 1 : 0;
     m_underlineCount = [baseAttributes isUnderline] ? 1 : 0;
@@ -415,10 +406,7 @@ static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
     CFAttributedStringRef output = m_output;
     m_output = NULL;
 
-    [m_attributes release];
     m_attributes = nil;
-
-    [m_characters release];
     m_characters = nil;
     
     free(buffer);

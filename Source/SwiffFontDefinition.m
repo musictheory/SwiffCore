@@ -173,10 +173,6 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 
 - (void) dealloc
 {
-    [m_name      release];  m_name      = nil;
-    [m_fullName  release];  m_fullName  = nil;
-    [m_copyright release];  m_copyright = nil;
-    
     if (m_glyphPaths) {
         for (NSInteger i = 0; i < m_glyphCount; i++) {
             CGPathRelease(m_glyphPaths[i]);
@@ -189,8 +185,6 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
     free(m_glyphAdvances);    m_glyphAdvances  = NULL;
     free(m_glyphBounds);      m_glyphBounds    = NULL;
     free(m_kerningRecords);   m_kerningRecords = NULL;
-    
-    [super dealloc];
 }
 
 
@@ -286,7 +280,7 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
     
         NSString *name = nil;
         SwiffParserReadLengthPrefixedString(parser, &name);
-        m_name = [name retain];
+        m_name = name;
         
         UInt16 glyphCount;
         SwiffParserReadUInt16(parser, &glyphCount);
@@ -361,13 +355,13 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 
 - (void) readDefineFontNameTagFromParser:(SwiffParser *)parser
 {
-    NSString *name      = nil;
+    NSString *name = nil;
     SwiffParserReadString(parser, &name);
-    m_fullName = [name retain];
+    m_fullName = name;
 
     NSString *copyright = nil;
     SwiffParserReadString(parser, &copyright);
-    m_copyright = [copyright retain];
+    m_copyright = copyright;
 }
 
 
@@ -377,7 +371,7 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 
     NSString *name;
     SwiffParserReadLengthPrefixedString(parser, &name);
-    m_name = [name retain];
+    m_name = name;
 
     SwiffParserReadUBits(parser, 2, &reserved);
     SwiffParserReadUBits(parser, 1, &isSmallText);

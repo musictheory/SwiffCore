@@ -33,7 +33,7 @@
 
 @interface SwiffPlayhead : NSObject {
 @private
-    id<SwiffPlayheadDelegate> m_delegate;
+    SwiffUnretained id<SwiffPlayheadDelegate> m_delegate;
 
     SwiffMovie    *m_movie;
     NSInteger      m_frameIndex;
@@ -67,13 +67,14 @@
 - (void) stop;
 - (void) step;
 
+- (SwiffScene *) scene;
+- (SwiffFrame *) frame;
+
 @property (nonatomic, assign) id<SwiffPlayheadDelegate> delegate;
 @property (nonatomic, assign) BOOL loopsMovie;
 @property (nonatomic, assign) BOOL loopsScene;
 
-@property (nonatomic, readonly, retain) SwiffMovie *movie;
-@property (nonatomic, readonly, assign) SwiffScene *scene;
-@property (nonatomic, readonly, assign) SwiffFrame *frame;
+@property (nonatomic, readonly, strong) SwiffMovie *movie;
 @property (nonatomic, readonly, getter=isPlaying) BOOL playing;
 
 @end

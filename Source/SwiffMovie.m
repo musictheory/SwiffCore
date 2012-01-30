@@ -75,15 +75,6 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 }
 
 
-- (void) dealloc
-{
-    [m_definitions release];
-    m_definitions = nil;
-
-    [super dealloc];
-}
-
-
 #pragma mark -
 #pragma mark Private Methods
 
@@ -166,9 +157,8 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
             NSMutableArray *needsTables = SwiffParserGetAssociatedValue(parser, SwiffMovieNeedsJPEGTablesDataKey);
 
             if (!needsTables) {
-                needsTables = [[NSMutableArray alloc] init];
+                needsTables = [NSMutableArray array];
                 SwiffParserSetAssociatedValue(parser, SwiffMovieNeedsJPEGTablesDataKey, needsTables);
-                [needsTables release];
             }
             
             [needsTables addObject:bitmap];
@@ -193,7 +183,6 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
         UInt16 fontID;
         SwiffParserReadUInt16(parser, &fontID);
 
-        NSNumber  *key  = [[NSNumber alloc] initWithInteger:(NSInteger)fontID];
         SwiffFontDefinition *font = SwiffMovieGetDefinition(self, fontID);
         
         if (![font isKindOfClass:[SwiffFontDefinition class]]) {
@@ -210,7 +199,6 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
             [font readDefineFontAlignZonesFromParser:parser];
         }
 
-        [key release];
     
     } else if (tag == SwiffTagDefineText) {
         definitionToAdd = [[SwiffStaticTextDefinition alloc] initWithParser:parser movie:self];
@@ -229,8 +217,6 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
         UInt16 libraryID = [definitionToAdd libraryID];
         SwiffSparseArraySetObjectAtIndex(m_definitions, libraryID, definitionToAdd);
     }
-    
-    [definitionToAdd release];
 }
 
 

@@ -84,7 +84,7 @@
         if (hasFontClass) {
             NSString *fontClass = nil;
             SwiffParserReadString( parser, &fontClass);
-            m_fontClass = [fontClass retain];
+            m_fontClass = fontClass;
             m_hasFontClass = YES;
         }
     
@@ -124,26 +124,17 @@
 
         NSString *variableName;
         SwiffParserReadString(parser, &variableName);
-        m_variableName = [variableName retain];
+        m_variableName = variableName;
         
         if (hasText) {
             NSString *initialText;
             SwiffParserReadString(parser, &initialText);
-            m_initialText = [initialText retain];
+            m_initialText = initialText;
         }
 
     }
     
     return self;
-}
-
-- (void) dealloc
-{
-    [m_initialText  release];  m_initialText  = nil;
-    [m_variableName release];  m_variableName = nil;
-    [m_fontClass    release];  m_fontClass    = nil;
-
-    [super dealloc];
 }
 
 

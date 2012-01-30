@@ -842,21 +842,12 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
 - (id) initWithMovie:(SwiffMovie *)movie
 {
     if ((self = [super init])) {
-        m_movie = [movie retain];
+        m_movie = movie;
         m_shouldAntialias = YES;
         m_scaleFactorHint = 1.0;
     }
 
     return self;
-}
-
-
-- (void) dealloc
-{
-    [m_movie release];
-    m_movie = nil;
-
-    [super dealloc];
 }
 
 

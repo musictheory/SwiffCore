@@ -41,10 +41,6 @@
 {
     [m_layer clearWeakReferences];
     [m_layer setSwiffLayerDelegate:nil];
-    [m_layer release];
-    m_layer = nil;
-
-    [super dealloc];
 }
 
 

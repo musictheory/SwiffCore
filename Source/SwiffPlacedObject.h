@@ -55,7 +55,7 @@
 @property (nonatomic, copy)   NSString *className;
 @property (nonatomic, assign) SwiffBlendMode blendMode;
 @property (nonatomic, assign) CGBlendMode CGBlendMode;
-@property (nonatomic, retain) NSArray *filters;
+@property (nonatomic, strong) NSArray *filters;
 
 @property (nonatomic, assign) BOOL wantsLayer;
 @property (nonatomic, copy)   NSString *layerIdentifier;

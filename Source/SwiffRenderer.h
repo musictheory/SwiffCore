@@ -54,7 +54,7 @@
 
 - (void) renderPlacedObjects:(NSArray *)placedObjects inContext:(CGContextRef)context;
 
-@property (nonatomic, retain, readonly) SwiffMovie *movie;
+@property (nonatomic, strong, readonly) SwiffMovie *movie;
 
 @property (nonatomic, assign) CGAffineTransform *baseAffineTransform;
 

@@ -46,12 +46,12 @@
                         streamBlock: (SwiffSoundStreamBlock *) streamBlock
 {
     if ((self = [super init])) {
-        m_placedObjects = [placedObjects retain];
-        m_soundEvents   = [soundEvents   retain];
-        m_streamSound   = [streamSound   retain];
-        m_streamBlock   = [streamBlock   retain];
+        m_placedObjects = placedObjects;
+        m_soundEvents   = soundEvents;
+        m_streamSound   = streamSound;
+        m_streamBlock   = streamBlock;
 
-        m_placedObjectsWithNames = [placedObjectsWithNames retain];
+        m_placedObjectsWithNames = placedObjectsWithNames;
     }
     
     return self;
@@ -61,21 +61,6 @@
 - (void) clearWeakReferences
 {
     m_scene = nil;
-}
-
-
-- (void) dealloc
-{
-    [m_label         release];  m_label         = nil;
-    [m_placedObjects release];  m_placedObjects = nil;
-    [m_soundEvents   release];  m_soundEvents   = nil;
-    [m_streamSound   release];  m_streamSound   = nil;
-    [m_streamBlock   release];  m_streamBlock   = nil;
-
-    [m_placedObjectsWithNames release];
-    m_placedObjectsWithNames = nil;
-
-    [super dealloc];
 }
 
 
@@ -97,7 +82,6 @@
 
 - (void) _updateLabel:(NSString *)label 
 {
-    [m_label release];
     m_label = [label copy];
 }
 

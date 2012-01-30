@@ -74,8 +74,8 @@
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie;
 
-@property (nonatomic, retain, readonly) NSString *variableName;
-@property (nonatomic, retain, readonly) NSString *initialText;
+@property (nonatomic, strong, readonly) NSString *variableName;
+@property (nonatomic, strong, readonly) NSString *initialText;
 
 @property (nonatomic, assign, readonly) NSUInteger maxLength;
 
@@ -99,7 +99,7 @@
 @property (nonatomic, assign, readonly) BOOL hasFont;
 @property (nonatomic, assign, readonly) BOOL hasFontClass;
 @property (nonatomic, assign, readonly) UInt16 fontID;
-@property (nonatomic, assign, readonly) NSString *fontClass;
+@property (nonatomic, strong, readonly) NSString *fontClass;
 @property (nonatomic, assign, readonly) CGFloat fontHeight;
 @property (nonatomic, assign, readonly) SwiffTwips fontHeightInTwips;
 

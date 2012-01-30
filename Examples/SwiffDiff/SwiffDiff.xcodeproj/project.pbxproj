@@ -13,7 +13,7 @@
 		5580A9161488472400F55ED0 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5580A9141488472400F55ED0 /* MainMenu.xib */; };
 		5580A91B1488473100F55ED0 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5580A9191488473100F55ED0 /* InfoPlist.strings */; };
 		55AEB9B91488457B00C17C1C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55AEB9B81488457B00C17C1C /* Cocoa.framework */; };
-		55B079C114884C32006769C8 /* lib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079BD14884C25006769C8 /* lib.a */; };
+		55B079C114884C32006769C8 /* libSwiffCoreMac.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079BD14884C25006769C8 /* libSwiffCoreMac.a */; };
 		55B079C814884D79006769C8 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079C614884D79006769C8 /* libxml2.dylib */; };
 		55B079C914884D79006769C8 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079C714884D79006769C8 /* libz.dylib */; };
 		55B079CC14884E25006769C8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B079CA14884E25006769C8 /* AudioToolbox.framework */; };
@@ -78,7 +78,7 @@
 			files = (
 				55B079C814884D79006769C8 /* libxml2.dylib in Frameworks */,
 				55B079C914884D79006769C8 /* libz.dylib in Frameworks */,
-				55B079C114884C32006769C8 /* lib.a in Frameworks */,
+				55B079C114884C32006769C8 /* libSwiffCoreMac.a in Frameworks */,
 				55B079CC14884E25006769C8 /* AudioToolbox.framework in Frameworks */,
 				55AEB9B91488457B00C17C1C /* Cocoa.framework in Frameworks */,
 				55B079CD14884E25006769C8 /* QuartzCore.framework in Frameworks */,
@@ -159,8 +159,8 @@
 		55B079B614884C25006769C8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				55B079BB14884C25006769C8 /* lib.a */,
-				55B079BD14884C25006769C8 /* lib.a */,
+				55B079BB14884C25006769C8 /* libSwiffCore.a */,
+				55B079BD14884C25006769C8 /* libSwiffCoreMac.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -218,18 +218,16 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		55B079BB14884C25006769C8 /* lib.a */ = {
+		55B079BB14884C25006769C8 /* libSwiffCore.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			name = lib.a;
 			path = libSwiffCore.a;
 			remoteRef = 55B079BA14884C25006769C8 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		55B079BD14884C25006769C8 /* lib.a */ = {
+		55B079BD14884C25006769C8 /* libSwiffCoreMac.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			name = lib.a;
 			path = libSwiffCoreMac.a;
 			remoteRef = 55B079BC14884C25006769C8 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -347,6 +345,7 @@
 		55AEB9D31488457B00C17C1C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Source/SwiffDiffPrefix.pch;
 				HEADER_SEARCH_PATHS = (
@@ -362,6 +361,7 @@
 		55AEB9D41488457B00C17C1C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Source/SwiffDiffPrefix.pch;
 				HEADER_SEARCH_PATHS = (

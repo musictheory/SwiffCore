@@ -61,7 +61,6 @@
 
         if (fillStyle) {
             [array addObject:fillStyle];
-            [fillStyle release];
         } else {
             return nil;
         }
@@ -74,61 +73,41 @@
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [self init])) {
-        UInt8 type;
-        SwiffParserReadUInt8(parser, &type);
-        m_type = type;
+        SwiffParserReadUInt8(parser, &m_type);
 
         if (IS_COLOR_TYPE) {
             SwiffTag  tag     = SwiffParserGetCurrentTag(parser);
             NSInteger version = SwiffParserGetCurrentTagVersion(parser);
         
             if ((tag == SwiffTagDefineShape) && (version >= 3)) {
-                SwiffParserReadColorRGBA(parser, &m_content.color);
+                SwiffParserReadColorRGBA(parser, &m_color);
             } else {
-                SwiffParserReadColorRGB(parser, &m_content.color);
+                SwiffParserReadColorRGB(parser, &m_color);
             }
 
         } else if (IS_GRADIENT_TYPE) {
-            SwiffParserReadMatrix(parser, &m_content.gradientTransform);
+            SwiffParserReadMatrix(parser, &m_transform);
             BOOL isFocalGradient = (m_type == SwiffFillStyleTypeFocalRadialGradient);
 
-            SwiffGradient *gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:isFocalGradient];
-            m_content.gradient = CFBridgingRetain(gradient);
-            [gradient release];
+            m_gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:isFocalGradient];
 
         } else if (IS_BITMAP_TYPE) {
-            UInt16 bitmapID;
-            SwiffParserReadUInt16(parser, &bitmapID);
-            m_content.bitmapID = bitmapID;
+            SwiffParserReadUInt16(parser, &m_bitmapID);
+            SwiffParserReadMatrix(parser, &m_transform);
 
-            SwiffParserReadMatrix(parser, &m_content.bitmapTransform);
-
-            m_content.bitmapTransform.a /= 20.0;
-            m_content.bitmapTransform.d /= 20.0;
+            m_transform.a /= 20.0;
+            m_transform.d /= 20.0;
 
         } else {
-            [self release];
             return nil;
         }
 
         if (!SwiffParserIsValid(parser)) {
-            [self release];
             return nil;
         }
     }
 
     return self;
-}
-
-
-- (void) dealloc
-{
-    if (IS_GRADIENT_TYPE && m_content.gradient) {
-        CFRelease(m_content.gradient);
-        m_content.gradient = NULL;
-    }
-
-    [super dealloc];
 }
 
 
@@ -139,10 +118,10 @@
     if (m_type == SwiffFillStyleTypeColor) {
 
         typeString = [NSString stringWithFormat:@"#%02lX%02lX%02lX, %ld%%",
-            (long)(m_content.color.red   * 255.0),
-            (long)(m_content.color.green * 255.0),
-            (long)(m_content.color.blue  * 255.0),
-            (long)(m_content.color.alpha * 100.0)
+            (long)(m_color.red   * 255.0),
+            (long)(m_color.green * 255.0),
+            (long)(m_color.blue  * 255.0),
+            (long)(m_color.alpha * 100.0)
         ];
 
     } else if (m_type == SwiffFillStyleTypeLinearGradient) {
@@ -170,61 +149,26 @@
 
 - (SwiffColor *) colorPointer
 {
-    if (IS_COLOR_TYPE) {
-        return &m_content.color;
-    } else {
-        return NULL;
-    }
-}
-
-
-- (SwiffColor) color
-{
-    if (IS_COLOR_TYPE) {
-        return m_content.color;
-    } else {
-        SwiffColor color = { 0, 0, 0, 0 };
-        return color;
-    }
-}
-
-
-- (SwiffGradient *) gradient
-{
-    if (IS_GRADIENT_TYPE) {
-        return (__bridge SwiffGradient *)m_content.gradient;
-    } else {
-        return nil;
-    }
+    return IS_COLOR_TYPE ? &m_color : NULL;
 }
 
 
 - (CGAffineTransform) gradientTransform
 {
-    if (IS_GRADIENT_TYPE) {
-        return m_content.gradientTransform;
-    } else {
-        return CGAffineTransformIdentity;
-    }
-}
-
-
-- (UInt16) bitmapID
-{
-    return IS_BITMAP_TYPE ? m_content.bitmapID : 0;
+    return IS_GRADIENT_TYPE ? m_transform : CGAffineTransformIdentity;
 }
 
 
 - (CGAffineTransform) bitmapTransform
 {
-    if (IS_BITMAP_TYPE) {
-        return m_content.bitmapTransform;
-    } else {
-        return CGAffineTransformIdentity;
-    }
+    return IS_BITMAP_TYPE ? m_transform : CGAffineTransformIdentity;
 }
 
 
-@synthesize type = m_type;
+@synthesize type     = m_type,
+            color    = m_color,
+            gradient = m_gradient,
+            bitmapID = m_bitmapID;
+
 
 @end
