@@ -42,35 +42,30 @@
 
 - (NSUInteger) countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id __unsafe_unretained [])buffer count:(NSUInteger)count
 {
-    NSInteger highByte = state->state >> 8;
-    NSInteger lowByte  = state->state & 0xFF;
+    NSUInteger i = state->state;
+    NSUInteger o = 0;
 
-    NSUInteger i = 0;
+    while ((o < count) && (i < 65536)) {
+        id object = SwiffSparseArrayGetObjectAtIndex(self, i);
 
-    for ( ; highByte < 256; highByte++) {
-        SwiffSparseArrayBucket *bucket = m_buckets[highByte];
+        if (object) {
+            buffer[o++] = object;
 
-        if (bucket) {
-            for ( ; lowByte < 256; lowByte++) {
-                id object = bucket->m_objects[lowByte];
-                if (object) {
-                    buffer[i++] = object;
-                    if (i == count) goto end;
-                }
-            }
+        // Did we fail because we have no bucket?
+        // If so, skip over the entire non-existant bucket
+        } else if (!m_buckets[i >> 8]) {
+            i += 256;
+            continue;
         }
 
-        if (highByte != 255) {
-            lowByte = 0;
-        }
+        i++;
     }
 
-end:
-    state->state = (highByte << 8) | lowByte;
+    state->state = i;
     state->itemsPtr = buffer;
     state->mutationsPtr = &state->extra[0];
         
-    return i;
+    return o;
 }
 
 
