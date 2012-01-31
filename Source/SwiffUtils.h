@@ -49,7 +49,13 @@ extern NSStringEncoding SwiffGetLegacyStringEncoding(void);
 #ifndef UIKIT_EXTERN
 #ifndef NSStringFromCGPoint
 #define NSStringFromCGPoint(X) NSStringFromPoint(NSPointFromCGPoint(X))
+#endif
+
+#ifndef NSStringFromCGSize
 #define NSStringFromCGSize(X)  NSStringFromSize(NSSizeFromCGSize(X))
+#endif
+
+#ifndef NSStringFromCGRect
 #define NSStringFromCGRect(X)  NSStringFromRect(NSRectFromCGRect(X))
 #endif
 #endif

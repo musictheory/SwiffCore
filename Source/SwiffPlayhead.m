@@ -70,9 +70,11 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
     [m_timer invalidate];
     m_timer = nil;
 
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
     [m_displayLink setPaused:YES];
     [m_displayLink invalidate];
     m_displayLink = nil;
+#endif
 }
 
 
@@ -115,11 +117,16 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
         [self invalidateTimers];
 
         if (play) {
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
             if ([CADisplayLink class]) {
                 m_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleTimerTick:)];
                 [m_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
 
-            } else {
+            } else
+#endif
+
+            {
                 NSMethodSignature *signature = [self methodSignatureForSelector:@selector(handleTimerTick:)];
                 NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
                 
