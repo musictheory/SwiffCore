@@ -49,6 +49,7 @@
     SwiffSoundEvent      *m_event;
     SwiffSoundDefinition *m_definition;
     UInt32                m_frameIndex;
+    BOOL                  m_isStopping;
 }
 
 - (id) initWithEvent:(SwiffSoundEvent *)event definition:(SwiffSoundDefinition *)definition;
@@ -128,7 +129,7 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
 {
     SwiffSoundChannel    *channel    = (__bridge SwiffSoundChannel *)inUserData;
     SwiffSoundDefinition *definition = channel->m_definition;
-    
+
     AudioStreamPacketDescription *aspd = inBuffer->mUserData;
     
     CFIndex firstOffset   = kCFNotFound;
@@ -159,18 +160,20 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
         }
     }
 
-    if (bytesWritten > 0) {
-        CFDataRef data = SwiffSoundDefinitionGetData(definition);
-        CFDataGetBytes(data, CFRangeMake(firstOffset, bytesWritten), inBuffer->mAudioData);
+    if (!channel->m_isStopping) {
+        if (bytesWritten > 0) {
+            CFDataRef data = SwiffSoundDefinitionGetData(definition);
+            CFDataGetBytes(data, CFRangeMake(firstOffset, bytesWritten), inBuffer->mAudioData);
 
-        inBuffer->mAudioDataByteSize = bytesWritten;
+            inBuffer->mAudioDataByteSize = bytesWritten;
 
-        OSStatus err = AudioQueueEnqueueBuffer(inAQ, inBuffer, framesWritten, aspd);
-        if (err != noErr) {
-            SwiffWarn(@"Sound", @"AudioQueueEnqueueBuffer() returned %@", sGetStringForAudioError(err));
+            OSStatus err = AudioQueueEnqueueBuffer(inAQ, inBuffer, framesWritten, aspd);
+            if (err != noErr) {
+                SwiffWarn(@"Sound", @"AudioQueueEnqueueBuffer() returned %@", sGetStringForAudioError(err));
+            }
+        } else {
+            AudioQueueStop(inAQ, false);
         }
-    } else {
-        AudioQueueStop(inAQ, false);
     }
 
     channel->m_frameIndex = frameIndex; 
@@ -322,6 +325,7 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
 
 - (void) stop
 {
+    m_isStopping = YES;
     AudioQueueStop(m_queue, true);
 }
 
