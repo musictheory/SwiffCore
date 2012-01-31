@@ -37,8 +37,7 @@
 
 
 @interface SwiffPlayhead ()
-- (void) _cleanupTimer;
-- (void) _tick;
+- (void) handleTimerTick:(NSTimer *)timer;
 @end
 
 extern void SwiffPlayheadWarnForInvalidGotoArguments(void);
@@ -63,23 +62,21 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 }
 
 
-- (void) dealloc
-{
-    [self _cleanupTimer];
-}
-
-
 #pragma mark -
 #pragma mark - Private Methods
 
-- (void) _cleanupTimer
+- (void) invalidateTimers
 {
     [m_timer invalidate];
     m_timer = nil;
+
+    [m_displayLink setPaused:YES];
+    [m_displayLink invalidate];
+    m_displayLink = nil;
 }
 
 
-- (void) _tick
+- (void) handleTimerTick:(id)sender
 {
     long currentIndex = (long)((CACurrentMediaTime() - m_timerPlayStart) * [m_movie frameRate]);
 
@@ -115,17 +112,25 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
     }
 
     if (isPlaying != play) {
-        [self _cleanupTimer];
+        [self invalidateTimers];
 
         if (play) {
-            NSMethodSignature *signature = [self methodSignatureForSelector:@selector(_tick)];
-            NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-            
-            [invocation setTarget:self];
-            [invocation setSelector:@selector(_tick)];
-            
-            m_timer = [NSTimer timerWithTimeInterval:(1 / 60.0) invocation:invocation repeats:YES];
-            [[NSRunLoop currentRunLoop] addTimer:m_timer forMode:NSRunLoopCommonModes];
+            if ([CADisplayLink class]) {
+                m_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleTimerTick:)];
+                [m_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+
+            } else {
+                NSMethodSignature *signature = [self methodSignatureForSelector:@selector(handleTimerTick:)];
+                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+                
+                [invocation setTarget:self];
+                [invocation setSelector:@selector(handleTimerTick:)];
+                
+                m_timer = [NSTimer timerWithTimeInterval:(1 / 60.0) invocation:invocation repeats:YES];
+                [[NSRunLoop currentRunLoop] addTimer:m_timer forMode:NSRunLoopCommonModes];
+                
+                [invocation setArgument:(__bridge void *)m_timer atIndex:2];
+            }
             
             m_timerPlayStart = CACurrentMediaTime();
             m_timerPlayIndex = 0;
@@ -327,7 +332,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (BOOL) isPlaying
 {
-    return m_timer != nil;
+    return m_timer || m_displayLink;
 }
 
 

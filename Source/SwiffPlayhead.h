@@ -28,6 +28,7 @@
 #import <SwiffImport.h>
 
 @class SwiffScene, SwiffFrame, SwiffMovie;
+@class CADisplayLink;
 @protocol SwiffPlayheadDelegate;
 
 
@@ -40,6 +41,7 @@
     NSInteger      m_frameIndexForNextStep;
 
     NSTimer       *m_timer;
+    CADisplayLink *m_displayLink;
     CFTimeInterval m_timerPlayStart;
     long           m_timerPlayIndex;
 
@@ -66,6 +68,8 @@
 - (void) play;
 - (void) stop;
 - (void) step;
+
+- (void) invalidateTimers;
 
 - (SwiffScene *) scene;
 - (SwiffFrame *) frame;

@@ -72,6 +72,8 @@ static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";
 - (void) dealloc
 {
     [[SwiffSoundPlayer sharedInstance] stopAllSoundsForMovie:m_movie];
+
+    [m_playhead invalidateTimers];
     [m_playhead setDelegate:nil];
 }
 
@@ -520,6 +522,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         [self _updateSublayersForPlacedObjects:sublayerAdds];
 
         [self _invalidatePlacedObjects:rectInvalidates];
+        
+        [m_contentLayer displayIfNeeded];
 
         [CATransaction commit];
 
