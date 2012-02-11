@@ -160,6 +160,29 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 
 @implementation SwiffFontDefinition
 
+@synthesize movie          = m_movie,
+            name           = m_name,
+            fullName       = m_fullName,
+            copyright      = m_copyright,
+            glyphCount     = m_glyphCount,
+            glyphPaths     = m_glyphPaths,
+            codeTable      = m_codeTable,
+            encoding       = m_encoding,
+            languageCode   = m_languageCode,
+            kerningCount   = m_kerningCount,
+            glyphAdvances  = m_glyphAdvances,
+            glyphBounds    = m_glyphBounds,
+            ascent         = m_ascent,
+            descent        = m_descent,
+            leading        = m_leading,
+            kerningRecords = m_kerningRecords,
+            libraryID      = m_libraryID,
+            bold           = m_bold,
+            italic         = m_italic,
+            smallText      = m_smallText,
+            hasLayout      = m_hasLayout;
+
+
 - (id) initWithLibraryID:(UInt16)libraryID movie:(SwiffMovie *)movie
 {
     if ((self = [super init])) {
@@ -418,29 +441,5 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 
 - (CGRect) bounds       { return CGRectZero; }
 - (CGRect) renderBounds { return CGRectZero; }
-
-@synthesize movie         = m_movie,
-            libraryID     = m_libraryID,
-            name          = m_name,
-            fullName      = m_fullName,
-            copyright     = m_copyright,
-            glyphCount    = m_glyphCount,
-            glyphPaths    = m_glyphPaths,
-            codeTable     = m_codeTable,
-            encoding      = m_encoding,
-            languageCode  = m_languageCode,
-            bold          = m_bold,
-            italic        = m_italic,
-            smallText     = m_smallText;
-
-@synthesize hasLayout     = m_hasLayout,
-            ascent        = m_ascent,
-            descent       = m_descent,
-            leading       = m_leading,
-            glyphAdvances = m_glyphAdvances,
-            glyphBounds   = m_glyphBounds,
-            kerningCount  = m_kerningCount,
-            kerningRecords = m_kerningRecords;
-
 
 @end

@@ -80,7 +80,23 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
 }
  
 
-@implementation SwiffShapeDefinition
+@implementation SwiffShapeDefinition {
+    CFArrayRef  m_groups;
+    NSArray    *m_fillStyles;
+    NSArray    *m_lineStyles;
+    NSArray    *m_paths;
+}
+
+@synthesize movie                 = m_movie,
+            libraryID             = m_libraryID,
+            bounds                = m_bounds,
+            renderBounds          = m_renderBounds,
+            edgeBounds            = m_edgeBounds,
+            usesFillWindingRule   = m_usesFillWindingRule,
+            usesNonScalingStrokes = m_usesNonScalingStrokes,
+            usesScalingStrokes    = m_usesScalingStrokes,
+            hasEdgeBounds         = m_hasEdgeBounds;
+
 
 #pragma mark -
 #pragma mark Lifecycle
@@ -577,17 +593,6 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
 
     return m_paths;
 }
-
-
-@synthesize movie                 = m_movie,
-            libraryID             = m_libraryID,
-            bounds                = m_bounds,
-            renderBounds          = m_renderBounds,
-            edgeBounds            = m_edgeBounds,
-            usesFillWindingRule   = m_usesFillWindingRule,
-            usesNonScalingStrokes = m_usesNonScalingStrokes,
-            usesScalingStrokes    = m_usesScalingStrokes,
-            hasEdgeBounds         = m_hasEdgeBounds;
 
 @end
 

@@ -36,7 +36,12 @@
 @end
 
 
-@implementation SwiffSceneAndFrameLabelData
+@implementation SwiffSceneAndFrameLabelData {
+    SwiffMovie   *m_movie;
+    NSDictionary *m_offsetToSceneNameMap;
+    NSDictionary *m_numberToFrameLabelMap;
+}
+
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie
 {

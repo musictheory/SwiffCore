@@ -31,24 +31,7 @@
 @class SwiffMovie;
 
 
-@interface SwiffRenderer : NSObject {
-@private
-    SwiffMovie       *m_movie;
-
-    CGFloat           m_scaleFactorHint;
-    CGFloat           m_hairlineWidth;
-    CGFloat           m_fillHairlineWidth;
-
-    CGAffineTransform m_baseAffineTransform;
-    SwiffColor        m_multiplyColor;
-    BOOL              m_hasBaseAffineTransform;
-    BOOL              m_hasMultiplyColor;
-
-    BOOL              m_shouldAntialias;
-    BOOL              m_shouldSmoothFonts;
-    BOOL              m_shouldSubpixelPositionFonts;
-    BOOL              m_shouldSubpixelQuantizeFonts;
-}
+@interface SwiffRenderer : NSObject
 
 - (id) initWithMovie:(SwiffMovie *)movie;
 

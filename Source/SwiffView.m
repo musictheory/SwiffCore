@@ -28,14 +28,23 @@
 #import "SwiffView.h"
 #import "SwiffMovie.h"
 #import "SwiffUtils.h"
+#import <SwiffLayer.h>
 
 
-@interface SwiffView ()
+@interface SwiffView () <SwiffLayerDelegate>
 - (void) _layoutMovieLayer;
 @end
 
 
-@implementation SwiffView
+@implementation SwiffView {
+    SwiffLayer *m_layer;
+    BOOL m_delegate_swiffView_willUpdateCurrentFrame;
+    BOOL m_delegate_swiffView_didUpdateCurrentFrame;
+    BOOL m_delegate_swiffView_shouldInterpolateFromFrame_toFrame;
+}
+
+@synthesize delegate = m_delegate;
+
 
 - (void) dealloc
 {
@@ -245,7 +254,5 @@
 - (BOOL)            shouldSubpixelQuantizeFonts       { return [m_layer shouldSubpixelQuantizeFonts]; }
 - (BOOL)            shouldFlattenSublayers            { return [m_layer shouldFlattenSublayers];      }
 - (BOOL)            shouldDrawDebugColors             { return [m_layer shouldDrawDebugColors];       }
-
-@synthesize delegate = m_delegate;
 
 @end

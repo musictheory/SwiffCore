@@ -64,12 +64,31 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
 
 
 @interface SwiffSpriteDefinition ()
+@property (nonatomic, swiff_weak) SwiffMovie *movie;
+
 - (void) _parser:(SwiffParser *)parser didFindTag:(SwiffTag)tag version:(NSInteger)version;
 - (void) _parserDidEnd:(SwiffParser *)parser;
 @end
 
 
-@implementation SwiffSpriteDefinition
+@implementation SwiffSpriteDefinition {
+    NSDictionary     *m_labelToFrameMap;
+    SwiffFrame       *m_lastFrame;
+    NSDictionary     *m_sceneNameToSceneMap;
+    SwiffSparseArray *m_placedObjects;
+    NSMutableArray   *m_frames;
+}
+
+@synthesize movie        = m_movie,
+            libraryID    = m_libraryID,
+            scenes       = m_scenes,
+            frames       = m_frames,
+            bounds       = m_bounds,
+            renderBounds = m_renderBounds;
+
+
+#pragma mark -
+#pragma mark Lifecycle
 
 - (id) init
 {
@@ -534,11 +553,5 @@ static NSString * const SwiffSpriteDefinitionStreamBlockKey = @"SwiffSpriteDefin
     
     return m_bounds;
 }
-
-
-@synthesize movie      = m_movie,
-            libraryID  = m_libraryID,
-            scenes     = m_scenes,
-            frames     = m_frames;
 
 @end

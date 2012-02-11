@@ -47,7 +47,7 @@
 
 
 typedef struct SwiffRenderState {
-    SwiffUnretained SwiffMovie *movie;
+    __unsafe_unretained SwiffMovie *movie;
 
     CGContextRef      context;
     CGRect            clipBoundingBox;
@@ -837,7 +837,22 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
 #pragma mark -
 #pragma mark SwiffRenderer Class
 
-@implementation SwiffRenderer
+@implementation SwiffRenderer {
+    CGAffineTransform m_baseAffineTransform;
+    SwiffColor        m_multiplyColor;
+    BOOL              m_hasBaseAffineTransform;
+    BOOL              m_hasMultiplyColor;
+}
+
+@synthesize movie                       = m_movie,
+            scaleFactorHint             = m_scaleFactorHint,
+            hairlineWidth               = m_hairlineWidth,
+            fillHairlineWidth           = m_fillHairlineWidth,
+            shouldAntialias             = m_shouldAntialias,
+            shouldSmoothFonts           = m_shouldSmoothFonts,
+            shouldSubpixelPositionFonts = m_shouldSubpixelPositionFonts,
+            shouldSubpixelQuantizeFonts = m_shouldSubpixelQuantizeFonts;
+
 
 - (id) initWithMovie:(SwiffMovie *)movie
 {
@@ -951,18 +966,5 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
     }
 } 
 
-
-@synthesize movie                       = m_movie,
-            scaleFactorHint             = m_scaleFactorHint,
-            hairlineWidth               = m_hairlineWidth,
-            fillHairlineWidth           = m_fillHairlineWidth,
-            shouldAntialias             = m_shouldAntialias,
-            shouldSmoothFonts           = m_shouldSmoothFonts,
-            shouldSubpixelPositionFonts = m_shouldSubpixelPositionFonts,
-            shouldSubpixelQuantizeFonts = m_shouldSubpixelQuantizeFonts;
-
-
 @end
-
-
 

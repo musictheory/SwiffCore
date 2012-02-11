@@ -36,15 +36,7 @@
 @protocol SwiffMovieDecoder;
 
 
-@interface SwiffMovie : SwiffSpriteDefinition {
-@private
-    SwiffSparseArray *m_definitions;
-    
-    NSInteger   m_version;
-    CGRect      m_stageRect;
-    CGFloat     m_frameRate;
-    SwiffColor  m_backgroundColor;
-}
+@interface SwiffMovie : SwiffSpriteDefinition
 
 - (id) initWithData:(NSData *)data;
 

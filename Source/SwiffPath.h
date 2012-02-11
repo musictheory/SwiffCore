@@ -44,19 +44,7 @@ typedef UInt8 SwiffPathOperation;
 extern void SwiffPathAddOperationAndTwips(SwiffPath *path, SwiffPathOperation operation, /*SwiffTwips*/ ...);
 extern void SwiffPathAddOperationEnd(SwiffPath *path);
 
-@interface SwiffPath : NSObject {
-@private
-    NSUInteger        m_operationsCount;
-    UInt8            *m_operations;
-
-    NSUInteger        m_floatsCount;
-    CGFloat          *m_floats;
-
-    SwiffLineStyle   *m_lineStyle;
-    SwiffFillStyle   *m_fillStyle;
-
-    BOOL              m_usesFillHairlineWidth;
-}
+@interface SwiffPath : NSObject
 
 - (id) initWithLineStyle:(SwiffLineStyle *)lineStyle fillStyle:(SwiffFillStyle *)fillStyle;
 

@@ -118,7 +118,27 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
 }
 
 
-@implementation SwiffDynamicTextAttributes
+@implementation SwiffDynamicTextAttributes {
+    NSString        *m_tabStopsString;
+    SwiffColor       m_fontColor;
+    NSInteger        m_mapType;
+    BOOL             m_hasFontColor;
+}
+
+
+@synthesize fontName           = m_fontName,
+            mappedFontName     = m_mappedFontName,
+            fontSizeInTwips    = m_fontSizeInTwips,
+            bold               = m_bold,
+            italic             = m_italic,
+            underline          = m_underline,
+            textAlignment      = m_textAlignment,
+            leftMarginInTwips  = m_leftMarginInTwips,
+            rightMarginInTwips = m_rightMarginInTwips,
+            indentInTwips      = m_indentInTwips,
+            leadingInTwips     = m_leadingInTwips,
+            tabStopsString     = m_tabStopsString;
+
 
 - (id) copyWithZone:(NSZone *)zone
 {
@@ -288,23 +308,12 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
     }
 }
 
+
 - (SwiffColor *) fontColor
 {
     return m_hasFontColor ? &m_fontColor : NULL;
 }
 
-@synthesize fontName           = m_fontName,
-            mappedFontName     = m_mappedFontName,
-            fontSizeInTwips    = m_fontSizeInTwips,
-            bold               = m_bold,
-            italic             = m_italic,
-            underline          = m_underline,
-            textAlignment      = m_textAlignment,
-            leftMarginInTwips  = m_leftMarginInTwips,
-            rightMarginInTwips = m_rightMarginInTwips,
-            indentInTwips      = m_indentInTwips,
-            leadingInTwips     = m_leadingInTwips,
-            tabStopsString     = m_tabStopsString;
 
 @end
 

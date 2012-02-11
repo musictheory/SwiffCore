@@ -30,7 +30,16 @@
 #import <SwiffUtils.h>
 
 
-@implementation SwiffGradient
+@implementation SwiffGradient {
+    CGFloat       m_ratios[15];
+    SwiffColor    m_colors[15];
+}
+
+@synthesize recordCount       = m_recordCount,
+            spreadMode        = m_spreadMode,
+            interpolationMode = m_interpolationMode,
+            focalPoint        = m_focalPoint;
+
 
 - (id) initWithParser:(SwiffParser *)parser isFocalGradient:(BOOL)isFocalGradient
 {
@@ -130,11 +139,5 @@
         if (outRatio) *outRatio = m_ratios[index];
     }
 }
-
-
-@synthesize recordCount       = m_recordCount,
-            spreadMode        = m_spreadMode,
-            interpolationMode = m_interpolationMode,
-            focalPoint        = m_focalPoint;
 
 @end

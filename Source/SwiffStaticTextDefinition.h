@@ -32,15 +32,7 @@
 @class SwiffMovie;
 
 
-@interface SwiffStaticTextDefinition : NSObject <SwiffDefinition> {
-@private
-    SwiffUnretained SwiffMovie *m_movie;
-
-    NSArray          *m_textRecords;
-    UInt16            m_libraryID;
-    CGRect            m_bounds;
-    CGAffineTransform m_textTransform;
-}
+@interface SwiffStaticTextDefinition : NSObject <SwiffDefinition>
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie;
 

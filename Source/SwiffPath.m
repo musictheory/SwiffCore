@@ -37,6 +37,15 @@ static const NSUInteger sGrowthForFloats     = 256;
 
 @implementation SwiffPath
 
+@synthesize operations            = m_operations,
+            floats                = m_floats,
+            operationsCount       = m_operationsCount,
+            floatsCount           = m_floatsCount,
+            fillStyle             = m_fillStyle,
+            lineStyle             = m_lineStyle,
+            usesFillHairlineWidth = m_usesFillHairlineWidth;
+
+
 static void SwiffPathAddTwipsToFloats(SwiffPath *path, const SwiffTwips twips)
 {
     if ((path->m_floatsCount % sGrowthForFloats) == 0) {
@@ -108,14 +117,5 @@ void SwiffPathAddOperationEnd(SwiffPath *path)
         m_floats = NULL;
     }
 }
-
-
-@synthesize operations            = m_operations,
-            floats                = m_floats,
-            operationsCount       = m_operationsCount,
-            floatsCount           = m_floatsCount,
-            fillStyle             = m_fillStyle,
-            lineStyle             = m_lineStyle,
-            usesFillHairlineWidth = m_usesFillHairlineWidth;
 
 @end

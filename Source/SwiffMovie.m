@@ -52,13 +52,23 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 @end
 
 @interface SwiffSpriteDefinition (Protected)
+@property (nonatomic, swiff_weak) SwiffMovie *movie;
+
 - (void) _decodeData:(NSData *)data;
 - (void) _parser:(SwiffParser *)parser didFindTag:(SwiffTag)tag version:(NSInteger)version;
 - (void) _parserDidEnd:(SwiffParser *)parser;
 @end
 
 
-@implementation SwiffMovie
+@implementation SwiffMovie {
+    SwiffSparseArray *m_definitions;
+}
+
+@synthesize version         = m_version,
+            frameRate       = m_frameRate,
+            stageRect       = m_stageRect,
+            backgroundColor = m_backgroundColor;
+
 
 - (id) initWithData:(NSData *)data
 {
@@ -97,7 +107,7 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 
     // Parse tags
     {
-        m_movie = self;
+        [self setMovie:self];
 
         while (SwiffParserIsValid(parser)) {
             SwiffParserAdvanceToNextTag(parser);
@@ -110,7 +120,7 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
             [self _parser:parser didFindTag:tag version:version];
         }
         
-        m_movie = nil;
+        [self setMovie:nil];
     }
 
     NSData *jpegTablesData = SwiffParserGetAssociatedValue(parser, SwiffMovieJPEGTablesDataKey);
@@ -271,11 +281,5 @@ id<SwiffDefinition> SwiffMovieGetDefinition(SwiffMovie *movie, UInt16 libraryID)
 {
     return &m_backgroundColor;
 }
-
-
-@synthesize version         = m_version,
-            frameRate       = m_frameRate,
-            stageRect       = m_stageRect,
-            backgroundColor = m_backgroundColor;
 
 @end

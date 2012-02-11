@@ -27,6 +27,13 @@
 
 #import <SwiffImport.h>
 
+#if __has_feature(objc_arc_weak) 
+    #define swiff_weak weak
+#else
+    #define swiff_weak unsafe_unretained
+#endif
+
+
 typedef NSInteger SwiffTwips;
 
 

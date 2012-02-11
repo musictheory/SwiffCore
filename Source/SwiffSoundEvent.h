@@ -38,22 +38,7 @@ typedef struct {
 } SwiffSoundEnvelope;
 
 
-@interface SwiffSoundEvent : NSObject {
-@private
-    UInt16     m_libraryID;
-    NSString  *m_className;
-    SwiffSoundDefinition *m_definition;
-
-    NSUInteger m_inPoint;
-    NSUInteger m_outPoint;
-    NSInteger  m_loopCount;
-
-    NSInteger  m_envelopeCount;
-    SwiffSoundEnvelope *m_envelopes;
-
-    BOOL m_shouldStop;
-    BOOL m_allowsMultiple;
-}
+@interface SwiffSoundEvent : NSObject
 
 - (id) initWithParser:(SwiffParser *)parser;
 

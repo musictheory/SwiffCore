@@ -37,7 +37,19 @@
 - (void) _updateScene:(SwiffScene *)scene indexInScene:(NSUInteger)index1InScene;
 @end
 
-@implementation SwiffFrame
+
+@implementation SwiffFrame {
+    NSArray *m_placedObjectsWithNames;
+}
+
+@synthesize indexInScene  = m_indexInScene,
+            placedObjects = m_placedObjects,
+            scene         = m_scene,
+            label         = m_label,
+            soundEvents   = m_soundEvents,
+            streamSound   = m_streamSound,
+            streamBlock   = m_streamBlock;
+
 
 - (id) _initWithSortedPlacedObjects: (NSArray *) placedObjects
                           withNames: (NSArray *) placedObjectsWithNames
@@ -127,13 +139,5 @@
     return m_placedObjectsWithNames;
 }
 
-
-@synthesize indexInScene  = m_indexInScene,
-            placedObjects = m_placedObjects,
-            scene         = m_scene,
-            label         = m_label,
-            soundEvents   = m_soundEvents,
-            streamSound   = m_streamSound,
-            streamBlock   = m_streamBlock;
 
 @end

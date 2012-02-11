@@ -42,36 +42,7 @@ extern const CGFloat SwiffFontEmSquareHeight;           // 1024
 
 @class SwiffMovie;
 
-@interface SwiffFontDefinition : NSObject <SwiffDefinition> {
-@private
-    SwiffUnretained SwiffMovie *m_movie;
- 
-    NSString         *m_name;
-    NSString         *m_fullName;
-    NSString         *m_copyright;
-    UInt16           *m_codeTable;
-
-    SwiffLanguageCode m_languageCode;
-    NSStringEncoding  m_encoding;
-    NSUInteger        m_glyphCount;
-    NSUInteger        m_kerningCount;
-    CGPathRef        *m_glyphPaths;
-    CGFloat          *m_glyphAdvances;
-    CGRect           *m_glyphBounds;
-
-    CGFloat           m_ascent;
-    CGFloat           m_descent;
-    CGFloat           m_leading;
-
-    SwiffFontKerningRecord *m_kerningRecords;
-
-    UInt16            m_libraryID;
-    BOOL              m_bold;
-    BOOL              m_italic;
-    BOOL              m_smallText;
-    BOOL              m_hasLayout;
-}
-
+@interface SwiffFontDefinition : NSObject <SwiffDefinition>
 
 // Font information is distributed among DefineFont/DefineFontInfo/DefineFontName tags.  Hence, the
 // -initWithParser:tag:version: pattern used by other classes doesn't fit here.

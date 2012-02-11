@@ -30,24 +30,7 @@
 
 extern CGFloat SwiffTextGetMaximumVerticalOffset(CFAttributedStringRef as, CFRange range);
 
-@interface SwiffDynamicTextAttributes : NSObject <NSCopying> {
-@private
-    NSString        *m_fontName;
-    NSString        *m_mappedFontName;
-    NSString        *m_tabStopsString;
-    SwiffTwips       m_fontSizeInTwips;
-    SwiffColor       m_fontColor;
-    CTTextAlignment  m_textAlignment;
-    SwiffTwips       m_leftMarginInTwips;
-    SwiffTwips       m_rightMarginInTwips;
-    SwiffTwips       m_indentInTwips;
-    SwiffTwips       m_leadingInTwips;
-    NSInteger        m_mapType;
-    BOOL             m_bold;
-    BOOL             m_italic;
-    BOOL             m_underline;
-    BOOL             m_hasFontColor;
-}
+@interface SwiffDynamicTextAttributes : NSObject <NSCopying>
 
 - (CTFontRef) copyCTFont CF_RETURNS_RETAINED;
 - (NSDictionary *) copyCoreTextAttributes NS_RETURNS_RETAINED;

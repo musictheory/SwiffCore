@@ -28,40 +28,20 @@
 #import <SwiffTypes.h>
 #import <SwiffImport.h>
 #import <QuartzCore/QuartzCore.h>
-#import <SwiffPlayhead.h>
 
 
 @class SwiffMovie, SwiffFrame, SwiffPlacedObject, SwiffPlayhead, SwiffRenderer, SwiffSparseArray;
 @protocol SwiffLayerDelegate;
 
 
-@interface SwiffLayer : CALayer <SwiffPlayheadDelegate> {
-    SwiffUnretained id<SwiffLayerDelegate> m_delegate;
-
-    SwiffMovie            *m_movie;
-    SwiffRenderer         *m_renderer;
-    SwiffFrame            *m_currentFrame;
-    SwiffPlayhead         *m_playhead;
-    SwiffSparseArray      *m_sublayers;
-    CALayer               *m_contentLayer;
-    NSUInteger             m_sublayerCount;
-
-    CGFloat              m_scaleFactor;
-    CGAffineTransform    m_baseAffineTransform;
-    CGAffineTransform    m_scaledAffineTransform;
-
-    BOOL  m_interpolateCurrentFrame;
-    BOOL  m_drawsBackground;
-    BOOL  m_shouldFlattenSublayers;
-    BOOL  m_shouldDrawDebugColors;
-}
+@interface SwiffLayer : CALayer
 
 - (id) initWithMovie:(SwiffMovie *)movie;
 
 - (void) clearWeakReferences;
 - (void) redisplay;
 
-@property (nonatomic, assign) id<SwiffLayerDelegate> swiffLayerDelegate;
+@property (nonatomic, swiff_weak) id<SwiffLayerDelegate> swiffLayerDelegate;
 
 @property (nonatomic, strong, readonly) SwiffMovie *movie;
 @property (nonatomic, strong, readonly) SwiffPlayhead *playhead;

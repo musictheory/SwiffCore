@@ -32,7 +32,40 @@
 #import "SwiffUtils.h"
 
 
-@implementation SwiffDynamicTextDefinition
+@implementation SwiffDynamicTextDefinition {
+    UInt16      m_fontHeightInTwips;
+    UInt16      m_leftMarginInTwips;
+    UInt16      m_rightMarginInTwips;
+    UInt16      m_indentInTwips;
+    SInt16      m_leadingInTwips;
+
+    BOOL        m_wordWrap;
+    BOOL        m_password;
+    BOOL        m_multiline;
+    BOOL        m_autosize;
+    BOOL        m_border;
+    BOOL        m_wasStatic;
+    BOOL        m_useOutlines;
+}
+
+@synthesize movie         = m_movie,
+            libraryID     = m_libraryID,
+            bounds        = m_bounds,
+            variableName  = m_variableName,
+            initialText   = m_initialText,
+            maxLength     = m_maxLength,
+            textAlignment = m_textAlignment,
+            editable      = m_editable,
+            selectable    = m_selectable,
+            HTML          = m_HTML,
+            hasLayout     = m_hasLayout,
+            hasFont       = m_hasFont,
+            hasFontClass  = m_hasFontClass,
+            fontClass     = m_fontClass,
+            fontID        = m_fontID,
+            hasColor      = m_hasColor,
+            color         = m_color;
+
 
 + (Class) placedObjectClass
 {
@@ -170,23 +203,5 @@
 - (SwiffTwips) rightMarginInTwips { return m_rightMarginInTwips; }
 - (SwiffTwips) indentInTwips      { return m_indentInTwips;      }
 - (SwiffTwips) leadingInTwips     { return m_leadingInTwips;     }
-
-@synthesize movie         = m_movie,
-            libraryID     = m_libraryID,
-            bounds        = m_bounds,
-            variableName  = m_variableName,
-            initialText   = m_initialText,
-            maxLength     = m_maxLength,
-            textAlignment = m_textAlignment,
-            editable      = m_editable,
-            selectable    = m_selectable,
-            HTML          = m_HTML,
-            hasLayout     = m_hasLayout,
-            hasFont       = m_hasFont,
-            hasFontClass  = m_hasFontClass,
-            fontClass     = m_fontClass,
-            fontID        = m_fontID,
-            hasColor      = m_hasColor,
-            color         = m_color;
 
 @end

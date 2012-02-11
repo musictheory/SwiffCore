@@ -34,6 +34,19 @@ const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
 
 @implementation SwiffLineStyle
 
+@synthesize width              = m_width,
+            color              = m_color,
+            fillStyle          = m_fillStyle,
+            startLineCap       = m_startLineCap,
+            endLineCap         = m_endLineCap,
+            lineJoin           = m_lineJoin,
+            miterLimit         = m_miterLimit,
+            scalesHorizontally = m_scalesHorizontally,
+            scalesVertically   = m_scalesVertically,
+            pixelAligned       = m_pixelAligned,
+            closesStroke       = m_closesStroke;
+
+
 + (NSArray *) lineStyleArrayWithParser:(SwiffParser *)parser
 {
     UInt8 count8;
@@ -162,17 +175,5 @@ const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
     return &m_color;
 }
 
-
-@synthesize width              = m_width,
-            color              = m_color,
-            fillStyle          = m_fillStyle,
-            startLineCap       = m_startLineCap,
-            endLineCap         = m_endLineCap,
-            lineJoin           = m_lineJoin,
-            miterLimit         = m_miterLimit,
-            scalesHorizontally = m_scalesHorizontally,
-            scalesVertically   = m_scalesVertically,
-            pixelAligned       = m_pixelAligned,
-            closesStroke       = m_closesStroke;
 
 @end

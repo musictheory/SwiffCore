@@ -30,12 +30,7 @@
 
 @class SwiffMovie;
 
-@interface SwiffSceneAndFrameLabelData : NSObject {
-@private
-    SwiffMovie   *m_movie;
-    NSDictionary *m_offsetToSceneNameMap;
-    NSDictionary *m_numberToFrameLabelMap;
-}
+@interface SwiffSceneAndFrameLabelData : NSObject
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie;
 

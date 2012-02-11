@@ -42,12 +42,7 @@
 @end
 
 
-@interface SwiffBlurFilter : SwiffFilter {
-@private
-    CGFloat m_blurX;
-    CGFloat m_blurY;
-    UInt8   m_numberOfPasses;
-}
+@interface SwiffBlurFilter : SwiffFilter
 
 @property (nonatomic, assign, readonly) CGFloat blurX;
 @property (nonatomic, assign, readonly) CGFloat blurY;
@@ -56,10 +51,7 @@
 @end
 
 
-@interface SwiffColorMatrixFilter : SwiffFilter {
-@private
-    float m_matrixValues[20];
-}
+@interface SwiffColorMatrixFilter : SwiffFilter
 
 @property (nonatomic, assign, readonly) UInt8  matrixWidth;   // Always 5
 @property (nonatomic, assign, readonly) UInt8  matrixHeight;  // Always 4
@@ -68,17 +60,7 @@
 @end
 
 
-@interface SwiffConvolutionFilter : SwiffFilter {
-@private
-    SwiffColor m_color;
-    float     *m_matrixValues;
-    float      m_divisor;
-    float      m_bias;
-    UInt8      m_matrixWidth;
-    UInt8      m_matrixHeight;
-    BOOL       m_clamp;
-    BOOL       m_preservesAlpha;
-}
+@interface SwiffConvolutionFilter : SwiffFilter
 
 @property (nonatomic, assign, readonly) UInt8  matrixWidth;
 @property (nonatomic, assign, readonly) UInt8  matrixHeight;
@@ -92,18 +74,7 @@
 @end
 
 
-@interface SwiffDropShadowFilter : SwiffFilter {
-@private
-    SwiffColor m_color;
-    CGFloat    m_blurX;
-    CGFloat    m_blurY;
-    CGFloat    m_angle;
-    CGFloat    m_distance;
-    CGFloat    m_strength;
-    BOOL       m_innerShadow;
-    BOOL       m_knockout;
-    UInt8      m_numberOfPasses;
-}
+@interface SwiffDropShadowFilter : SwiffFilter
 
 @property (nonatomic, assign, readonly) SwiffColor color;
 @property (nonatomic, assign, readonly) CGFloat blurX;
@@ -118,16 +89,7 @@
 @end
 
 
-@interface SwiffGlowFilter : SwiffFilter {
-@private
-    SwiffColor m_color;
-    CGFloat    m_blurX;
-    CGFloat    m_blurY;
-    CGFloat    m_strength;
-    BOOL       m_innerGlow;
-    BOOL       m_knockout;
-    UInt8      m_numberOfPasses;
-}
+@interface SwiffGlowFilter : SwiffFilter
 
 @property (nonatomic, assign, readonly) SwiffColor color;
 @property (nonatomic, assign, readonly) CGFloat blurX;
@@ -140,20 +102,7 @@
 @end
 
 
-@interface SwiffBevelFilter : SwiffFilter {
-@private
-    SwiffColor m_shadowColor;
-    SwiffColor m_highlightColor;
-    CGFloat    m_blurX;
-    CGFloat    m_blurY;
-    CGFloat    m_angle;
-    CGFloat    m_distance;
-    CGFloat    m_strength;
-    BOOL       m_innerShadow;
-    BOOL       m_knockout;
-    BOOL       m_onTop;
-    UInt8      m_numberOfPasses;
-}
+@interface SwiffBevelFilter : SwiffFilter
 
 @property (nonatomic, assign, readonly) SwiffColor shadowColor;
 @property (nonatomic, assign, readonly) SwiffColor highlightColor;
@@ -170,19 +119,7 @@
 @end
 
 
-@interface SwiffGradientGlowFilter : SwiffFilter {
-@private
-    SwiffGradient *m_gradient;
-    CGFloat        m_blurX;
-    CGFloat        m_blurY;
-    CGFloat        m_angle;
-    CGFloat        m_distance;
-    CGFloat        m_strength;
-    BOOL           m_innerGlow;
-    BOOL           m_knockout;
-    BOOL           m_onTop;
-    UInt8          m_numberOfPasses;
-}
+@interface SwiffGradientGlowFilter : SwiffFilter
 
 @property (nonatomic, strong, readonly) SwiffGradient *gradient;
 @property (nonatomic, assign, readonly) CGFloat blurX;
@@ -198,19 +135,7 @@
 @end
 
 
-@interface SwiffGradientBevelFilter : SwiffFilter {
-@private
-    SwiffGradient *m_gradient;
-    CGFloat        m_blurX;
-    CGFloat        m_blurY;
-    CGFloat        m_angle;
-    CGFloat        m_distance;
-    CGFloat        m_strength;
-    BOOL           m_innerShadow;
-    BOOL           m_knockout;
-    BOOL           m_onTop;
-    UInt8          m_numberOfPasses;
-}
+@interface SwiffGradientBevelFilter : SwiffFilter
 
 @property (nonatomic, strong, readonly) SwiffGradient *gradient;
 @property (nonatomic, assign, readonly) CGFloat blurX;

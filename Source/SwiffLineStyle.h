@@ -34,21 +34,7 @@
 
 extern const CGFloat SwiffLineStyleHairlineWidth;
 
-@interface SwiffLineStyle : NSObject {
-    CGFloat         m_width;
-    SwiffColor      m_color;
-    SwiffFillStyle *m_fillStyle;
-
-    CGLineCap       m_startLineCap;
-    CGLineCap       m_endLineCap;
-    CGLineJoin      m_lineJoin;
-    CGFloat         m_miterLimit;
-
-    BOOL            m_scalesHorizontally;
-    BOOL            m_scalesVertically;
-    BOOL            m_pixelAligned;
-    BOOL            m_closesStroke;
-}
+@interface SwiffLineStyle : NSObject
 
 // Reads a LINESTYLEARRAY from the parser
 + (NSArray *) lineStyleArrayWithParser:(SwiffParser *)parser;

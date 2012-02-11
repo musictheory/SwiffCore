@@ -41,16 +41,7 @@
 #define kMaxPacketsPerAudioBuffer 32
 
 
-@interface SwiffSoundChannel : NSObject {
-@private
-    AudioQueueRef         m_queue;
-    AudioQueueBufferRef   m_buffer[kNumberOfAudioBuffers];
-    AudioStreamPacketDescription m_packetDescription[kNumberOfAudioBuffers][kMaxPacketsPerAudioBuffer];
-    SwiffSoundEvent      *m_event;
-    SwiffSoundDefinition *m_definition;
-    UInt32                m_frameIndex;
-    BOOL                  m_isStopping;
-}
+@interface SwiffSoundChannel : NSObject
 
 - (id) initWithEvent:(SwiffSoundEvent *)event definition:(SwiffSoundDefinition *)definition;
 
@@ -123,7 +114,17 @@ static void sFillASBDForSoundDefinition(AudioStreamBasicDescription *asbd, Swiff
 }
 
 
-@implementation SwiffSoundChannel
+@implementation SwiffSoundChannel {
+    AudioQueueRef         m_queue;
+    AudioQueueBufferRef   m_buffer[kNumberOfAudioBuffers];
+    AudioStreamPacketDescription m_packetDescription[kNumberOfAudioBuffers][kMaxPacketsPerAudioBuffer];
+    UInt32                m_frameIndex;
+    BOOL                  m_isStopping;
+}
+
+@synthesize event      = m_event,
+            definition = m_definition;
+
 
 static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer)
 {
@@ -330,14 +331,15 @@ static void sAudioQueuePropertyCallback(void *inUserData, AudioQueueRef inAQ, Au
 }
 
 
-@synthesize event      = m_event,
-            definition = m_definition;
-
 @end
 
 
 
-@implementation SwiffSoundPlayer
+@implementation SwiffSoundPlayer {
+    NSMutableArray      *m_eventChannels;
+    SwiffSoundChannel   *m_currentStreamChannel;
+}
+
 
 + (SwiffSoundPlayer *) sharedInstance
 {

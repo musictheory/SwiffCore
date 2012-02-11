@@ -38,7 +38,9 @@
 @end
 
 
-@implementation SwiffSparseArray
+@implementation SwiffSparseArray {
+    SwiffSparseArrayBucket *m_buckets[256];
+}
 
 - (NSUInteger) countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id __unsafe_unretained [])buffer count:(NSUInteger)count
 {

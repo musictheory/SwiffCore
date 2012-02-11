@@ -26,24 +26,12 @@
 */
 
 #import <SwiffImport.h>
+#import <SwiffTypes.h>
 
 @class SwiffScene, SwiffPlacedObject, SwiffSoundDefinition, SwiffSoundStreamBlock;
 
 
-@interface SwiffFrame : NSObject {
-@private
-    SwiffUnretained SwiffScene *m_scene;
-
-    NSUInteger   m_indexInScene;
-
-    NSString    *m_label;
-    NSArray     *m_placedObjects;
-    NSArray     *m_placedObjectsWithNames;
-
-    NSArray               *m_soundEvents;
-    SwiffSoundDefinition  *m_streamSound;
-    SwiffSoundStreamBlock *m_streamBlock;
-}
+@interface SwiffFrame : NSObject
 
 - (void) clearWeakReferences;
 
@@ -51,7 +39,8 @@
 
 @property (nonatomic, copy, readonly) NSString *label;
 
-@property (nonatomic, assign, readonly) SwiffScene *scene;
+@property (nonatomic, swiff_weak, readonly) SwiffScene *scene;
+
 @property (nonatomic, assign, readonly) NSUInteger index1InScene;
 @property (nonatomic, assign, readonly) NSUInteger indexInScene;
 @property (nonatomic, assign, readonly) NSUInteger index1InMovie;

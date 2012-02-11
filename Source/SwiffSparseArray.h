@@ -29,10 +29,7 @@
 
 @class SwiffSparseArrayBucket;
 
-@interface SwiffSparseArray : NSObject <NSFastEnumeration> {
-@private
-    SwiffSparseArrayBucket *m_buckets[256];
-}
+@interface SwiffSparseArray : NSObject <NSFastEnumeration>
 
 - (void) setObject:(id)object atIndex:(UInt16)index;
 - (id) objectAtIndex:(UInt16)index;

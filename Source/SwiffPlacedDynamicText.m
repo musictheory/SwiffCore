@@ -34,7 +34,14 @@
 #import "SwiffPlacedDynamicText.h"
 
 
-@implementation SwiffPlacedDynamicText
+@implementation SwiffPlacedDynamicText {
+    CFAttributedStringRef  m_attributedText;
+}
+
+@synthesize text       = m_text,
+            definition = m_definition,
+            HTML       = m_HTML;
+
 
 - (id) initWithPlacedObject:(SwiffPlacedObject *)placedObject
 {
@@ -143,10 +150,5 @@
 
     return m_attributedText;
 }
-
-
-@synthesize text           = m_text,
-            definition     = m_definition,
-            HTML           = m_HTML;
 
 @end

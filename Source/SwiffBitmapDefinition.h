@@ -31,18 +31,7 @@
 #import <SwiffParser.h>
 
 
-@interface SwiffBitmapDefinition : NSObject <SwiffDefinition> {
-@private
-    SwiffUnretained SwiffMovie *m_movie;
-
-    UInt16      m_libraryID;
-    
-    SwiffTag    m_tag;
-    NSData     *m_tagData;
-    NSData     *m_jpegTablesData;
-
-    CGImageRef  m_CGImage;
-}
+@interface SwiffBitmapDefinition : NSObject <SwiffDefinition>
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie;
 

@@ -32,6 +32,16 @@
 
 @implementation SwiffStaticTextDefinition
 
+@synthesize movie         = m_movie,
+            libraryID     = m_libraryID,
+            bounds        = m_bounds,
+            textRecords   = m_textRecords,
+            textTransform = m_textTransform;
+
+
+#pragma mark -
+#pragma mark Lifecycle
+
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie
 {
     if ((self = [super init])) {
@@ -63,11 +73,5 @@
     return m_bounds;
 }
 
-
-@synthesize movie         = m_movie,
-            libraryID     = m_libraryID,
-            bounds        = m_bounds,
-            textRecords   = m_textRecords,
-            textTransform = m_textTransform;
 
 @end

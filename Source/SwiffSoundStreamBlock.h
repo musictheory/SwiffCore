@@ -27,12 +27,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface SwiffSoundStreamBlock : NSObject {
-@private
-    NSInteger m_frameOffset;
-    NSInteger m_sampleCount;
-    NSInteger m_sampleSeek;
-}
+@interface SwiffSoundStreamBlock : NSObject
 
 @property (nonatomic, assign) NSInteger frameOffset;
 @property (nonatomic, assign) NSInteger sampleCount;

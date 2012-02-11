@@ -32,13 +32,7 @@
 @class SwiffMovie;
 
 
-@interface SwiffPlacedDynamicText : SwiffPlacedObject {
-@private
-    SwiffDynamicTextDefinition *m_definition;
-    NSString              *m_text;
-    CFAttributedStringRef  m_attributedText;
-    BOOL                   m_HTML;
-}
+@interface SwiffPlacedDynamicText : SwiffPlacedObject
 
 - (void) setText:(NSString *)text HTML:(BOOL)isHTML;
 

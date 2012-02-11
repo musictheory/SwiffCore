@@ -31,11 +31,7 @@
 @class SwiffSoundChannel;
 
 
-@interface SwiffSoundPlayer : NSObject {
-@private
-    NSMutableArray      *m_eventChannels;
-    SwiffSoundChannel   *m_currentStreamChannel;
-}
+@interface SwiffSoundPlayer : NSObject
 
 + (SwiffSoundPlayer *) sharedInstance;
 

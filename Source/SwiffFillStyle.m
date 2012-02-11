@@ -37,7 +37,15 @@
 
 #define IS_BITMAP_TYPE   ((m_type >= SwiffFillStyleTypeRepeatingBitmap) && (m_type <= SwiffFillStyleTypeNonSmoothedClippedBitmap))
 
-@implementation SwiffFillStyle
+@implementation SwiffFillStyle {
+    CGAffineTransform  m_transform;
+}
+
+@synthesize type     = m_type,
+            color    = m_color,
+            gradient = m_gradient,
+            bitmapID = m_bitmapID;
+
 
 + (NSArray *) fillStyleArrayWithParser:(SwiffParser *)parser
 {
@@ -163,12 +171,5 @@
 {
     return IS_BITMAP_TYPE ? m_transform : CGAffineTransformIdentity;
 }
-
-
-@synthesize type     = m_type,
-            color    = m_color,
-            gradient = m_gradient,
-            bitmapID = m_bitmapID;
-
 
 @end

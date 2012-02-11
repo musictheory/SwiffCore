@@ -36,10 +36,6 @@
 #import <QuartzCore/QuartzCore.h>
 
 
-@interface SwiffPlayhead ()
-- (void) handleTimerTick:(NSTimer *)timer;
-@end
-
 extern void SwiffPlayheadWarnForInvalidGotoArguments(void);
 
 void SwiffPlayheadWarnForInvalidGotoArguments()
@@ -48,7 +44,26 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 }
 
 
-@implementation SwiffPlayhead
+@interface SwiffPlayhead ()
+- (void) handleTimerTick:(NSTimer *)timer;
+@end
+
+
+@implementation SwiffPlayhead {
+    NSInteger      m_frameIndex;
+    NSInteger      m_frameIndexForNextStep;
+    NSTimer       *m_timer;
+    CADisplayLink *m_displayLink;
+    CFTimeInterval m_timerPlayStart;
+    long           m_timerPlayIndex;
+    BOOL           m_hasFrameIndexForNextStep;
+}
+
+@synthesize delegate      = m_delegate,
+            movie         = m_movie,
+            loopsMovie    = m_loopsMovie,
+            loopsScene    = m_loopsScene;
+
 
 - (id) initWithMovie:(SwiffMovie *)movie delegate:(id<SwiffPlayheadDelegate>)delegate
 {
@@ -341,11 +356,5 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 {
     return m_timer || m_displayLink;
 }
-
-
-@synthesize delegate      = m_delegate,
-            movie         = m_movie,
-            loopsMovie    = m_loopsMovie,
-            loopsScene    = m_loopsScene;
 
 @end

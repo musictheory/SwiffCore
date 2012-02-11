@@ -330,7 +330,16 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
 }
 
 
-@implementation SwiffBitmapDefinition
+@implementation SwiffBitmapDefinition {
+    SwiffTag    m_tag;
+    NSData     *m_tagData;
+    NSData     *m_jpegTablesData;
+    CGImageRef  m_CGImage;
+}
+
+@synthesize movie     = m_movie,
+            libraryID = m_libraryID;
+
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie
 {
@@ -359,10 +368,8 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
 
 - (void) dealloc
 {
-      m_tagData        = nil;
-      m_jpegTablesData = nil;
-    CGImageRelease(m_CGImage);   m_CGImage        = NULL;
-
+    CGImageRelease(m_CGImage);
+    m_CGImage = NULL;
 }
 
 
@@ -484,8 +491,5 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
     return CGRectZero;
 }
 
-
-@synthesize movie     = m_movie,
-            libraryID = m_libraryID;
 
 @end

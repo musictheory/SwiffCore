@@ -45,15 +45,7 @@ enum {
 typedef NSInteger SwiffGradientInterpolationMode;
 
 
-@interface SwiffGradient : NSObject {
-@private
-    NSInteger     m_spreadMode;
-    NSInteger     m_interpolationMode;
-    NSInteger     m_recordCount;
-    CGFloat       m_ratios[15];
-    SwiffColor    m_colors[15];
-    CGFloat       m_focalPoint;
-}
+@interface SwiffGradient : NSObject
 
 - (id) initWithParser:(SwiffParser *)parser isFocalGradient:(BOOL)isFocalGradient;
 

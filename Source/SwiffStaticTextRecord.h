@@ -36,22 +36,7 @@ typedef struct SwiffTextRecordGlyphEntry {
 } SwiffStaticTextRecordGlyphEntry;
 
 
-@interface SwiffStaticTextRecord : NSObject {
-@private
-    SwiffStaticTextRecordGlyphEntry *m_glyphEntries;
-    NSUInteger  m_glyphEntriesCount;
-
-    CGFloat     m_xOffset;
-    CGFloat     m_yOffset;
-    CGFloat     m_textHeight;
-    SwiffColor  m_color;
-
-    UInt16      m_fontID;
-    BOOL        m_hasFont;
-    BOOL        m_hasColor;
-    BOOL        m_hasXOffset;
-    BOOL        m_hasYOffset;
-}
+@interface SwiffStaticTextRecord : NSObject
 
 + (NSArray *) textRecordArrayWithParser:(SwiffParser *)parser glyphBits:(UInt8)glyphBits advanceBits:(UInt8)advanceBits;
 

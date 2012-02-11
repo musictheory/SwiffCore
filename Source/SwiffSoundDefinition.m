@@ -37,7 +37,24 @@
 @end
 
 
-@implementation SwiffSoundDefinition
+@implementation SwiffSoundDefinition {
+    NSMutableData *m_data;
+    NSUInteger    *m_frames;
+    NSInteger      m_framesCount;
+    NSInteger      m_framesCapacity;
+    UInt8          m_rawSampleRate;
+    SInt16         m_latencySeek;
+    UInt16         m_averageSampleCount;
+}
+
+@synthesize stereo             = m_stereo,
+            bitsPerChannel     = m_bitsPerChannel,
+            movie              = m_movie,
+            libraryID          = m_libraryID,
+            data               = m_data,
+            sampleCount        = m_sampleCount,
+            format             = m_format;
+
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie
 {
@@ -87,8 +104,6 @@
             if (soundFormat == SwiffSoundFormatMP3) {
                 SwiffParserReadSInt16(parser, &m_latencySeek);
             }
-
-            m_streaming = YES;
         }
     }
     
@@ -175,7 +190,7 @@ extern CFIndex SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *self,
 {
     SwiffSoundStreamBlock *result = nil;
 
-    if (m_streaming) {
+    if ([self isStreaming]) {
         result = [[SwiffSoundStreamBlock alloc] init];
         
         [result setFrameOffset:m_framesCount];
@@ -214,16 +229,8 @@ extern CFIndex SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *self,
     else                            return 44100.0f;
 }
 
-- (SwiffSoundFormat) format      { return m_format;             }
 - (BOOL)      isStreaming        { return m_libraryID == 0;     }
 - (NSInteger) averageSampleCount { return m_averageSampleCount; }
 - (NSInteger) latencySeek        { return m_latencySeek;        }
-
-@synthesize stereo             = m_stereo,
-            bitsPerChannel     = m_bitsPerChannel,
-            movie              = m_movie,
-            libraryID          = m_libraryID,
-            data               = m_data,
-            sampleCount        = m_sampleCount;
 
 @end

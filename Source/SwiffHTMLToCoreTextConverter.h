@@ -30,16 +30,7 @@
 
 @class SwiffDynamicTextAttributes;
 
-@interface SwiffHTMLToCoreTextConverter : NSObject {
-    SwiffDynamicTextAttributes *m_attributes;
-    NSMutableString *m_characters;
-    NSInteger        m_boldCount;
-    NSInteger        m_italicCount;
-    NSInteger        m_underlineCount;
-    BOOL             m_needsParagraphBreak;
-
-    CFMutableAttributedStringRef m_output;
-}
+@interface SwiffHTMLToCoreTextConverter : NSObject
 
 + (id) sharedInstance;
 

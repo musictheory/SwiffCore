@@ -27,7 +27,6 @@
 
 #import <SwiffImport.h>
 #import <SwiffTypes.h>
-#import <SwiffLayer.h>
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR || TARGET_HAS_UIKIT
 #define SwiffViewUsesUIKit 1
@@ -48,21 +47,13 @@
 
 @protocol SwiffViewDelegate;
 
-@interface SwiffView : SwiffViewSuperclass <SwiffLayerDelegate> {
-@private
-    SwiffUnretained id<SwiffViewDelegate> m_delegate;
-    SwiffLayer           *m_layer;
-    
-    BOOL m_delegate_swiffView_willUpdateCurrentFrame;
-    BOOL m_delegate_swiffView_didUpdateCurrentFrame;
-    BOOL m_delegate_swiffView_shouldInterpolateFromFrame_toFrame;
-}
+@interface SwiffView : SwiffViewSuperclass
 
 - (id) initWithFrame:(SwiffViewRect)frame movie:(SwiffMovie *)movie;
 
 - (void) redisplay;
 
-@property (nonatomic, assign) id<SwiffViewDelegate> delegate;
+@property (nonatomic, swiff_weak) id<SwiffViewDelegate> delegate;
 
 @property (nonatomic, strong, readonly) SwiffMovie *movie;
 @property (nonatomic, strong, readonly) SwiffPlayhead *playhead;

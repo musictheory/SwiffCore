@@ -35,7 +35,16 @@
 - (void) _updateScene:(SwiffScene *)scene indexInScene:(NSUInteger)index1InScene;
 @end
 
-@implementation SwiffScene
+
+@implementation SwiffScene {
+    NSDictionary *m_labelToFrameMap;
+}
+
+@synthesize movie        = m_movie,
+            name         = m_name,
+            frames       = m_frames,
+            indexInMovie = m_indexInMovie;
+
 
 - (id) initWithMovie:(SwiffMovie *)movie name:(NSString *)name indexInMovie:(NSUInteger)indexInMovie frames:(NSArray *)frames
 {
@@ -135,10 +144,5 @@
     return m_indexInMovie + 1;
 }
 
-
-@synthesize movie        = m_movie,
-            name         = m_name,
-            frames       = m_frames,
-            indexInMovie = m_indexInMovie;
 
 @end

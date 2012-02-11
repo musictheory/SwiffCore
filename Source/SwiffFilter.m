@@ -80,6 +80,11 @@
 
 @implementation SwiffBlurFilter
 
+@synthesize blurX          = m_blurX,
+            blurY          = m_blurY,
+            numberOfPasses = m_numberOfPasses;
+
+
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [super init])) {
@@ -94,18 +99,16 @@
     return self;
 }
 
-
-@synthesize blurX          = m_blurX,
-            blurY          = m_blurY,
-            numberOfPasses = m_numberOfPasses;
-
 @end
 
 
 #pragma mark -
 #pragma mark Color Matrix Filter
 
-@implementation SwiffColorMatrixFilter
+@implementation SwiffColorMatrixFilter {
+    float m_matrixValues[20];
+}
+
 
 - (id) initWithParser:(SwiffParser *)parser
 {
@@ -130,6 +133,16 @@
 #pragma mark Convolution Filter
 
 @implementation SwiffConvolutionFilter
+
+@synthesize matrixWidth    = m_matrixWidth,
+            matrixHeight   = m_matrixHeight,
+            matrixValues   = m_matrixValues,
+            divisor        = m_divisor,
+            bias           = m_bias,
+            color          = m_color,
+            clamp          = m_clamp,
+            preservesAlpha = m_preservesAlpha;
+
 
 - (id) initWithParser:(SwiffParser *)parser
 {
@@ -163,16 +176,6 @@
     m_matrixValues = NULL;
 }
 
-
-@synthesize matrixWidth    = m_matrixWidth,
-            matrixHeight   = m_matrixHeight,
-            matrixValues   = m_matrixValues,
-            divisor        = m_divisor,
-            bias           = m_bias,
-            color          = m_color,
-            clamp          = m_clamp,
-            preservesAlpha = m_preservesAlpha;
-
 @end
 
 
@@ -180,6 +183,17 @@
 #pragma mark Drop Shadow Filter
 
 @implementation SwiffDropShadowFilter
+
+@synthesize color          = m_color,
+            blurX          = m_blurX,
+            blurY          = m_blurY,
+            angle          = m_angle,
+            distance       = m_distance,
+            strength       = m_strength,
+            innerShadow    = m_innerShadow,
+            knockout       = m_knockout,
+            numberOfPasses = m_numberOfPasses;
+
 
 - (id) initWithParser:(SwiffParser *)parser
 {
@@ -201,22 +215,21 @@
     return self;
 }
 
-@synthesize color          = m_color,
-            blurX          = m_blurX,
-            blurY          = m_blurY,
-            angle          = m_angle,
-            distance       = m_distance,
-            strength       = m_strength,
-            innerShadow    = m_innerShadow,
-            knockout       = m_knockout,
-            numberOfPasses = m_numberOfPasses;
-
 @end
 
 #pragma mark -
 #pragma mark Glow Filter
 
 @implementation SwiffGlowFilter
+
+@synthesize color          = m_color,
+            blurX          = m_blurX,
+            blurY          = m_blurY,
+            strength       = m_strength,
+            innerGlow      = m_innerGlow,
+            knockout       = m_knockout,
+            numberOfPasses = m_numberOfPasses;
+
 
 - (id) initWithParser:(SwiffParser *)parser
 {
@@ -236,15 +249,6 @@
     return self;
 }
 
-
-@synthesize color = m_color,
-            blurX = m_blurX,
-            blurY = m_blurY,
-            strength = m_strength,
-            innerGlow = m_innerGlow,
-            knockout = m_knockout,
-            numberOfPasses = m_numberOfPasses;
-
 @end
 
 
@@ -252,6 +256,19 @@
 #pragma mark Bevel Filter
 
 @implementation SwiffBevelFilter
+
+@synthesize shadowColor = m_shadowColor,
+            highlightColor = m_highlightColor,
+            blurX = m_blurX,
+            blurY = m_blurY,
+            angle = m_angle,
+            distance = m_distance,
+            strength = m_strength,
+            innerShadow = m_innerShadow,
+            knockout = m_knockout,
+            onTop = m_onTop,
+            numberOfPasses = m_numberOfPasses;
+
 
 - (id) initWithParser:(SwiffParser *)parser
 {
@@ -275,19 +292,6 @@
     return self;
 }
 
-
-@synthesize shadowColor = m_shadowColor,
-            highlightColor = m_highlightColor,
-            blurX = m_blurX,
-            blurY = m_blurY,
-            angle = m_angle,
-            distance = m_distance,
-            strength = m_strength,
-            innerShadow = m_innerShadow,
-            knockout = m_knockout,
-            onTop = m_onTop,
-            numberOfPasses = m_numberOfPasses;
-
 @end
 
 
@@ -295,6 +299,18 @@
 #pragma mark Gradient Glow Filter
 
 @implementation SwiffGradientGlowFilter
+
+@synthesize gradient       = m_gradient,
+            blurX          = m_blurX,
+            blurY          = m_blurY,
+            angle          = m_angle,
+            distance       = m_distance,
+            strength       = m_strength,
+            innerGlow      = m_innerGlow,
+            knockout       = m_knockout,
+            onTop          = m_onTop,
+            numberOfPasses = m_numberOfPasses;
+
 
 - (id) initWithParser:(SwiffParser *)parser
 {
@@ -318,18 +334,6 @@
     return self;
 }
 
-
-@synthesize gradient       = m_gradient,
-            blurX          = m_blurX,
-            blurY          = m_blurY,
-            angle          = m_angle,
-            distance       = m_distance,
-            strength       = m_strength,
-            innerGlow      = m_innerGlow,
-            knockout       = m_knockout,
-            onTop          = m_onTop,
-            numberOfPasses = m_numberOfPasses;
-
 @end
 
 
@@ -337,6 +341,18 @@
 #pragma mark Gradient Bevel Filter
 
 @implementation SwiffGradientBevelFilter 
+
+@synthesize gradient       = m_gradient,
+            blurX          = m_blurX,
+            blurY          = m_blurY,
+            angle          = m_angle,
+            distance       = m_distance,
+            strength       = m_strength,
+            innerShadow    = m_innerShadow,
+            knockout       = m_knockout,
+            onTop          = m_onTop,
+            numberOfPasses = m_numberOfPasses;
+
 
 - (id) initWithParser:(SwiffParser *)parser
 {
@@ -359,17 +375,5 @@
     
     return self;
 }
-
-
-@synthesize gradient       = m_gradient,
-            blurX          = m_blurX,
-            blurY          = m_blurY,
-            angle          = m_angle,
-            distance       = m_distance,
-            strength       = m_strength,
-            innerShadow    = m_innerShadow,
-            knockout       = m_knockout,
-            onTop          = m_onTop,
-            numberOfPasses = m_numberOfPasses;
 
 @end

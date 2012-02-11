@@ -33,44 +33,7 @@
 @class SwiffMovie;
 
 
-@interface SwiffDynamicTextDefinition : NSObject <SwiffDefinition> {
-@private
-    SwiffUnretained SwiffMovie *m_movie;
-
-    UInt16      m_libraryID;
-    CGRect      m_bounds;
-    
-    SwiffColor  m_color;
-    NSUInteger  m_maxLength;
-    
-    NSString   *m_variableName;
-    NSString   *m_initialText;
-    NSString   *m_fontClass;
-
-    UInt16      m_fontHeightInTwips;
-    UInt16      m_fontID;
-    UInt16      m_leftMarginInTwips;
-    UInt16      m_rightMarginInTwips;
-    UInt16      m_indentInTwips;
-    SInt16      m_leadingInTwips;
-    CTTextAlignment m_textAlignment;
-
-    BOOL        m_wordWrap;
-    BOOL        m_password;
-    BOOL        m_multiline;
-    BOOL        m_editable;
-    BOOL        m_selectable;
-    BOOL        m_hasFont;
-    BOOL        m_hasFontClass;
-    BOOL        m_hasColor;
-    BOOL        m_autosize;
-    BOOL        m_hasLayout;
-    
-    BOOL        m_border;
-    BOOL        m_wasStatic;
-    BOOL        m_HTML;
-    BOOL        m_useOutlines;
-}
+@interface SwiffDynamicTextDefinition : NSObject <SwiffDefinition>
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie;
 

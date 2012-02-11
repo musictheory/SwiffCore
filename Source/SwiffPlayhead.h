@@ -26,29 +26,14 @@
 */
 
 #import <SwiffImport.h>
+#import <SwiffTypes.h>
 
 @class SwiffScene, SwiffFrame, SwiffMovie;
 @class CADisplayLink;
 @protocol SwiffPlayheadDelegate;
 
 
-@interface SwiffPlayhead : NSObject {
-@private
-    SwiffUnretained id<SwiffPlayheadDelegate> m_delegate;
-
-    SwiffMovie    *m_movie;
-    NSInteger      m_frameIndex;
-    NSInteger      m_frameIndexForNextStep;
-
-    NSTimer       *m_timer;
-    CADisplayLink *m_displayLink;
-    CFTimeInterval m_timerPlayStart;
-    long           m_timerPlayIndex;
-
-    BOOL           m_loopsMovie;
-    BOOL           m_loopsScene;
-    BOOL           m_hasFrameIndexForNextStep;
-}
+@interface SwiffPlayhead : NSObject
 
 - (id) initWithMovie:(SwiffMovie *)movie delegate:(id<SwiffPlayheadDelegate>)delegate;
 
@@ -74,7 +59,7 @@
 - (SwiffScene *) scene;
 - (SwiffFrame *) frame;
 
-@property (nonatomic, assign) id<SwiffPlayheadDelegate> delegate;
+@property (nonatomic, swiff_weak) id<SwiffPlayheadDelegate> delegate;
 @property (nonatomic, assign) BOOL loopsMovie;
 @property (nonatomic, assign) BOOL loopsScene;
 

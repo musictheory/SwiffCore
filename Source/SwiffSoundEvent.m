@@ -28,8 +28,20 @@
 #import "SwiffSoundEvent.h"
 
 
+@implementation SwiffSoundEvent {
+    SwiffSoundEnvelope   *m_envelopes;
+}
 
-@implementation SwiffSoundEvent
+@synthesize libraryID      = m_libraryID,
+            className      = m_className,
+            definition     = m_definition,
+            inPoint        = m_inPoint,
+            outPoint       = m_outPoint,
+            loopCount      = m_loopCount,
+            envelopeCount  = m_envelopeCount,
+            shouldStop     = m_shouldStop,
+            allowsMultiple = m_allowsMultiple;
+
 
 - (id) initWithParser:(SwiffParser *)parser
 {
@@ -169,16 +181,5 @@
     if (outLeftLevel)  *outLeftLevel  = leftLevel;
     if (outRightLevel) *outRightLevel = rightLevel;
 }
-
-
-@synthesize libraryID      = m_libraryID,
-            className      = m_className,
-            definition     = m_definition,
-            inPoint        = m_inPoint,
-            outPoint       = m_outPoint,
-            loopCount      = m_loopCount,
-            envelopeCount  = m_envelopeCount,
-            shouldStop     = m_shouldStop,
-            allowsMultiple = m_allowsMultiple;
 
 @end

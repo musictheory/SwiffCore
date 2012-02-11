@@ -39,26 +39,7 @@ extern CFIndex   SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *def
 
 @class SwiffSoundStreamBlock;
 
-@interface SwiffSoundDefinition : NSObject <SwiffDefinition> {
-@private
-    SwiffUnretained SwiffMovie *m_movie;
-
-    NSMutableData *m_data;
-
-    NSUInteger    *m_frames;
-    NSInteger      m_framesCount;
-    NSInteger      m_framesCapacity;
-
-    UInt32         m_sampleCount;
-    UInt16         m_averageSampleCount;
-    UInt16         m_libraryID;
-    SInt16         m_latencySeek;
-    UInt8          m_format;
-    UInt8          m_rawSampleRate;
-    UInt8          m_bitsPerChannel;
-    BOOL           m_stereo;
-    BOOL           m_streaming;
-}
+@interface SwiffSoundDefinition : NSObject <SwiffDefinition>
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie;
 

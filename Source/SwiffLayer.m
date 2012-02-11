@@ -45,8 +45,29 @@ static NSString * const SwiffRenderScaleFactorKey  = @"SwiffRenderScaleFactor"; 
 static NSString * const SwiffRenderTranslationXKey = @"SwiffRenderTranslationX";  // NSNumber<CGFloat>
 static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";  // NSNumber<CGFloat>
 
+@interface SwiffLayer ()  <SwiffPlayheadDelegate>
+@end
 
-@implementation SwiffLayer
+
+@implementation SwiffLayer {
+    SwiffRenderer     *m_renderer;
+    SwiffSparseArray  *m_sublayers;
+    CALayer           *m_contentLayer;
+    NSUInteger         m_sublayerCount;
+    CGFloat            m_scaleFactor;
+    CGAffineTransform  m_baseAffineTransform;
+    CGAffineTransform  m_scaledAffineTransform;
+    BOOL               m_interpolateCurrentFrame;
+}
+
+@synthesize swiffLayerDelegate     = m_delegate,
+            movie                  = m_movie,
+            playhead               = m_playhead,
+            currentFrame           = m_currentFrame,
+            drawsBackground        = m_drawsBackground,
+            shouldFlattenSublayers = m_shouldFlattenSublayers,
+            shouldDrawDebugColors  = m_shouldDrawDebugColors;
+
 
 - (id) initWithMovie:(SwiffMovie *)movie
 {
@@ -914,13 +935,5 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 - (BOOL)    shouldSmoothFonts           { return [m_renderer shouldSmoothFonts];           }
 - (BOOL)    shouldSubpixelPositionFonts { return [m_renderer shouldSubpixelPositionFonts]; }
 - (BOOL)    shouldSubpixelQuantizeFonts { return [m_renderer shouldSubpixelQuantizeFonts]; }
-
-@synthesize swiffLayerDelegate     = m_delegate,
-            movie                  = m_movie,
-            playhead               = m_playhead,
-            currentFrame           = m_currentFrame,
-            drawsBackground        = m_drawsBackground,
-            shouldFlattenSublayers = m_shouldFlattenSublayers,
-            shouldDrawDebugColors  = m_shouldDrawDebugColors;
 
 @end

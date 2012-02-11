@@ -49,7 +49,18 @@ enum {
 typedef NSInteger SwiffHTMLToCoreTextConverterTag;
 
 
-@implementation SwiffHTMLToCoreTextConverter
+@implementation SwiffHTMLToCoreTextConverter {
+    SwiffDynamicTextAttributes *m_attributes;
+
+    NSMutableString *m_characters;
+    NSInteger        m_boldCount;
+    NSInteger        m_italicCount;
+    NSInteger        m_underlineCount;
+    BOOL             m_needsParagraphBreak;
+
+    CFMutableAttributedStringRef m_output;
+}
+
 
 + (id) sharedInstance
 {

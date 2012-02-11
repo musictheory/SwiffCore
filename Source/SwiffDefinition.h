@@ -26,14 +26,17 @@
 */
 
 #import <SwiffImport.h>
+#import <SwiffTypes.h>
 
 @class SwiffMovie;
 
 
 @protocol SwiffDefinition <NSObject>
+
 - (void) clearWeakReferences;
 
-@property (nonatomic, assign, readonly) SwiffMovie *movie;
+@property (nonatomic, swiff_weak, readonly) SwiffMovie *movie;
+
 @property (nonatomic, assign, readonly) UInt16 libraryID;
 @property (nonatomic, assign, readonly) CGRect bounds;
 @property (nonatomic, assign, readonly) CGRect renderBounds;

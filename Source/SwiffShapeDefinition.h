@@ -32,25 +32,7 @@
 @class SwiffMovie;
 
 
-@interface SwiffShapeDefinition : NSObject <SwiffDefinition> {
-@private
-    SwiffUnretained SwiffMovie *m_movie;
-
-    UInt16      m_libraryID;
-    CFArrayRef  m_groups;
-    NSArray    *m_fillStyles;
-    NSArray    *m_lineStyles;
-    NSArray    *m_paths;
-    
-    CGRect      m_bounds;
-    CGRect      m_renderBounds;
-    CGRect      m_edgeBounds;
-
-    BOOL        m_usesFillWindingRule;
-    BOOL        m_usesNonScalingStrokes;
-    BOOL        m_usesScalingStrokes;
-    BOOL        m_hasEdgeBounds;
-}
+@interface SwiffShapeDefinition : NSObject <SwiffDefinition>
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie;
 

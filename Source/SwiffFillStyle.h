@@ -47,14 +47,7 @@ enum {
 typedef UInt8 SwiffFillStyleType;
 
 
-@interface SwiffFillStyle : NSObject {
-@private
-    UInt8              m_type;
-    UInt16             m_bitmapID;
-    SwiffColor         m_color;
-    SwiffGradient     *m_gradient;
-    CGAffineTransform  m_transform;
-}
+@interface SwiffFillStyle : NSObject
 
 // Reads a FILLSTYLEARRAY from the parser
 + (NSArray *) fillStyleArrayWithParser:(SwiffParser *)parser;

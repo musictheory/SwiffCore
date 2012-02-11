@@ -26,19 +26,12 @@
 */
 
 #import <SwiffImport.h>
+#import <SwiffTypes.h>
 
 @class SwiffFrame, SwiffMovie;
 
 
-@interface SwiffScene : NSObject {
-@private
-    SwiffUnretained SwiffMovie *m_movie;
-
-    NSString     *m_name;
-    NSArray      *m_frames;
-    NSDictionary *m_labelToFrameMap;
-    NSUInteger    m_indexInMovie;
-}
+@interface SwiffScene : NSObject
 
 - (id) initWithMovie:(SwiffMovie *)movie name:(NSString *)name indexInMovie:(NSUInteger)indexInMovie frames:(NSArray *)frames;
 
@@ -56,7 +49,7 @@
 @property (nonatomic, assign, readonly) NSUInteger indexInMovie;
 @property (nonatomic, assign, readonly) NSUInteger index1InMovie;
 
-@property (nonatomic, assign, readonly) SwiffMovie *movie;
+@property (nonatomic, swiff_weak, readonly) SwiffMovie *movie;
 @property (nonatomic, strong, readonly) NSString *name;
 @property (nonatomic, strong, readonly) NSArray *frames;
 
