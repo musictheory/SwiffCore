@@ -32,11 +32,11 @@
 
 @implementation SwiffStaticTextDefinition
 
-@synthesize movie         = m_movie,
-            libraryID     = m_libraryID,
-            bounds        = m_bounds,
-            textRecords   = m_textRecords,
-            textTransform = m_textTransform;
+@synthesize movie         = _movie,
+            libraryID     = _libraryID,
+            bounds        = _bounds,
+            textRecords   = _textRecords,
+            textTransform = _textTransform;
 
 
 #pragma mark -
@@ -45,17 +45,17 @@
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie
 {
     if ((self = [super init])) {
-        m_movie = movie;
+        _movie = movie;
     
-        SwiffParserReadUInt16(parser, &m_libraryID);
-        SwiffParserReadRect(parser,   &m_bounds);
-        SwiffParserReadMatrix(parser, &m_textTransform);
+        SwiffParserReadUInt16(parser, &_libraryID);
+        SwiffParserReadRect(parser,   &_bounds);
+        SwiffParserReadMatrix(parser, &_textTransform);
 
         UInt8 glyphBits, advanceBits;
         SwiffParserReadUInt8(parser, &glyphBits);
         SwiffParserReadUInt8(parser, &advanceBits);
     
-        m_textRecords = [SwiffStaticTextRecord textRecordArrayWithParser:parser glyphBits:glyphBits advanceBits:advanceBits];
+        _textRecords = [SwiffStaticTextRecord textRecordArrayWithParser:parser glyphBits:glyphBits advanceBits:advanceBits];
     }
     
     return self;
@@ -64,13 +64,13 @@
 
 - (void) clearWeakReferences
 {
-    m_movie = nil;
+    _movie = nil;
 }
 
 
 - (CGRect) renderBounds
 {
-    return m_bounds;
+    return _bounds;
 }
 
 

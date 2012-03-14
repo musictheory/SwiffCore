@@ -80,19 +80,19 @@
 
 @implementation SwiffBlurFilter
 
-@synthesize blurX          = m_blurX,
-            blurY          = m_blurY,
-            numberOfPasses = m_numberOfPasses;
+@synthesize blurX          = _blurX,
+            blurY          = _blurY,
+            numberOfPasses = _numberOfPasses;
 
 
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [super init])) {
-        SwiffParserReadFixed(parser, &m_blurX);
-        SwiffParserReadFixed(parser, &m_blurY);
+        SwiffParserReadFixed(parser, &_blurX);
+        SwiffParserReadFixed(parser, &_blurY);
 
         UInt32 tmp;
-        SwiffParserReadUBits(parser, 5, &tmp);  m_numberOfPasses = tmp;
+        SwiffParserReadUBits(parser, 5, &tmp);  _numberOfPasses = tmp;
         SwiffParserReadUBits(parser, 3, &tmp);  // Reserved UB[3]
     }
 
@@ -106,7 +106,7 @@
 #pragma mark Color Matrix Filter
 
 @implementation SwiffColorMatrixFilter {
-    float m_matrixValues[20];
+    float _matrixValues[20];
 }
 
 
@@ -114,7 +114,7 @@
 {
     if ((self = [super init])) {
         for (NSInteger i = 0; i < 20; i++) {
-            SwiffParserReadFloat(parser, &m_matrixValues[i]);
+            SwiffParserReadFloat(parser, &_matrixValues[i]);
         }
     }
 
@@ -124,7 +124,7 @@
 
 - (UInt8)   matrixHeight { return 5; }
 - (UInt8)   matrixWidth  { return 4; }
-- (float *) matrixValues { return &m_matrixValues[0]; }
+- (float *) matrixValues { return &_matrixValues[0]; }
 
 @end
 
@@ -134,35 +134,35 @@
 
 @implementation SwiffConvolutionFilter
 
-@synthesize matrixWidth    = m_matrixWidth,
-            matrixHeight   = m_matrixHeight,
-            matrixValues   = m_matrixValues,
-            divisor        = m_divisor,
-            bias           = m_bias,
-            color          = m_color,
-            clamp          = m_clamp,
-            preservesAlpha = m_preservesAlpha;
+@synthesize matrixWidth    = _matrixWidth,
+            matrixHeight   = _matrixHeight,
+            matrixValues   = _matrixValues,
+            divisor        = _divisor,
+            bias           = _bias,
+            color          = _color,
+            clamp          = _clamp,
+            preservesAlpha = _preservesAlpha;
 
 
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [super init])) {
-        SwiffParserReadUInt8(parser, &m_matrixWidth);
-        SwiffParserReadUInt8(parser, &m_matrixHeight);
-        SwiffParserReadFloat(parser, &m_divisor);
-        SwiffParserReadFloat(parser, &m_bias);
+        SwiffParserReadUInt8(parser, &_matrixWidth);
+        SwiffParserReadUInt8(parser, &_matrixHeight);
+        SwiffParserReadFloat(parser, &_divisor);
+        SwiffParserReadFloat(parser, &_bias);
 
-        NSInteger count = m_matrixWidth * m_matrixHeight;
+        NSInteger count = _matrixWidth * _matrixHeight;
 
-        m_matrixValues = malloc(sizeof(float) * count);
+        _matrixValues = malloc(sizeof(float) * count);
         for (NSInteger i = 0; i < count; i++) {
-            SwiffParserReadFloat(parser, &m_matrixValues[i]);
+            SwiffParserReadFloat(parser, &_matrixValues[i]);
         }
 
         UInt32 tmp;
         SwiffParserReadUBits(parser, 6, &tmp);  // Reserved UB[6]
-        SwiffParserReadUBits(parser, 1, &tmp);  m_clamp = tmp;
-        SwiffParserReadUBits(parser, 1, &tmp);  m_preservesAlpha = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _clamp = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _preservesAlpha = tmp;
 
     }
 
@@ -172,8 +172,8 @@
 
 - (void) dealloc
 {
-    free(m_matrixValues);
-    m_matrixValues = NULL;
+    free(_matrixValues);
+    _matrixValues = NULL;
 }
 
 @end
@@ -184,32 +184,32 @@
 
 @implementation SwiffDropShadowFilter
 
-@synthesize color          = m_color,
-            blurX          = m_blurX,
-            blurY          = m_blurY,
-            angle          = m_angle,
-            distance       = m_distance,
-            strength       = m_strength,
-            innerShadow    = m_innerShadow,
-            knockout       = m_knockout,
-            numberOfPasses = m_numberOfPasses;
+@synthesize color          = _color,
+            blurX          = _blurX,
+            blurY          = _blurY,
+            angle          = _angle,
+            distance       = _distance,
+            strength       = _strength,
+            innerShadow    = _innerShadow,
+            knockout       = _knockout,
+            numberOfPasses = _numberOfPasses;
 
 
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [super init])) {
-        SwiffParserReadColorRGBA(parser, &m_color);
-        SwiffParserReadFixed(parser, &m_blurX);
-        SwiffParserReadFixed(parser, &m_blurY);
-        SwiffParserReadFixed(parser, &m_angle);
-        SwiffParserReadFixed(parser, &m_distance);
-        SwiffParserReadFixed8(parser, &m_strength);
+        SwiffParserReadColorRGBA(parser, &_color);
+        SwiffParserReadFixed(parser, &_blurX);
+        SwiffParserReadFixed(parser, &_blurY);
+        SwiffParserReadFixed(parser, &_angle);
+        SwiffParserReadFixed(parser, &_distance);
+        SwiffParserReadFixed8(parser, &_strength);
 
         UInt32 tmp;
-        SwiffParserReadUBits(parser, 1, &tmp);  m_innerShadow = tmp;
-        SwiffParserReadUBits(parser, 1, &tmp);  m_knockout = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _innerShadow = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _knockout = tmp;
         SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
-        SwiffParserReadUBits(parser, 5, &tmp);  m_numberOfPasses = tmp;
+        SwiffParserReadUBits(parser, 5, &tmp);  _numberOfPasses = tmp;
     }
 
     return self;
@@ -222,28 +222,28 @@
 
 @implementation SwiffGlowFilter
 
-@synthesize color          = m_color,
-            blurX          = m_blurX,
-            blurY          = m_blurY,
-            strength       = m_strength,
-            innerGlow      = m_innerGlow,
-            knockout       = m_knockout,
-            numberOfPasses = m_numberOfPasses;
+@synthesize color          = _color,
+            blurX          = _blurX,
+            blurY          = _blurY,
+            strength       = _strength,
+            innerGlow      = _innerGlow,
+            knockout       = _knockout,
+            numberOfPasses = _numberOfPasses;
 
 
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [super init])) {
-        SwiffParserReadColorRGBA(parser, &m_color);
-        SwiffParserReadFixed(parser, &m_blurX);
-        SwiffParserReadFixed(parser, &m_blurY);
-        SwiffParserReadFixed8(parser, &m_strength);
+        SwiffParserReadColorRGBA(parser, &_color);
+        SwiffParserReadFixed(parser, &_blurX);
+        SwiffParserReadFixed(parser, &_blurY);
+        SwiffParserReadFixed8(parser, &_strength);
 
         UInt32 tmp;
-        SwiffParserReadUBits(parser, 1, &tmp);  m_innerGlow = tmp;
-        SwiffParserReadUBits(parser, 1, &tmp);  m_knockout = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _innerGlow = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _knockout = tmp;
         SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
-        SwiffParserReadUBits(parser, 5, &tmp);  m_numberOfPasses = tmp;
+        SwiffParserReadUBits(parser, 5, &tmp);  _numberOfPasses = tmp;
     }
     
     return self;
@@ -257,36 +257,36 @@
 
 @implementation SwiffBevelFilter
 
-@synthesize shadowColor = m_shadowColor,
-            highlightColor = m_highlightColor,
-            blurX = m_blurX,
-            blurY = m_blurY,
-            angle = m_angle,
-            distance = m_distance,
-            strength = m_strength,
-            innerShadow = m_innerShadow,
-            knockout = m_knockout,
-            onTop = m_onTop,
-            numberOfPasses = m_numberOfPasses;
+@synthesize shadowColor = _shadowColor,
+            highlightColor = _highlightColor,
+            blurX = _blurX,
+            blurY = _blurY,
+            angle = _angle,
+            distance = _distance,
+            strength = _strength,
+            innerShadow = _innerShadow,
+            knockout = _knockout,
+            onTop = _onTop,
+            numberOfPasses = _numberOfPasses;
 
 
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [super init])) {
-        SwiffParserReadColorRGBA(parser, &m_shadowColor);
-        SwiffParserReadColorRGBA(parser, &m_highlightColor);
-        SwiffParserReadFixed(parser, &m_blurX);
-        SwiffParserReadFixed(parser, &m_blurY);
-        SwiffParserReadFixed(parser, &m_angle);
-        SwiffParserReadFixed(parser, &m_distance);
-        SwiffParserReadFixed8(parser, &m_strength);
+        SwiffParserReadColorRGBA(parser, &_shadowColor);
+        SwiffParserReadColorRGBA(parser, &_highlightColor);
+        SwiffParserReadFixed(parser, &_blurX);
+        SwiffParserReadFixed(parser, &_blurY);
+        SwiffParserReadFixed(parser, &_angle);
+        SwiffParserReadFixed(parser, &_distance);
+        SwiffParserReadFixed8(parser, &_strength);
 
         UInt32 tmp;
-        SwiffParserReadUBits(parser, 1, &tmp);  m_innerShadow = tmp;
-        SwiffParserReadUBits(parser, 1, &tmp);  m_knockout = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _innerShadow = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _knockout = tmp;
         SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
-        SwiffParserReadUBits(parser, 1, &tmp);  m_onTop = tmp;
-        SwiffParserReadUBits(parser, 4, &tmp);  m_numberOfPasses = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _onTop = tmp;
+        SwiffParserReadUBits(parser, 4, &tmp);  _numberOfPasses = tmp;
     }
     
     return self;
@@ -300,35 +300,35 @@
 
 @implementation SwiffGradientGlowFilter
 
-@synthesize gradient       = m_gradient,
-            blurX          = m_blurX,
-            blurY          = m_blurY,
-            angle          = m_angle,
-            distance       = m_distance,
-            strength       = m_strength,
-            innerGlow      = m_innerGlow,
-            knockout       = m_knockout,
-            onTop          = m_onTop,
-            numberOfPasses = m_numberOfPasses;
+@synthesize gradient       = _gradient,
+            blurX          = _blurX,
+            blurY          = _blurY,
+            angle          = _angle,
+            distance       = _distance,
+            strength       = _strength,
+            innerGlow      = _innerGlow,
+            knockout       = _knockout,
+            onTop          = _onTop,
+            numberOfPasses = _numberOfPasses;
 
 
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [super init])) {
-        m_gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:NO];
+        _gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:NO];
 
-        SwiffParserReadFixed(parser, &m_blurX);
-        SwiffParserReadFixed(parser, &m_blurY);
-        SwiffParserReadFixed(parser, &m_angle);
-        SwiffParserReadFixed(parser, &m_distance);
-        SwiffParserReadFixed8(parser, &m_strength);
+        SwiffParserReadFixed(parser, &_blurX);
+        SwiffParserReadFixed(parser, &_blurY);
+        SwiffParserReadFixed(parser, &_angle);
+        SwiffParserReadFixed(parser, &_distance);
+        SwiffParserReadFixed8(parser, &_strength);
 
         UInt32 tmp;
-        SwiffParserReadUBits(parser, 1, &tmp);  m_innerGlow = tmp;
-        SwiffParserReadUBits(parser, 1, &tmp);  m_knockout = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _innerGlow = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _knockout = tmp;
         SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
-        SwiffParserReadUBits(parser, 1, &tmp);  m_onTop = tmp;
-        SwiffParserReadUBits(parser, 4, &tmp);  m_numberOfPasses = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _onTop = tmp;
+        SwiffParserReadUBits(parser, 4, &tmp);  _numberOfPasses = tmp;
     }
 
     return self;
@@ -342,35 +342,35 @@
 
 @implementation SwiffGradientBevelFilter 
 
-@synthesize gradient       = m_gradient,
-            blurX          = m_blurX,
-            blurY          = m_blurY,
-            angle          = m_angle,
-            distance       = m_distance,
-            strength       = m_strength,
-            innerShadow    = m_innerShadow,
-            knockout       = m_knockout,
-            onTop          = m_onTop,
-            numberOfPasses = m_numberOfPasses;
+@synthesize gradient       = _gradient,
+            blurX          = _blurX,
+            blurY          = _blurY,
+            angle          = _angle,
+            distance       = _distance,
+            strength       = _strength,
+            innerShadow    = _innerShadow,
+            knockout       = _knockout,
+            onTop          = _onTop,
+            numberOfPasses = _numberOfPasses;
 
 
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [super init])) {
-        m_gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:NO];
+        _gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:NO];
 
-        SwiffParserReadFixed(parser, &m_blurX);
-        SwiffParserReadFixed(parser, &m_blurY);
-        SwiffParserReadFixed(parser, &m_angle);
-        SwiffParserReadFixed(parser, &m_distance);
-        SwiffParserReadFixed8(parser, &m_strength);
+        SwiffParserReadFixed(parser, &_blurX);
+        SwiffParserReadFixed(parser, &_blurY);
+        SwiffParserReadFixed(parser, &_angle);
+        SwiffParserReadFixed(parser, &_distance);
+        SwiffParserReadFixed8(parser, &_strength);
 
         UInt32 tmp;
-        SwiffParserReadUBits(parser, 1, &tmp);  m_innerShadow = tmp;
-        SwiffParserReadUBits(parser, 1, &tmp);  m_knockout = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _innerShadow = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _knockout = tmp;
         SwiffParserReadUBits(parser, 1, &tmp);  // Composite source Always 1
-        SwiffParserReadUBits(parser, 1, &tmp);  m_onTop = tmp;
-        SwiffParserReadUBits(parser, 4, &tmp);  m_numberOfPasses = tmp;
+        SwiffParserReadUBits(parser, 1, &tmp);  _onTop = tmp;
+        SwiffParserReadUBits(parser, 4, &tmp);  _numberOfPasses = tmp;
     }
     
     return self;

@@ -50,40 +50,40 @@ static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";
 
 
 @implementation SwiffLayer {
-    SwiffRenderer     *m_renderer;
-    SwiffSparseArray  *m_sublayers;
-    CALayer           *m_contentLayer;
-    NSUInteger         m_sublayerCount;
-    CGFloat            m_scaleFactor;
-    CGAffineTransform  m_baseAffineTransform;
-    CGAffineTransform  m_scaledAffineTransform;
-    BOOL               m_interpolateCurrentFrame;
+    SwiffRenderer     *_renderer;
+    SwiffSparseArray  *_sublayers;
+    CALayer           *_contentLayer;
+    NSUInteger         _sublayerCount;
+    CGFloat            _scaleFactor;
+    CGAffineTransform  _baseAffineTransform;
+    CGAffineTransform  _scaledAffineTransform;
+    BOOL               _interpolateCurrentFrame;
 }
 
-@synthesize swiffLayerDelegate     = m_delegate,
-            movie                  = m_movie,
-            playhead               = m_playhead,
-            currentFrame           = m_currentFrame,
-            drawsBackground        = m_drawsBackground,
-            shouldFlattenSublayers = m_shouldFlattenSublayers,
-            shouldDrawDebugColors  = m_shouldDrawDebugColors;
+@synthesize swiffLayerDelegate     = _delegate,
+            movie                  = _movie,
+            playhead               = _playhead,
+            currentFrame           = _currentFrame,
+            drawsBackground        = _drawsBackground,
+            shouldFlattenSublayers = _shouldFlattenSublayers,
+            shouldDrawDebugColors  = _shouldDrawDebugColors;
 
 
 - (id) initWithMovie:(SwiffMovie *)movie
 {
     if ((self = [self init])) {
-        m_movie = movie;
+        _movie = movie;
 
-        m_renderer = [[SwiffRenderer alloc] initWithMovie:movie];
+        _renderer = [[SwiffRenderer alloc] initWithMovie:movie];
         
-        m_contentLayer = [[CALayer alloc] init];
-        [m_contentLayer setDelegate:self];
-        [self addSublayer:m_contentLayer];
+        _contentLayer = [[CALayer alloc] init];
+        [_contentLayer setDelegate:self];
+        [self addSublayer:_contentLayer];
 
-        m_playhead = [[SwiffPlayhead alloc] initWithMovie:movie delegate:self];
-        [m_playhead gotoFrameWithIndex:0 play:NO];
+        _playhead = [[SwiffPlayhead alloc] initWithMovie:movie delegate:self];
+        [_playhead gotoFrameWithIndex:0 play:NO];
         
-        [m_contentLayer setNeedsDisplay];
+        [_contentLayer setNeedsDisplay];
     }
     
     return self;
@@ -92,16 +92,16 @@ static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";
 
 - (void) dealloc
 {
-    [[SwiffSoundPlayer sharedInstance] stopAllSoundsForMovie:m_movie];
+    [[SwiffSoundPlayer sharedInstance] stopAllSoundsForMovie:_movie];
 
-    [m_playhead invalidateTimers];
-    [m_playhead setDelegate:nil];
+    [_playhead invalidateTimers];
+    [_playhead setDelegate:nil];
 }
 
 
 - (void) clearWeakReferences
 {
-    [m_contentLayer setDelegate:nil];
+    [_contentLayer setDelegate:nil];
 }
 
 
@@ -127,7 +127,7 @@ static CGRect sExpandRect(CGRect rect)
 static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 {
     // Return NO if the library IDs are not equal
-    if (a->m_libraryID != b->m_libraryID) {
+    if (a->_libraryID != b->_libraryID) {
         return NO;
     }
     
@@ -149,11 +149,11 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
                               outTransform: (CGAffineTransform *) outTransform
                               outTranslate: (CGPoint *) outTranslate
 {
-    id<SwiffDefinition> definition = [m_movie definitionWithLibraryID:[placedObject libraryID]];
+    id<SwiffDefinition> definition = [_movie definitionWithLibraryID:[placedObject libraryID]];
 
     CGAffineTransform transform = CGAffineTransformIdentity;
     transform = CGAffineTransformConcat(transform, [placedObject affineTransform]);
-    transform = CGAffineTransformConcat(transform, m_scaledAffineTransform);
+    transform = CGAffineTransformConcat(transform, _scaledAffineTransform);
     
     CGAffineTransform scaleFactorTransform = CGAffineTransformMakeScale(scaleFactor, scaleFactor);
 
@@ -224,7 +224,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     CGFloat max3 = MAX(max1, max2);
 
     CGFloat contentsScale = [self contentsScale];
-    return SwiffScaleCeil(max3, 1) * (contentsScale * m_scaleFactor);
+    return SwiffScaleCeil(max3, 1) * (contentsScale * _scaleFactor);
 }
 
 
@@ -301,8 +301,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     );
 
     CALayer *masterLayer = nil;
-    if ([m_delegate isKindOfClass:[SwiffView class]]) {
-        masterLayer = [(SwiffView *)m_delegate layer];
+    if ([_delegate isKindOfClass:[SwiffView class]]) {
+        masterLayer = [(SwiffView *)_delegate layer];
     }
 
     CAAnimation *existingAnimation = nil;
@@ -337,8 +337,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     [self addSublayer:sublayer];
 
     [CATransaction begin];
-    if (m_interpolateCurrentFrame || existingAnimation) {
-        [CATransaction setAnimationDuration:existingAnimation ? [existingAnimation duration] : (1.0 / [m_movie frameRate])];
+    if (_interpolateCurrentFrame || existingAnimation) {
+        [CATransaction setAnimationDuration:existingAnimation ? [existingAnimation duration] : (1.0 / [_movie frameRate])];
         [CATransaction setAnimationTimingFunction:existingAnimation ? [existingAnimation timingFunction] : [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]];
     } else {
         [CATransaction setDisableActions:YES];
@@ -370,7 +370,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         UInt16 depth = [placedObject depth];
         UInt16 libraryID = [placedObject libraryID];
         
-        id<SwiffDefinition> definition = [m_movie definitionWithLibraryID:libraryID];
+        id<SwiffDefinition> definition = [_movie definitionWithLibraryID:libraryID];
         CALayer *sublayer = [CALayer layer];
 
         CGRect bounds = [definition renderBounds];
@@ -389,18 +389,18 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
         SwiffLog(@"View", @"adding sublayer at depth %d", (int)depth);
 
-        if (!m_sublayers) {
-            m_sublayers = [[SwiffSparseArray alloc] init];
+        if (!_sublayers) {
+            _sublayers = [[SwiffSparseArray alloc] init];
         }
 
-        CALayer *existing = SwiffSparseArrayGetObjectAtIndex(m_sublayers, depth);
+        CALayer *existing = SwiffSparseArrayGetObjectAtIndex(_sublayers, depth);
         if (existing) {
             [existing removeFromSuperlayer];
         } else {
-            m_sublayerCount++;
+            _sublayerCount++;
         }
 
-        SwiffSparseArraySetObjectAtIndex(m_sublayers, depth, sublayer);
+        SwiffSparseArraySetObjectAtIndex(_sublayers, depth, sublayer);
     }
 }
 
@@ -410,14 +410,14 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     for (SwiffPlacedObject *placedObject in placedObjects) {
         UInt16 depth = [placedObject depth];
 
-        CALayer *sublayer = SwiffSparseArrayGetObjectAtIndex(m_sublayers, depth);
+        CALayer *sublayer = SwiffSparseArrayGetObjectAtIndex(_sublayers, depth);
         if (!sublayer) continue;
 
         SwiffLog(@"View", @"removing sublayer at depth %d", (int)depth);
         [sublayer removeFromSuperlayer];
 
-        SwiffSparseArraySetObjectAtIndex(m_sublayers, depth, nil);
-        m_sublayerCount--;
+        SwiffSparseArraySetObjectAtIndex(_sublayers, depth, nil);
+        _sublayerCount--;
     }
 }
 
@@ -427,7 +427,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     for (SwiffPlacedObject *placedObject in placedObjects) {
         UInt16 depth = [placedObject depth];
 
-        CALayer *sublayer = SwiffSparseArrayGetObjectAtIndex(m_sublayers, depth);
+        CALayer *sublayer = SwiffSparseArrayGetObjectAtIndex(_sublayers, depth);
         if (!sublayer) continue;
 
         [self _updateGeometryForSublayer:sublayer withPlacedObject:placedObject];
@@ -441,7 +441,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
     for (SwiffPlacedObject *placedObject in placedObjects) {
         UInt16 libraryID = [placedObject libraryID];
-        id<SwiffDefinition> definition = [m_movie definitionWithLibraryID:libraryID];
+        id<SwiffDefinition> definition = [_movie definitionWithLibraryID:libraryID];
         
         CGRect bounds = [definition renderBounds];
         bounds = CGRectApplyAffineTransform(bounds, [placedObject affineTransform]);
@@ -453,9 +453,9 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         }
     }
 
-    invalidRect = CGRectApplyAffineTransform(invalidRect, m_scaledAffineTransform);
+    invalidRect = CGRectApplyAffineTransform(invalidRect, _scaledAffineTransform);
     if (!CGRectIsEmpty(invalidRect)) {
-        [m_contentLayer setNeedsDisplayInRect:invalidRect];
+        [_contentLayer setNeedsDisplayInRect:invalidRect];
     }
 }
 
@@ -473,8 +473,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
     #define NEXT(prefix) { \
         SwiffPlacedObject *o = prefix ## PlacedObject = [prefix ## Enumerator nextObject]; \
-        prefix ## Depth        = o ?  o->m_depth : NSIntegerMax; \
-        prefix ## WantsLayer   = o ? (o->m_additional && [o wantsLayer]) : NO; \
+        prefix ## Depth        = o ?  o->_depth : NSIntegerMax; \
+        prefix ## WantsLayer   = o ? (o->_additional && [o wantsLayer]) : NO; \
     }
 
     NEXT(old);
@@ -488,12 +488,12 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     while ((oldDepth < NSIntegerMax) || (newDepth < NSIntegerMax)) {
         if (oldDepth == newDepth) {
             if (oldPlacedObject != newPlacedObject) {
-                if (m_shouldFlattenSublayers) {
+                if (_shouldFlattenSublayers) {
                     oldWantsLayer = NO;
                     newWantsLayer = NO;
                 }
 
-                if (oldWantsLayer && !SwiffSparseArrayGetObjectAtIndex(m_sublayers, oldDepth)) {
+                if (oldWantsLayer && !SwiffSparseArrayGetObjectAtIndex(_sublayers, oldDepth)) {
                     oldWantsLayer = NO;
                 }
             
@@ -510,7 +510,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
             NEXT(new);
             
         } else if (newDepth < oldDepth) {
-            if (m_shouldFlattenSublayers) {
+            if (_shouldFlattenSublayers) {
                 newWantsLayer = NO;
             }
 
@@ -519,11 +519,11 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
             NEXT(new);
 
         } else if (oldDepth < newDepth) {
-            if (m_shouldFlattenSublayers) {
+            if (_shouldFlattenSublayers) {
                 oldWantsLayer = NO;
             }
 
-            if (oldWantsLayer && !SwiffSparseArrayGetObjectAtIndex(m_sublayers, oldDepth)) {
+            if (oldWantsLayer && !SwiffSparseArrayGetObjectAtIndex(_sublayers, oldDepth)) {
                 oldWantsLayer = NO;
             }
 
@@ -544,7 +544,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
         [self _invalidatePlacedObjects:rectInvalidates];
         
-        [m_contentLayer displayIfNeeded];
+        [_contentLayer displayIfNeeded];
 
         [CATransaction commit];
 
@@ -562,7 +562,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 - (void) setContentsScale:(CGFloat)contentsScale
 {
     [super setContentsScale:contentsScale];
-    [m_contentLayer setContentsScale:contentsScale];
+    [_contentLayer setContentsScale:contentsScale];
 }
 
 
@@ -572,21 +572,21 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
     [super setBounds:bounds];
 
-    CGSize movieSize = [m_movie stageRect].size;
+    CGSize movieSize = [_movie stageRect].size;
 
     CGFloat sx = bounds.size.width /  movieSize.width;
     CGFloat sy = bounds.size.height / movieSize.height;
 
-    m_scaleFactor = sx > sy ? sx : sy;
-    m_scaledAffineTransform = CGAffineTransformMakeScale(sx, sy);
+    _scaleFactor = sx > sy ? sx : sy;
+    _scaledAffineTransform = CGAffineTransformMakeScale(sx, sy);
 
-    [m_contentLayer setContentsScale:[self contentsScale]];
-    [m_contentLayer setFrame:bounds];
+    [_contentLayer setContentsScale:[self contentsScale]];
+    [_contentLayer setFrame:bounds];
 
     if (!CGSizeEqualToSize(oldBounds.size, bounds.size)) {
-        [m_contentLayer setNeedsDisplay];
+        [_contentLayer setNeedsDisplay];
         
-        for (CALayer *sublayer in m_sublayers) {
+        for (CALayer *sublayer in _sublayers) {
             SwiffPlacedObject *placedObject = [sublayer valueForKey:SwiffPlacedObjectKey];
             if (placedObject) {
                 [self _updateGeometryForSublayer:sublayer withPlacedObject:placedObject];
@@ -598,10 +598,10 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) drawLayer:(CALayer *)layer inContext:(CGContextRef)context
 {
-    if (layer == m_contentLayer) {
-        if (!m_currentFrame) return;
+    if (layer == _contentLayer) {
+        if (!_currentFrame) return;
 
-        SwiffFrame *frame = m_currentFrame;
+        SwiffFrame *frame = _currentFrame;
 
 #if WARN_ON_DROPPED_FRAMES        
         clock_t c = clock();
@@ -610,12 +610,12 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
         NSArray *placedObjects = [frame placedObjects];
         NSMutableArray *filteredObjects = nil;
         
-        if (m_sublayerCount) {
+        if (_sublayerCount) {
             filteredObjects = [[NSMutableArray alloc] initWithCapacity:[placedObjects count]];
             
             for (SwiffPlacedObject *object in placedObjects) {
-                UInt16 depth = object->m_depth;
-                if (!SwiffSparseArrayGetObjectAtIndex(m_sublayers, depth)) {
+                UInt16 depth = object->_depth;
+                if (!SwiffSparseArrayGetObjectAtIndex(_sublayers, depth)) {
                     [filteredObjects addObject:object];
                 }
             }
@@ -623,7 +623,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
         CGContextSaveGState(context);
 
-        if (m_shouldDrawDebugColors) {
+        if (_shouldDrawDebugColors) {
             static int sCounter = 0;
             if      (sCounter == 0) CGContextSetRGBFillColor(context, 1, 1, 0, 0.15);
             else if (sCounter == 1) CGContextSetRGBFillColor(context, 0, 1, 1, 0.15);
@@ -633,9 +633,9 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
             CGContextFillRect(context, [layer bounds]);
         }
 
-        [m_renderer setScaleFactorHint:[self contentsScale]];
-        [m_renderer setBaseAffineTransform:&m_scaledAffineTransform];
-        [m_renderer renderPlacedObjects:(filteredObjects ? filteredObjects : placedObjects) inContext:context];
+        [_renderer setScaleFactorHint:[self contentsScale]];
+        [_renderer setBaseAffineTransform:&_scaledAffineTransform];
+        [_renderer renderPlacedObjects:(filteredObjects ? filteredObjects : placedObjects) inContext:context];
 
         CGContextRestoreGState(context);
         
@@ -651,7 +651,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     } else {
         SwiffPlacedObject *layerPlacedObject = [layer valueForKey:SwiffPlacedObjectKey];
 
-        SwiffPlacedObject *rendererPlacedObject = SwiffPlacedObjectCreate(m_movie, [layerPlacedObject libraryID], layerPlacedObject);
+        SwiffPlacedObject *rendererPlacedObject = SwiffPlacedObjectCreate(_movie, [layerPlacedObject libraryID], layerPlacedObject);
 
         [rendererPlacedObject setAffineTransform:CGAffineTransformIdentity];
         
@@ -663,7 +663,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
         CGContextSaveGState(context);
 
-        if (m_shouldDrawDebugColors) {
+        if (_shouldDrawDebugColors) {
             static int sCounter = 0;
             if      (sCounter == 0) CGContextSetRGBFillColor(context, 1, 0, 0, 0.35);
             else if (sCounter == 1) CGContextSetRGBFillColor(context, 0, 1, 0, 0.35);
@@ -704,20 +704,20 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
             );
         }
 
-        CGFloat hairlineWidth     = [m_renderer hairlineWidth];
-        CGFloat fillHairlineWidth = [m_renderer fillHairlineWidth];
+        CGFloat hairlineWidth     = [_renderer hairlineWidth];
+        CGFloat fillHairlineWidth = [_renderer fillHairlineWidth];
 
         CGFloat contentsScale = [self contentsScale];
 
-        [m_renderer setHairlineWidth:(hairlineWidth * contentsScale)];
-        [m_renderer setFillHairlineWidth:(fillHairlineWidth * contentsScale)];
-        [m_renderer setScaleFactorHint:1.0];
-        [m_renderer setBaseAffineTransform:&base];
+        [_renderer setHairlineWidth:(hairlineWidth * contentsScale)];
+        [_renderer setFillHairlineWidth:(fillHairlineWidth * contentsScale)];
+        [_renderer setScaleFactorHint:1.0];
+        [_renderer setBaseAffineTransform:&base];
 
-        [m_renderer renderPlacedObjects:placedObjects inContext:context];
+        [_renderer renderPlacedObjects:placedObjects inContext:context];
 
-        [m_renderer setHairlineWidth:hairlineWidth];
-        [m_renderer setFillHairlineWidth:fillHairlineWidth];
+        [_renderer setHairlineWidth:hairlineWidth];
+        [_renderer setFillHairlineWidth:fillHairlineWidth];
         
         CGContextRestoreGState(context);
     }
@@ -734,20 +734,20 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 {
     CAAnimation *existingAnimation = nil;
 
-    if (layer != m_contentLayer) {
+    if (layer != _contentLayer) {
         if ([event hasPrefix:@"Swiff"]) {
             return (id)[NSNull null];
         }
     }
     
-    if ([m_delegate isKindOfClass:[SwiffView class]]) {
-        CALayer *master = [(SwiffView *)m_delegate layer];
+    if ([_delegate isKindOfClass:[SwiffView class]]) {
+        CALayer *master = [(SwiffView *)_delegate layer];
         
          if (!existingAnimation) existingAnimation = [master animationForKey:@"bounds"];
          if (!existingAnimation) existingAnimation = [master animationForKey:@"position"];
     }
 
-    if (existingAnimation || m_interpolateCurrentFrame) {
+    if (existingAnimation || _interpolateCurrentFrame) {
         CABasicAnimation *basicAnimation = [CABasicAnimation animationWithKeyPath:event];
 
         if (existingAnimation) {
@@ -755,7 +755,7 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
             [basicAnimation setTimingFunction:[existingAnimation timingFunction]];
 
         } else {
-            [basicAnimation setDuration:(1.0 / [m_movie frameRate])];
+            [basicAnimation setDuration:(1.0 / [_movie frameRate])];
         }
 
         return basicAnimation;
@@ -778,20 +778,20 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     }
 
     if ([playhead isPlaying]) {
-        [[SwiffSoundPlayer sharedInstance] processMovie:m_movie frame:frame];
+        [[SwiffSoundPlayer sharedInstance] processMovie:_movie frame:frame];
     }
 
-    if (frame != m_currentFrame) {
-        [m_delegate layer:self willUpdateCurrentFrame:frame];
+    if (frame != _currentFrame) {
+        [_delegate layer:self willUpdateCurrentFrame:frame];
 
-        m_interpolateCurrentFrame = [m_delegate layer:self shouldInterpolateFromFrame:m_currentFrame toFrame:frame];
+        _interpolateCurrentFrame = [_delegate layer:self shouldInterpolateFromFrame:_currentFrame toFrame:frame];
 
-        SwiffFrame *oldFrame = m_currentFrame;
-        m_currentFrame = frame;
+        SwiffFrame *oldFrame = _currentFrame;
+        _currentFrame = frame;
 
         [self _transitionToFrame:frame fromFrame:oldFrame];
 
-        [m_delegate layer:self didUpdateCurrentFrame:m_currentFrame];
+        [_delegate layer:self didUpdateCurrentFrame:_currentFrame];
     }
 }
 
@@ -801,23 +801,23 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) redisplay
 {
-    for (CALayer *layer in m_sublayers) {
+    for (CALayer *layer in _sublayers) {
         [layer removeFromSuperlayer];
     };
     
-    m_sublayers = nil;
-    m_sublayerCount = 0;
+    _sublayers = nil;
+    _sublayerCount = 0;
 
-    [self _transitionToFrame:m_currentFrame fromFrame:nil];
-    [m_contentLayer setNeedsDisplay];
+    [self _transitionToFrame:_currentFrame fromFrame:nil];
+    [_contentLayer setNeedsDisplay];
 }
 
 
 - (void) _setNeedsRedisplay
 {
-    [m_contentLayer setNeedsDisplay];
+    [_contentLayer setNeedsDisplay];
 
-    for (CALayer *layer in m_sublayers) {
+    for (CALayer *layer in _sublayers) {
         [layer setNeedsDisplay];
     };
 }
@@ -828,15 +828,15 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setSwiffLayerDelegate:(id<SwiffLayerDelegate>)delegate
 {
-    if (m_delegate != delegate) {
-        m_delegate = delegate;
+    if (_delegate != delegate) {
+        _delegate = delegate;
     }
 }
 
 
 - (void) setDrawsBackground:(BOOL)drawsBackground
 {
-    if (m_drawsBackground != drawsBackground) {
+    if (_drawsBackground != drawsBackground) {
         if (drawsBackground) {
             SwiffColor *backgroundColorPointer = [[self movie] backgroundColorPointer];
 
@@ -852,14 +852,14 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
             [self setBackgroundColor:NULL];
         }
 
-        m_drawsBackground = drawsBackground;
+        _drawsBackground = drawsBackground;
     }
 }
 
 
 - (void) setMultiplyColor:(SwiffColor *)color
 {
-    [m_renderer setMultiplyColor:color];
+    [_renderer setMultiplyColor:color];
     [self _setNeedsRedisplay];
 }
 
@@ -867,8 +867,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setHairlineWidth:(CGFloat)width
 {
-    if (width != [m_renderer hairlineWidth]) {
-        [m_renderer setHairlineWidth:width];
+    if (width != [_renderer hairlineWidth]) {
+        [_renderer setHairlineWidth:width];
         [self _setNeedsRedisplay];
     }
 }
@@ -876,8 +876,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setFillHairlineWidth:(CGFloat)width
 {
-    if (width != [m_renderer fillHairlineWidth]) {
-        [m_renderer setFillHairlineWidth:width];
+    if (width != [_renderer fillHairlineWidth]) {
+        [_renderer setFillHairlineWidth:width];
         [self _setNeedsRedisplay];
     }
 }
@@ -885,8 +885,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setShouldAntialias:(BOOL)yn
 {
-    if (yn != [m_renderer shouldAntialias]) {
-        [m_renderer setShouldAntialias:yn];
+    if (yn != [_renderer shouldAntialias]) {
+        [_renderer setShouldAntialias:yn];
         [self _setNeedsRedisplay];
     }
 }
@@ -894,8 +894,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setShouldSmoothFonts:(BOOL)yn
 {
-    if (yn != [m_renderer shouldSmoothFonts]) {
-        [m_renderer setShouldSmoothFonts:yn];
+    if (yn != [_renderer shouldSmoothFonts]) {
+        [_renderer setShouldSmoothFonts:yn];
         [self _setNeedsRedisplay];
     }
 }
@@ -903,8 +903,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setShouldSubpixelPositionFonts:(BOOL)yn
 {
-    if (yn != [m_renderer shouldSubpixelPositionFonts]) {
-        [m_renderer setShouldSubpixelPositionFonts:yn];
+    if (yn != [_renderer shouldSubpixelPositionFonts]) {
+        [_renderer setShouldSubpixelPositionFonts:yn];
         [self _setNeedsRedisplay];
     }
 }
@@ -912,8 +912,8 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setShouldSubpixelQuantizeFonts:(BOOL)yn
 {
-    if (yn != [m_renderer shouldSubpixelQuantizeFonts]) {
-        [m_renderer setShouldSubpixelQuantizeFonts:yn];
+    if (yn != [_renderer shouldSubpixelQuantizeFonts]) {
+        [_renderer setShouldSubpixelQuantizeFonts:yn];
         [self _setNeedsRedisplay];
     }
 }
@@ -921,19 +921,19 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
 - (void) setShouldFlattenSublayers:(BOOL)shouldFlattenSublayers
 {
-    if (shouldFlattenSublayers != m_shouldFlattenSublayers) {
-        m_shouldFlattenSublayers  = shouldFlattenSublayers;
+    if (shouldFlattenSublayers != _shouldFlattenSublayers) {
+        _shouldFlattenSublayers  = shouldFlattenSublayers;
         [self _setNeedsRedisplay];
     }
 }
 
 
-- (SwiffColor *) multiplyColor          { return [m_renderer multiplyColor];               }
-- (CGFloat) hairlineWidth               { return [m_renderer hairlineWidth];               }
-- (CGFloat) fillHairlineWidth           { return [m_renderer fillHairlineWidth];           }
-- (BOOL)    shouldAntialias             { return [m_renderer shouldAntialias];             }
-- (BOOL)    shouldSmoothFonts           { return [m_renderer shouldSmoothFonts];           }
-- (BOOL)    shouldSubpixelPositionFonts { return [m_renderer shouldSubpixelPositionFonts]; }
-- (BOOL)    shouldSubpixelQuantizeFonts { return [m_renderer shouldSubpixelQuantizeFonts]; }
+- (SwiffColor *) multiplyColor          { return [_renderer multiplyColor];               }
+- (CGFloat) hairlineWidth               { return [_renderer hairlineWidth];               }
+- (CGFloat) fillHairlineWidth           { return [_renderer fillHairlineWidth];           }
+- (BOOL)    shouldAntialias             { return [_renderer shouldAntialias];             }
+- (BOOL)    shouldSmoothFonts           { return [_renderer shouldSmoothFonts];           }
+- (BOOL)    shouldSubpixelPositionFonts { return [_renderer shouldSubpixelPositionFonts]; }
+- (BOOL)    shouldSubpixelQuantizeFonts { return [_renderer shouldSubpixelQuantizeFonts]; }
 
 @end

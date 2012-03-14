@@ -32,17 +32,17 @@
 
 @implementation SwiffStaticTextRecord
 
-@synthesize hasFont           = m_hasFont,
-            fontID            = m_fontID,
-            textHeight        = m_textHeight,
-            hasColor          = m_hasColor,
-            color             = m_color,
-            hasXOffset        = m_hasXOffset,
-            xOffset           = m_xOffset,
-            hasYOffset        = m_hasYOffset,
-            yOffset           = m_yOffset,
-            glyphEntriesCount = m_glyphEntriesCount,
-            glyphEntries      = m_glyphEntries;
+@synthesize hasFont           = _hasFont,
+            fontID            = _fontID,
+            textHeight        = _textHeight,
+            hasColor          = _hasColor,
+            color             = _color,
+            hasXOffset        = _hasXOffset,
+            xOffset           = _xOffset,
+            hasYOffset        = _hasYOffset,
+            yOffset           = _yOffset,
+            glyphEntriesCount = _glyphEntriesCount,
+            glyphEntries      = _glyphEntries;
 
 
 + (NSArray *) textRecordArrayWithParser:(SwiffParser *)parser glyphBits:(UInt8)glyphBits advanceBits:(UInt8)advanceBits
@@ -73,57 +73,57 @@
         SwiffParserReadUBits(parser, 1, &hasXOffset);
         
         if (textRecordType == 1) {
-            m_hasFont  = hasFont;
-            m_hasColor = hasColor;
+            _hasFont  = hasFont;
+            _hasColor = hasColor;
             
             if (hasFont) {
                 UInt16 fontID;
                 SwiffParserReadUInt16(parser, &fontID);
-                m_fontID = fontID;
+                _fontID = fontID;
             }
 
             if (hasColor) {
                 if (SwiffParserGetCurrentTagVersion(parser) >= 2) {
-                    SwiffParserReadColorRGBA(parser, &m_color);
+                    SwiffParserReadColorRGBA(parser, &_color);
                 } else {
-                    SwiffParserReadColorRGB(parser, &m_color);
+                    SwiffParserReadColorRGB(parser, &_color);
                 }
             }
             
             if (hasXOffset) {
                 SInt16 x = 0;
                 SwiffParserReadSInt16(parser, &x);
-                m_xOffset = SwiffGetCGFloatFromTwips(x);
-                m_hasXOffset = YES;
+                _xOffset = SwiffGetCGFloatFromTwips(x);
+                _hasXOffset = YES;
             }
 
             if (hasYOffset) {
                 SInt16 y = 0;
                 SwiffParserReadSInt16(parser, &y);
-                m_yOffset = SwiffGetCGFloatFromTwips(y);
-                m_hasYOffset = YES;
+                _yOffset = SwiffGetCGFloatFromTwips(y);
+                _hasYOffset = YES;
             }
             
             if (hasFont) {
                 UInt16 height;
                 SwiffParserReadUInt16(parser, &height);
-                m_textHeight = SwiffGetCGFloatFromTwips(height);
+                _textHeight = SwiffGetCGFloatFromTwips(height);
             }
             
             UInt8 glyphCount;
             SwiffParserReadUInt8(parser, &glyphCount);
-            m_glyphEntriesCount = glyphCount;
-            m_glyphEntries = calloc(glyphCount, sizeof(SwiffStaticTextRecordGlyphEntry));
+            _glyphEntriesCount = glyphCount;
+            _glyphEntries = calloc(glyphCount, sizeof(SwiffStaticTextRecordGlyphEntry));
 
-            for (UInt8 i = 0; i < m_glyphEntriesCount; i++) {
+            for (UInt8 i = 0; i < _glyphEntriesCount; i++) {
                 UInt32 glyphIndex   = 0;
                 SInt32 glyphAdvance = 0;
 
                 SwiffParserReadUBits(parser, glyphBits,   &glyphIndex);
                 SwiffParserReadSBits(parser, advanceBits, &glyphAdvance);
                 
-                m_glyphEntries[i].index   = glyphIndex;
-                m_glyphEntries[i].advance = SwiffGetCGFloatFromTwips(glyphAdvance);
+                _glyphEntries[i].index   = glyphIndex;
+                _glyphEntries[i].advance = SwiffGetCGFloatFromTwips(glyphAdvance);
             }
             
         } else {
@@ -141,8 +141,8 @@
 
 - (void) dealloc
 {
-    free(m_glyphEntries);
-    m_glyphEntries = NULL;
+    free(_glyphEntries);
+    _glyphEntries = NULL;
 }
 
 
@@ -151,7 +151,7 @@
 
 - (SwiffColor *) colorPointer
 {
-    return &m_color;
+    return &_color;
 }
 
 

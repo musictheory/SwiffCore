@@ -29,18 +29,18 @@
 
 
 @implementation SwiffSoundEvent {
-    SwiffSoundEnvelope   *m_envelopes;
+    SwiffSoundEnvelope   *_envelopes;
 }
 
-@synthesize libraryID      = m_libraryID,
-            className      = m_className,
-            definition     = m_definition,
-            inPoint        = m_inPoint,
-            outPoint       = m_outPoint,
-            loopCount      = m_loopCount,
-            envelopeCount  = m_envelopeCount,
-            shouldStop     = m_shouldStop,
-            allowsMultiple = m_allowsMultiple;
+@synthesize libraryID      = _libraryID,
+            className      = _className,
+            definition     = _definition,
+            inPoint        = _inPoint,
+            outPoint       = _outPoint,
+            loopCount      = _loopCount,
+            envelopeCount  = _envelopeCount,
+            shouldStop     = _shouldStop,
+            allowsMultiple = _allowsMultiple;
 
 
 - (id) initWithParser:(SwiffParser *)parser
@@ -61,7 +61,7 @@
     } else if (tag == SwiffTagDefineButtonSound) {
         SwiffParserReadUInt16(parser, &libraryID);
 
-        if (m_libraryID == 0) {
+        if (_libraryID == 0) {
             return nil;
         }
     }
@@ -77,27 +77,27 @@
         SwiffParserReadUBits(parser, 1, &hasOutPoint);
         SwiffParserReadUBits(parser, 1, &hasInPoint);
 
-        m_libraryID      = libraryID;
-        m_className      = className;
-        m_shouldStop     = syncStop;
-        m_allowsMultiple = !syncNoMultiple;
+        _libraryID      = libraryID;
+        _className      = className;
+        _shouldStop     = syncStop;
+        _allowsMultiple = !syncNoMultiple;
 
         if (hasInPoint) {
             UInt32 inPoint;
             SwiffParserReadUInt32(parser, &inPoint);
-            m_inPoint = inPoint;
+            _inPoint = inPoint;
         }
         
         if (hasOutPoint) {
             UInt32 outPoint;
             SwiffParserReadUInt32(parser, &outPoint);
-            m_outPoint = outPoint;
+            _outPoint = outPoint;
         }
         
         if (hasLoops) {
             UInt16 loops;
             SwiffParserReadUInt16(parser, &loops);
-            m_loopCount = loops;
+            _loopCount = loops;
         }
 
         if (hasEnvelope) {
@@ -105,7 +105,7 @@
             SwiffParserReadUInt8(parser, &envPoints);
             
             if (envPoints) {
-                m_envelopeCount = envPoints;
+                _envelopeCount = envPoints;
                 SwiffSoundEnvelope *envelopes = (SwiffSoundEnvelope *)malloc(sizeof(SwiffSoundEnvelope) * envPoints);
                 
                 for (UInt8 i = 0; i < envPoints; i++) {
@@ -122,7 +122,7 @@
                     envelopes[i].rightLevel = rightLevel / 32768.0;
                 }
 
-                m_envelopes = envelopes;
+                _envelopes = envelopes;
             }
         }
     }
@@ -133,14 +133,14 @@
 
 - (void) dealloc
 {
-    free(m_envelopes);
-    m_envelopes = NULL;
+    free(_envelopes);
+    _envelopes = NULL;
 }
 
 
 - (SwiffSoundEnvelope) envelopeAtIndex:(NSInteger)index
 {
-    return m_envelopes[index];
+    return _envelopes[index];
 }
 
 
@@ -148,24 +148,24 @@
 {
     float leftLevel  = 1.0;
     float rightLevel = 1.0;
-    NSInteger last = m_envelopeCount - 1;
+    NSInteger last = _envelopeCount - 1;
 
-    if (m_envelopeCount == 0) {
+    if (_envelopeCount == 0) {
         leftLevel  = 1.0;
         rightLevel = 1.0;
 
-    } else if (m_envelopeCount == 1 || (position <= m_envelopes[0].position)) {
-        leftLevel  = m_envelopes[0].leftLevel;
-        rightLevel = m_envelopes[0].rightLevel;
+    } else if (_envelopeCount == 1 || (position <= _envelopes[0].position)) {
+        leftLevel  = _envelopes[0].leftLevel;
+        rightLevel = _envelopes[0].rightLevel;
 
-    } else if (position >= m_envelopes[last].position) {
-        leftLevel  = m_envelopes[last].leftLevel;
-        rightLevel = m_envelopes[last].rightLevel;
+    } else if (position >= _envelopes[last].position) {
+        leftLevel  = _envelopes[last].leftLevel;
+        rightLevel = _envelopes[last].rightLevel;
         
     } else {
         for (NSUInteger i = 1; i <= last; i++) {
-            SwiffSoundEnvelope start = m_envelopes[i - 1];
-            SwiffSoundEnvelope end   = m_envelopes[i];
+            SwiffSoundEnvelope start = _envelopes[i - 1];
+            SwiffSoundEnvelope end   = _envelopes[i];
             
             if ((position > start.position) && (position <= end.position)) {
                 CGFloat value = (position - start.position) / ((end.position - start.position) * 1.0);

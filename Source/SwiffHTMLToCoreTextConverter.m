@@ -50,15 +50,15 @@ typedef NSInteger SwiffHTMLToCoreTextConverterTag;
 
 
 @implementation SwiffHTMLToCoreTextConverter {
-    SwiffDynamicTextAttributes *m_attributes;
+    SwiffDynamicTextAttributes *_attributes;
 
-    NSMutableString *m_characters;
-    NSInteger        m_boldCount;
-    NSInteger        m_italicCount;
-    NSInteger        m_underlineCount;
-    BOOL             m_needsParagraphBreak;
+    NSMutableString *_characters;
+    NSInteger        _boldCount;
+    NSInteger        _italicCount;
+    NSInteger        _underlineCount;
+    BOOL             _needsParagraphBreak;
 
-    CFMutableAttributedStringRef m_output;
+    CFMutableAttributedStringRef _output;
 }
 
 
@@ -80,25 +80,25 @@ typedef NSInteger SwiffHTMLToCoreTextConverterTag;
 
 - (void) _flush
 {
-    if ([m_characters length]) {
-        [m_attributes setBold:      (m_boldCount      > 0)];
-        [m_attributes setItalic:    (m_italicCount    > 0)];
-        [m_attributes setUnderline: (m_underlineCount > 0)];
+    if ([_characters length]) {
+        [_attributes setBold:      (_boldCount      > 0)];
+        [_attributes setItalic:    (_italicCount    > 0)];
+        [_attributes setUnderline: (_underlineCount > 0)];
 
-        NSDictionary *coreTextAttributes = [m_attributes copyCoreTextAttributes];
+        NSDictionary *coreTextAttributes = [_attributes copyCoreTextAttributes];
        
-        CFAttributedStringRef replacement = CFAttributedStringCreate(NULL, (__bridge CFStringRef)m_characters, (__bridge CFDictionaryRef)coreTextAttributes); 
-        CFAttributedStringReplaceAttributedString(m_output, CFRangeMake(CFAttributedStringGetLength(m_output), 0), replacement);
+        CFAttributedStringRef replacement = CFAttributedStringCreate(NULL, (__bridge CFStringRef)_characters, (__bridge CFDictionaryRef)coreTextAttributes); 
+        CFAttributedStringReplaceAttributedString(_output, CFRangeMake(CFAttributedStringGetLength(_output), 0), replacement);
         CFRelease(replacement);
         
-        m_characters = [[NSMutableString alloc] init];
+        _characters = [[NSMutableString alloc] init];
     }
 }
 
 
 - (void) _cloneAttributes
 {
-    m_attributes = [m_attributes copy];
+    _attributes = [_attributes copy];
 }
 
 
@@ -125,7 +125,7 @@ static SwiffHTMLToCoreTextConverterTag sGetTagForString(const xmlChar *inString)
 
 static void sStartFontElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr element)
 {
-    SwiffDynamicTextAttributes *attributes = self->m_attributes;
+    SwiffDynamicTextAttributes *attributes = self->_attributes;
 
     // Handle "face" attribute
     {
@@ -200,7 +200,7 @@ static void sStartFontElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr 
 
 static void sStartParagraphElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr element)
 {
-    SwiffDynamicTextAttributes *attributes = self->m_attributes;
+    SwiffDynamicTextAttributes *attributes = self->_attributes;
 
     char *alignCString  = (char *)xmlGetProp((xmlNodePtr)element, (xmlChar *)"align");
 
@@ -220,7 +220,7 @@ static void sStartParagraphElement(SwiffHTMLToCoreTextConverter *self, xmlElemen
 
 static void sStartTextFormatElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr element)
 {
-    SwiffDynamicTextAttributes *attributes = self->m_attributes;
+    SwiffDynamicTextAttributes *attributes = self->_attributes;
 
     char *leftMarginCString  = (char *)xmlGetProp((xmlNodePtr)element, (xmlChar *)"leftmargin");
     char *rightMarginCString = (char *)xmlGetProp((xmlNodePtr)element, (xmlChar *)"rightmargin");
@@ -272,10 +272,10 @@ static void sStartElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr elem
         //!issue5: Dynamic Text HTML <a> support
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_B) {
-        [self _flush];  self->m_boldCount++;
+        [self _flush];  self->_boldCount++;
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_BR) {
-        [self->m_characters appendString:@"\n"];
+        [self->_characters appendString:@"\n"];
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_FONT) {
         [self _flush];
@@ -283,15 +283,15 @@ static void sStartElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr elem
         sStartFontElement(self, element);
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_I) {
-        [self _flush];  self->m_italicCount++;
+        [self _flush];  self->_italicCount++;
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_LI) {
-        [self->m_characters appendFormat:@"%C ", 0x2022];
+        [self->_characters appendFormat:@"%C ", 0x2022];
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_P) {
-        if (self->m_needsParagraphBreak) {
-            [self->m_characters appendString:@"\n"];
-            self->m_needsParagraphBreak = NO;
+        if (self->_needsParagraphBreak) {
+            [self->_characters appendString:@"\n"];
+            self->_needsParagraphBreak = NO;
         }
 
         [self _flush];
@@ -299,7 +299,7 @@ static void sStartElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr elem
         sStartParagraphElement(self, element);
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_TAB) {
-        [self->m_characters appendString:@"\t"];
+        [self->_characters appendString:@"\t"];
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_TEXTFORMAT) {
         [self _flush];
@@ -307,7 +307,7 @@ static void sStartElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr elem
         sStartTextFormatElement(self, element);
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_U) {
-        [self _flush];  self->m_underlineCount++;
+        [self _flush];  self->_underlineCount++;
     }
 }
 
@@ -318,33 +318,33 @@ static void sEndElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr elemen
         //!issue5: Dynamic Text HTML <a> support
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_B) {
-        self->m_boldCount--;  [self _flush];
+        self->_boldCount--;  [self _flush];
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_FONT) {
         [self _flush];
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_I) {
-        self->m_italicCount--;  [self _flush];
+        self->_italicCount--;  [self _flush];
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_LI) {
-        [self->m_characters appendString:@"\n"];
+        [self->_characters appendString:@"\n"];
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_P) {
-        self->m_needsParagraphBreak = YES;
+        self->_needsParagraphBreak = YES;
         [self _flush];
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_TEXTFORMAT) {
         [self _flush];
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_U) {
-        self->m_underlineCount--;  [self _flush];
+        self->_underlineCount--;  [self _flush];
     }
 }
 
 
 static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
 {
-    SwiffDynamicTextAttributes *savedAttributes = self->m_attributes;
+    SwiffDynamicTextAttributes *savedAttributes = self->_attributes;
     
     xmlElementType type    = node->type;
     xmlElementPtr  element = (type == XML_ELEMENT_NODE) ? (xmlElementPtr)node : NULL;
@@ -367,7 +367,7 @@ static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
             size_t length = strlen((const char *)content);
 
             NSString *string = [[NSString alloc] initWithBytesNoCopy:(void *)content length:length encoding:NSUTF8StringEncoding freeWhenDone:YES];
-            [self->m_characters appendString:string];
+            [self->_characters appendString:string];
         }
     }
 
@@ -376,7 +376,7 @@ static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
     }
 
     // Restore parser state from stack
-    self->m_attributes = savedAttributes;
+    self->_attributes = savedAttributes;
 }
 
 
@@ -395,16 +395,16 @@ static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
     
     htmlDocPtr htmlDoc = htmlReadMemory((const char *)buffer, length, NULL, "UTF-8", 0);
    
-    m_characters     = [[NSMutableString alloc] init];
-    m_output         = CFAttributedStringCreateMutable(NULL, 0);
-    m_attributes     = baseAttributes;
-    m_boldCount      = [baseAttributes isBold]      ? 1 : 0;
-    m_italicCount    = [baseAttributes isItalic]    ? 1 : 0;
-    m_underlineCount = [baseAttributes isUnderline] ? 1 : 0;
-    m_needsParagraphBreak = NO;
+    _characters     = [[NSMutableString alloc] init];
+    _output         = CFAttributedStringCreateMutable(NULL, 0);
+    _attributes     = baseAttributes;
+    _boldCount      = [baseAttributes isBold]      ? 1 : 0;
+    _italicCount    = [baseAttributes isItalic]    ? 1 : 0;
+    _underlineCount = [baseAttributes isUnderline] ? 1 : 0;
+    _needsParagraphBreak = NO;
 
-    if (!m_attributes) {
-        m_attributes = [[SwiffDynamicTextAttributes alloc] init];
+    if (!_attributes) {
+        _attributes = [[SwiffDynamicTextAttributes alloc] init];
     }
 
     if (htmlDoc) {
@@ -414,11 +414,11 @@ static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
         [self _flush];
     }
 
-    CFAttributedStringRef output = m_output;
-    m_output = NULL;
+    CFAttributedStringRef output = _output;
+    _output = NULL;
 
-    m_attributes = nil;
-    m_characters = nil;
+    _attributes = nil;
+    _characters = nil;
     
     free(buffer);
     

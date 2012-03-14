@@ -33,10 +33,10 @@
 
 @interface SwiffPlacedObject : NSObject {
 @package
-    UInt16             m_libraryID;
-    UInt16             m_depth;
-    CGAffineTransform  m_affineTransform;
-    void              *m_additional;      // Keep less commonly used ivars here
+    UInt16             _libraryID;
+    UInt16             _depth;
+    CGAffineTransform  _affineTransform;
+    void              *_additional;      // Keep less commonly used ivars here
 }
 
 - (id) initWithPlacedObject:(SwiffPlacedObject *)placedObject;

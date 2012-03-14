@@ -81,21 +81,21 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
  
 
 @implementation SwiffShapeDefinition {
-    CFArrayRef  m_groups;
-    NSArray    *m_fillStyles;
-    NSArray    *m_lineStyles;
-    NSArray    *m_paths;
+    CFArrayRef  _groups;
+    NSArray    *_fillStyles;
+    NSArray    *_lineStyles;
+    NSArray    *_paths;
 }
 
-@synthesize movie                 = m_movie,
-            libraryID             = m_libraryID,
-            bounds                = m_bounds,
-            renderBounds          = m_renderBounds,
-            edgeBounds            = m_edgeBounds,
-            usesFillWindingRule   = m_usesFillWindingRule,
-            usesNonScalingStrokes = m_usesNonScalingStrokes,
-            usesScalingStrokes    = m_usesScalingStrokes,
-            hasEdgeBounds         = m_hasEdgeBounds;
+@synthesize movie                 = _movie,
+            libraryID             = _libraryID,
+            bounds                = _bounds,
+            renderBounds          = _renderBounds,
+            edgeBounds            = _edgeBounds,
+            usesFillWindingRule   = _usesFillWindingRule,
+            usesNonScalingStrokes = _usesNonScalingStrokes,
+            usesScalingStrokes    = _usesScalingStrokes,
+            hasEdgeBounds         = _hasEdgeBounds;
 
 
 #pragma mark -
@@ -106,21 +106,21 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
     if ((self = [super init])) {
         SwiffParserByteAlign(parser);
 
-        m_movie = movie;
+        _movie = movie;
 
         SwiffTag  tag     = SwiffParserGetCurrentTag(parser);
         NSInteger version = SwiffParserGetCurrentTagVersion(parser);
 
         if (tag == SwiffTagDefineShape) {
-            SwiffParserReadUInt16(parser, &m_libraryID);
+            SwiffParserReadUInt16(parser, &_libraryID);
 
-            SwiffLog(@"Shape", @"DEFINESHAPE defines id %ld", (long)m_libraryID);
+            SwiffLog(@"Shape", @"DEFINESHAPE defines id %ld", (long)_libraryID);
             
-            SwiffParserReadRect(parser, &m_bounds);
+            SwiffParserReadRect(parser, &_bounds);
 
             if (version > 3) {
-                m_hasEdgeBounds = YES;
-                SwiffParserReadRect(parser, &m_edgeBounds);
+                _hasEdgeBounds = YES;
+                SwiffParserReadRect(parser, &_edgeBounds);
                 
                 UInt32 reserved, usesFillWindingRule, usesNonScalingStrokes, usesScalingStrokes;
                 SwiffParserReadUBits(parser, 5, &reserved);
@@ -128,9 +128,9 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
                 SwiffParserReadUBits(parser, 1, &usesNonScalingStrokes);
                 SwiffParserReadUBits(parser, 1, &usesScalingStrokes);
 
-                m_usesFillWindingRule   = usesFillWindingRule;
-                m_usesNonScalingStrokes = usesNonScalingStrokes;
-                m_usesScalingStrokes    = usesScalingStrokes;
+                _usesFillWindingRule   = usesFillWindingRule;
+                _usesNonScalingStrokes = usesNonScalingStrokes;
+                _usesScalingStrokes    = usesScalingStrokes;
             }
         }
 
@@ -152,13 +152,13 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
 
         CFMutableArrayRef groups = CFArrayCreateMutable(NULL, 0, NULL);
 
-        m_fillStyles = fillStyles;
-        m_lineStyles = lineStyles;
-        m_groups     = groups;
+        _fillStyles = fillStyles;
+        _lineStyles = lineStyles;
+        _groups     = groups;
         
         void (^readStyles)() = ^{
-            fillStyleOffset = [m_fillStyles count];
-            lineStyleOffset = [m_lineStyles count];
+            fillStyleOffset = [_fillStyles count];
+            lineStyleOffset = [_lineStyles count];
 
             NSArray *moreFillStyles = [SwiffFillStyle fillStyleArrayWithParser:parser];
             NSArray *moreLineStyles = [SwiffLineStyle lineStyleArrayWithParser:parser];
@@ -352,7 +352,7 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
         }
         
         CGFloat padding = SwiffCeil(maxWidth / 2.0) + 1;
-        m_renderBounds = CGRectInset(m_bounds, -padding, -padding);
+        _renderBounds = CGRectInset(_bounds, -padding, -padding);
     }
 
     return self;
@@ -361,21 +361,21 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
 
 - (void) dealloc
 {
-    if (m_groups) {
-        CFIndex length = CFArrayGetCount(m_groups);
+    if (_groups) {
+        CFIndex length = CFArrayGetCount(_groups);
         for (CFIndex i = 0; i < length; i++) {
-            free((void *)CFArrayGetValueAtIndex(m_groups, i));
+            free((void *)CFArrayGetValueAtIndex(_groups, i));
         }
 
-        CFRelease(m_groups);
-        m_groups = NULL;
+        CFRelease(_groups);
+        _groups = NULL;
     }
 }
 
 
 - (void) clearWeakReferences
 {
-    m_movie = nil;
+    _movie = nil;
 }
 
 
@@ -387,7 +387,7 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
     UInt16 index;
     NSMutableArray *result = [NSMutableArray array];
 
-    NSUInteger lineStyleCount = [m_lineStyles count];
+    NSUInteger lineStyleCount = [_lineStyles count];
 
     for (index = 1; index <= lineStyleCount; index++) {
         SwiffShapeOperation *operation = inOperations;
@@ -404,7 +404,7 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
             if (lineStyleIndex == index) {
                 if (!isDuplicate) { 
                     if (!path) {
-                        SwiffLineStyle *lineStyle = [m_lineStyles objectAtIndex:(index - 1)];
+                        SwiffLineStyle *lineStyle = [_lineStyles objectAtIndex:(index - 1)];
                         path = [[SwiffPath alloc] initWithLineStyle:lineStyle fillStyle:nil];
                     }
 
@@ -530,7 +530,7 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
         
         jCount = CFArrayGetCount(sortedOperations);
         if (jCount > 0) {
-            SwiffFillStyle *fillStyle = [m_fillStyles objectAtIndex:(fillStyleIndex - 1)];
+            SwiffFillStyle *fillStyle = [_fillStyles objectAtIndex:(fillStyleIndex - 1)];
             
             if (fillStyle) {
                 SwiffPath *path = [[SwiffPath alloc] initWithLineStyle:nil fillStyle:fillStyle];
@@ -564,9 +564,9 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
     @autoreleasepool {
         NSMutableArray *result = [[NSMutableArray alloc] init];
 
-        CFIndex length = CFArrayGetCount(m_groups);
+        CFIndex length = CFArrayGetCount(_groups);
         for (CFIndex i = 0; i < length; i++) {
-            SwiffShapeOperation *operations = (SwiffShapeOperation *)CFArrayGetValueAtIndex(m_groups, i);
+            SwiffShapeOperation *operations = (SwiffShapeOperation *)CFArrayGetValueAtIndex(_groups, i);
            
             [result addObjectsFromArray:[self _fillPathsForOperations:operations]];
             [result addObjectsFromArray:[self _linePathsForOperations:operations]];
@@ -574,10 +574,10 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
             free(operations);
         }
         
-        CFRelease(m_groups);
-        m_groups = NULL;
+        CFRelease(_groups);
+        _groups = NULL;
 
-        m_paths = result;
+        _paths = result;
     }
 }
 
@@ -587,11 +587,11 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
 
 - (NSArray *) paths
 {
-    if (!m_paths && m_groups) {
+    if (!_paths && _groups) {
         [self _makePaths];
     }
 
-    return m_paths;
+    return _paths;
 }
 
 @end

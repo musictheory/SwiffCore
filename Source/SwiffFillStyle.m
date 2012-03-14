@@ -29,22 +29,22 @@
 #import "SwiffParser.h"
 #import "SwiffGradient.h"
 
-#define IS_COLOR_TYPE    (m_type == SwiffFillStyleTypeColor)
+#define IS_COLOR_TYPE    (_type == SwiffFillStyleTypeColor)
 
-#define IS_GRADIENT_TYPE ((m_type == SwiffFillStyleTypeLinearGradient) || \
-                          (m_type == SwiffFillStyleTypeRadialGradient) || \
-                          (m_type == SwiffFillStyleTypeFocalRadialGradient))
+#define IS_GRADIENT_TYPE ((_type == SwiffFillStyleTypeLinearGradient) || \
+                          (_type == SwiffFillStyleTypeRadialGradient) || \
+                          (_type == SwiffFillStyleTypeFocalRadialGradient))
 
-#define IS_BITMAP_TYPE   ((m_type >= SwiffFillStyleTypeRepeatingBitmap) && (m_type <= SwiffFillStyleTypeNonSmoothedClippedBitmap))
+#define IS_BITMAP_TYPE   ((_type >= SwiffFillStyleTypeRepeatingBitmap) && (_type <= SwiffFillStyleTypeNonSmoothedClippedBitmap))
 
 @implementation SwiffFillStyle {
-    CGAffineTransform  m_transform;
+    CGAffineTransform  _transform;
 }
 
-@synthesize type     = m_type,
-            color    = m_color,
-            gradient = m_gradient,
-            bitmapID = m_bitmapID;
+@synthesize type     = _type,
+            color    = _color,
+            gradient = _gradient,
+            bitmapID = _bitmapID;
 
 
 + (NSArray *) fillStyleArrayWithParser:(SwiffParser *)parser
@@ -81,30 +81,30 @@
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [self init])) {
-        SwiffParserReadUInt8(parser, &m_type);
+        SwiffParserReadUInt8(parser, &_type);
 
         if (IS_COLOR_TYPE) {
             SwiffTag  tag     = SwiffParserGetCurrentTag(parser);
             NSInteger version = SwiffParserGetCurrentTagVersion(parser);
         
             if ((tag == SwiffTagDefineShape) && (version >= 3)) {
-                SwiffParserReadColorRGBA(parser, &m_color);
+                SwiffParserReadColorRGBA(parser, &_color);
             } else {
-                SwiffParserReadColorRGB(parser, &m_color);
+                SwiffParserReadColorRGB(parser, &_color);
             }
 
         } else if (IS_GRADIENT_TYPE) {
-            SwiffParserReadMatrix(parser, &m_transform);
-            BOOL isFocalGradient = (m_type == SwiffFillStyleTypeFocalRadialGradient);
+            SwiffParserReadMatrix(parser, &_transform);
+            BOOL isFocalGradient = (_type == SwiffFillStyleTypeFocalRadialGradient);
 
-            m_gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:isFocalGradient];
+            _gradient = [[SwiffGradient alloc] initWithParser:parser isFocalGradient:isFocalGradient];
 
         } else if (IS_BITMAP_TYPE) {
-            SwiffParserReadUInt16(parser, &m_bitmapID);
-            SwiffParserReadMatrix(parser, &m_transform);
+            SwiffParserReadUInt16(parser, &_bitmapID);
+            SwiffParserReadMatrix(parser, &_transform);
 
-            m_transform.a /= 20.0;
-            m_transform.d /= 20.0;
+            _transform.a /= 20.0;
+            _transform.d /= 20.0;
 
         } else {
             return nil;
@@ -123,28 +123,28 @@
 {
     NSString *typeString = nil;
 
-    if (m_type == SwiffFillStyleTypeColor) {
+    if (_type == SwiffFillStyleTypeColor) {
 
         typeString = [NSString stringWithFormat:@"#%02lX%02lX%02lX, %ld%%",
-            (long)(m_color.red   * 255.0),
-            (long)(m_color.green * 255.0),
-            (long)(m_color.blue  * 255.0),
-            (long)(m_color.alpha * 100.0)
+            (long)(_color.red   * 255.0),
+            (long)(_color.green * 255.0),
+            (long)(_color.blue  * 255.0),
+            (long)(_color.alpha * 100.0)
         ];
 
-    } else if (m_type == SwiffFillStyleTypeLinearGradient) {
+    } else if (_type == SwiffFillStyleTypeLinearGradient) {
         typeString = @"LinearGradient";
-    } else if (m_type == SwiffFillStyleTypeRadialGradient) {
+    } else if (_type == SwiffFillStyleTypeRadialGradient) {
         typeString = @"RadialGradient";
-    } else if (m_type == SwiffFillStyleTypeFocalRadialGradient) {
+    } else if (_type == SwiffFillStyleTypeFocalRadialGradient) {
         typeString = @"FocalRadialGradient";
-    } else if (m_type == SwiffFillStyleTypeRepeatingBitmap) {
+    } else if (_type == SwiffFillStyleTypeRepeatingBitmap) {
         typeString = @"RepeatingBitmap";
-    } else if (m_type == SwiffFillStyleTypeClippedBitmap) {
+    } else if (_type == SwiffFillStyleTypeClippedBitmap) {
         typeString = @"ClippedBitmap";
-    } else if (m_type == SwiffFillStyleTypeNonSmoothedRepeatingBitmap) {
+    } else if (_type == SwiffFillStyleTypeNonSmoothedRepeatingBitmap) {
         typeString = @"NonSmoothedRepeatingBitmap";
-    } else if (m_type == SwiffFillStyleTypeNonSmoothedClippedBitmap) {
+    } else if (_type == SwiffFillStyleTypeNonSmoothedClippedBitmap) {
         typeString = @"NonSmoothedClippedBitmap";
     }
 
@@ -157,19 +157,19 @@
 
 - (SwiffColor *) colorPointer
 {
-    return IS_COLOR_TYPE ? &m_color : NULL;
+    return IS_COLOR_TYPE ? &_color : NULL;
 }
 
 
 - (CGAffineTransform) gradientTransform
 {
-    return IS_GRADIENT_TYPE ? m_transform : CGAffineTransformIdentity;
+    return IS_GRADIENT_TYPE ? _transform : CGAffineTransformIdentity;
 }
 
 
 - (CGAffineTransform) bitmapTransform
 {
-    return IS_BITMAP_TYPE ? m_transform : CGAffineTransformIdentity;
+    return IS_BITMAP_TYPE ? _transform : CGAffineTransformIdentity;
 }
 
 @end

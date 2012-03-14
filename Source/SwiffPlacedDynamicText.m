@@ -35,12 +35,12 @@
 
 
 @implementation SwiffPlacedDynamicText {
-    CFAttributedStringRef  m_attributedText;
+    CFAttributedStringRef  _attributedText;
 }
 
-@synthesize text       = m_text,
-            definition = m_definition,
-            HTML       = m_HTML;
+@synthesize text       = _text,
+            definition = _definition,
+            HTML       = _HTML;
 
 
 - (id) initWithPlacedObject:(SwiffPlacedObject *)placedObject
@@ -50,11 +50,11 @@
         if ([placedObject isKindOfClass:[SwiffPlacedDynamicText class]]) {
             SwiffPlacedDynamicText *placedText = (SwiffPlacedDynamicText *)placedObject;
 
-            m_text = [placedText->m_text copy];
-            m_HTML =  placedText->m_HTML;
+            _text = [placedText->_text copy];
+            _HTML =  placedText->_HTML;
 
-            if (placedText->m_attributedText) {
-                m_attributedText = CFAttributedStringCreateCopy(NULL, placedText->m_attributedText);
+            if (placedText->_attributedText) {
+                _attributedText = CFAttributedStringCreateCopy(NULL, placedText->_attributedText);
             }
         }
     }
@@ -65,9 +65,9 @@
 
 - (void) dealloc
 {
-    if (m_attributedText) {
-        CFRelease(m_attributedText);
-        m_attributedText = NULL;
+    if (_attributedText) {
+        CFRelease(_attributedText);
+        _attributedText = NULL;
     }
 }
 
@@ -76,21 +76,21 @@
 {
     SwiffDynamicTextAttributes *attributes = [[SwiffDynamicTextAttributes alloc] init];
 
-    if ([m_definition hasFont]) {
-        SwiffFontDefinition *fontDefinition = [[m_definition movie] fontDefinitionWithLibraryID:[m_definition fontID]];
+    if ([_definition hasFont]) {
+        SwiffFontDefinition *fontDefinition = [[_definition movie] fontDefinitionWithLibraryID:[_definition fontID]];
 
         [attributes setFontName: [fontDefinition name]];
         [attributes setBold:     [fontDefinition isBold]];
         [attributes setItalic:   [fontDefinition isItalic]];
     }
     
-    [attributes setFontSizeInTwips:    [m_definition fontHeightInTwips]  ];
-    [attributes setFontColor:          [m_definition colorPointer]       ];
-    [attributes setTextAlignment:      [m_definition textAlignment]      ];
-    [attributes setLeftMarginInTwips:  [m_definition leftMarginInTwips]  ];
-    [attributes setRightMarginInTwips: [m_definition rightMarginInTwips] ];
-    [attributes setIndentInTwips:      [m_definition indentInTwips]      ];
-    [attributes setLeadingInTwips:     [m_definition leadingInTwips]     ];
+    [attributes setFontSizeInTwips:    [_definition fontHeightInTwips]  ];
+    [attributes setFontColor:          [_definition colorPointer]       ];
+    [attributes setTextAlignment:      [_definition textAlignment]      ];
+    [attributes setLeftMarginInTwips:  [_definition leftMarginInTwips]  ];
+    [attributes setRightMarginInTwips: [_definition rightMarginInTwips] ];
+    [attributes setIndentInTwips:      [_definition indentInTwips]      ];
+    [attributes setLeadingInTwips:     [_definition leadingInTwips]     ];
 
     return attributes;
 }
@@ -98,12 +98,12 @@
 
 - (void) setupWithDefinition:(id<SwiffDefinition>)definition
 {
-    if (m_definition != definition) {
-        m_definition = nil;
+    if (_definition != definition) {
+        _definition = nil;
         
         if ([definition isKindOfClass:[SwiffDynamicTextDefinition class]]) {
-            m_definition = (SwiffDynamicTextDefinition *)definition;
-            [self setText:[m_definition initialText] HTML:[m_definition isHTML]]; 
+            _definition = (SwiffDynamicTextDefinition *)definition;
+            [self setText:[_definition initialText] HTML:[_definition isHTML]]; 
         }
     }
 }
@@ -111,15 +111,15 @@
 
 - (void) setText:(NSString *)text HTML:(BOOL)isHTML
 {
-    if ((m_text != text) || (isHTML != m_HTML)) {
-        if (m_text != text) {
-            m_text = [text copy];
+    if ((_text != text) || (isHTML != _HTML)) {
+        if (_text != text) {
+            _text = [text copy];
         }
 
-        m_HTML = isHTML;
+        _HTML = isHTML;
 
-        if (m_attributedText) CFRelease(m_attributedText);
-        m_attributedText = NULL;
+        if (_attributedText) CFRelease(_attributedText);
+        _attributedText = NULL;
         
     }
 }
@@ -133,22 +133,22 @@
 
 - (CFAttributedStringRef) attributedText
 {
-    if (!m_attributedText && m_text) {
-        if (m_HTML) {
+    if (!_attributedText && _text) {
+        if (_HTML) {
             SwiffHTMLToCoreTextConverter *converter = [SwiffHTMLToCoreTextConverter sharedInstance];
             
             SwiffDynamicTextAttributes *baseAttributes = [self _newBaseAttributes];
-            m_attributedText = [converter copyAttributedStringForHTML:m_text baseAttributes:baseAttributes];
+            _attributedText = [converter copyAttributedStringForHTML:_text baseAttributes:baseAttributes];
 
         } else {
             SwiffDynamicTextAttributes *attributes = [self _newBaseAttributes];
             NSDictionary *dictionary = [attributes copyCoreTextAttributes];
 
-            m_attributedText = CFAttributedStringCreate(NULL, (__bridge CFStringRef)m_text, (__bridge CFDictionaryRef)dictionary);
+            _attributedText = CFAttributedStringCreate(NULL, (__bridge CFStringRef)_text, (__bridge CFDictionaryRef)dictionary);
         }
     }
 
-    return m_attributedText;
+    return _attributedText;
 }
 
 @end

@@ -31,14 +31,14 @@
 
 
 @implementation SwiffGradient {
-    CGFloat       m_ratios[15];
-    SwiffColor    m_colors[15];
+    CGFloat       _ratios[15];
+    SwiffColor    _colors[15];
 }
 
-@synthesize recordCount       = m_recordCount,
-            spreadMode        = m_spreadMode,
-            interpolationMode = m_interpolationMode,
-            focalPoint        = m_focalPoint;
+@synthesize recordCount       = _recordCount,
+            spreadMode        = _spreadMode,
+            interpolationMode = _interpolationMode,
+            focalPoint        = _focalPoint;
 
 
 - (id) initWithParser:(SwiffParser *)parser isFocalGradient:(BOOL)isFocalGradient
@@ -60,13 +60,13 @@
             if (count > 16) count = 16;
 
             for (i = 0; i < count; i++) {
-                SwiffParserReadColorRGBA(parser, &m_colors[i]);
+                SwiffParserReadColorRGBA(parser, &_colors[i]);
             }
             
             for (i = 0; i < count; i++) {
                 UInt8 ratio;
                 SwiffParserReadUInt8(parser, &ratio);
-                m_ratios[i] = ratio / 255.0;
+                _ratios[i] = ratio / 255.0;
             }
 
         } else {
@@ -81,25 +81,25 @@
             for (i = 0; i < count; i++) {
                 UInt8 ratio;
                 SwiffParserReadUInt8(parser, &ratio);
-                m_ratios[i] = ratio / 255.0;
+                _ratios[i] = ratio / 255.0;
                 
                 if (usesAlphaColors) {
-                    SwiffParserReadColorRGBA(parser, &m_colors[i]);
+                    SwiffParserReadColorRGBA(parser, &_colors[i]);
                 } else {
-                    SwiffParserReadColorRGB(parser,  &m_colors[i]);
+                    SwiffParserReadColorRGB(parser,  &_colors[i]);
                 }
             }
             
             if (isFocalGradient) {
-                SwiffParserReadFixed8(parser, &m_focalPoint);
+                SwiffParserReadFixed8(parser, &_focalPoint);
             }
 
             SwiffParserByteAlign(parser);
         }
         
-        m_spreadMode        = spreadMode;
-        m_interpolationMode = interpolationMode;
-        m_recordCount       = count;
+        _spreadMode        = spreadMode;
+        _interpolationMode = interpolationMode;
+        _recordCount       = count;
 
         if (!SwiffParserIsValid(parser)) {
             return nil;
@@ -113,17 +113,17 @@
 - (CGGradientRef) copyCGGradientWithColorTransformStack:(CFArrayRef)stack;
 {
     CGColorSpaceRef   colorSpace = CGColorSpaceCreateDeviceRGB();
-    CFMutableArrayRef colors     = CFArrayCreateMutable(NULL, m_recordCount, &kCFTypeArrayCallBacks);
+    CFMutableArrayRef colors     = CFArrayCreateMutable(NULL, _recordCount, &kCFTypeArrayCallBacks);
 
-    for (NSInteger i = 0; i < m_recordCount; i++) {
-        SwiffColor color = SwiffColorApplyColorTransformStack(m_colors[i], stack);
+    for (NSInteger i = 0; i < _recordCount; i++) {
+        SwiffColor color = SwiffColorApplyColorTransformStack(_colors[i], stack);
     
         CGColorRef cgColor = CGColorCreate(colorSpace, &color.red);
         CFArrayAppendValue(colors, cgColor);
         CGColorRelease(cgColor);
     }
     
-    CGGradientRef result = CGGradientCreateWithColors(colorSpace, colors, m_ratios);
+    CGGradientRef result = CGGradientCreateWithColors(colorSpace, colors, _ratios);
 
     if (colors)     CFRelease(colors);
     if (colorSpace) CFRelease(colorSpace);
@@ -134,9 +134,9 @@
 
 - (void) getColor:(SwiffColor *)outColor ratio:(CGFloat *)outRatio forRecord:(NSUInteger)index
 {
-    if (index < m_recordCount) {
-        if (outColor) *outColor = m_colors[index];
-        if (outRatio) *outRatio = m_ratios[index];
+    if (index < _recordCount) {
+        if (outColor) *outColor = _colors[index];
+        if (outRatio) *outRatio = _ratios[index];
     }
 }
 

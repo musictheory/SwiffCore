@@ -37,37 +37,37 @@ static const NSUInteger sGrowthForFloats     = 256;
 
 @implementation SwiffPath
 
-@synthesize operations            = m_operations,
-            floats                = m_floats,
-            operationsCount       = m_operationsCount,
-            floatsCount           = m_floatsCount,
-            fillStyle             = m_fillStyle,
-            lineStyle             = m_lineStyle,
-            usesFillHairlineWidth = m_usesFillHairlineWidth;
+@synthesize operations            = _operations,
+            floats                = _floats,
+            operationsCount       = _operationsCount,
+            floatsCount           = _floatsCount,
+            fillStyle             = _fillStyle,
+            lineStyle             = _lineStyle,
+            usesFillHairlineWidth = _usesFillHairlineWidth;
 
 
 static void SwiffPathAddTwipsToFloats(SwiffPath *path, const SwiffTwips twips)
 {
-    if ((path->m_floatsCount % sGrowthForFloats) == 0) {
-        NSUInteger capacity = (path->m_floatsCount + sGrowthForFloats);
-        path->m_floats = realloc(path->m_floats, sizeof(CGFloat) * capacity);
+    if ((path->_floatsCount % sGrowthForFloats) == 0) {
+        NSUInteger capacity = (path->_floatsCount + sGrowthForFloats);
+        path->_floats = realloc(path->_floats, sizeof(CGFloat) * capacity);
     }
 
-    path->m_floats[path->m_floatsCount++] = SwiffGetCGFloatFromTwips(twips);
+    path->_floats[path->_floatsCount++] = SwiffGetCGFloatFromTwips(twips);
 }
 
 
 void SwiffPathAddOperationAndTwips(SwiffPath *path, SwiffPathOperation operation, ...)
 {
-    if ((path->m_operationsCount % sGrowthForOperations) == 0) {
-        NSUInteger capacity = (path->m_operationsCount + sGrowthForOperations);
-        path->m_operations = realloc(path->m_operations, sizeof(UInt8) * capacity);
+    if ((path->_operationsCount % sGrowthForOperations) == 0) {
+        NSUInteger capacity = (path->_operationsCount + sGrowthForOperations);
+        path->_operations = realloc(path->_operations, sizeof(UInt8) * capacity);
     }
 
     va_list v;
     va_start(v, operation);
 
-    path->m_operations[path->m_operationsCount++] = operation;
+    path->_operations[path->_operationsCount++] = operation;
     
     if (operation == SwiffPathOperationCurve) {
         SwiffPathAddTwipsToFloats(path, va_arg(v, SwiffTwips));
@@ -97,8 +97,8 @@ void SwiffPathAddOperationEnd(SwiffPath *path)
 - (id) initWithLineStyle:(SwiffLineStyle *)lineStyle fillStyle:(SwiffFillStyle *)fillStyle
 {
     if ((self = [super init])) {
-        m_fillStyle = fillStyle;
-        m_lineStyle = lineStyle;
+        _fillStyle = fillStyle;
+        _lineStyle = lineStyle;
     }
     
     return self;
@@ -107,14 +107,14 @@ void SwiffPathAddOperationEnd(SwiffPath *path)
 
 - (void) dealloc
 {
-    if (m_operations) {
-        free(m_operations);
-        m_operations = NULL;
+    if (_operations) {
+        free(_operations);
+        _operations = NULL;
     }
 
-    if (m_floats) {
-        free(m_floats);
-        m_floats = NULL;
+    if (_floats) {
+        free(_floats);
+        _floats = NULL;
     }
 }
 

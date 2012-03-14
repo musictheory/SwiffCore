@@ -47,8 +47,8 @@ typedef struct SwiffPlacedObjectAdditionalStorage
     BOOL   cachesAsBitmap;
 } SwiffPlacedObjectAdditionalStorage;
 
-#define ADDITIONAL ((SwiffPlacedObjectAdditionalStorage *)m_additional)
-#define MAKE_ADDITIONAL { if (!m_additional) m_additional = calloc(1, sizeof(SwiffPlacedObjectAdditionalStorage)); }
+#define ADDITIONAL ((SwiffPlacedObjectAdditionalStorage *)_additional)
+#define MAKE_ADDITIONAL { if (!_additional) _additional = calloc(1, sizeof(SwiffPlacedObjectAdditionalStorage)); }
 
 SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, SwiffPlacedObject *existingPlacedObject)
 {
@@ -88,7 +88,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 - (id) init
 {
     if ((self = [super init])) {
-        m_affineTransform = CGAffineTransformIdentity;
+        _affineTransform = CGAffineTransformIdentity;
     }
 
     return self;
@@ -98,15 +98,15 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 - (id) initWithPlacedObject:(SwiffPlacedObject *)placedObject
 {
     if ((self = [self init])) {
-        m_depth             = placedObject->m_depth;
-        m_libraryID         = placedObject->m_libraryID;
-        m_affineTransform   = placedObject->m_affineTransform;
+        _depth             = placedObject->_depth;
+        _libraryID         = placedObject->_libraryID;
+        _affineTransform   = placedObject->_affineTransform;
 
-        if (placedObject->m_additional) {
-            m_additional = malloc(sizeof(SwiffPlacedObjectAdditionalStorage));
-            memcpy(m_additional, placedObject->m_additional, sizeof(SwiffPlacedObjectAdditionalStorage));
+        if (placedObject->_additional) {
+            _additional = malloc(sizeof(SwiffPlacedObjectAdditionalStorage));
+            memcpy(_additional, placedObject->_additional, sizeof(SwiffPlacedObjectAdditionalStorage));
             
-            SwiffPlacedObjectAdditionalStorage *other = placedObject->m_additional;
+            SwiffPlacedObjectAdditionalStorage *other = placedObject->_additional;
             ADDITIONAL->name      = other->name      ? CFStringCreateCopy(NULL, other->name)      : NULL;
             ADDITIONAL->className = other->className ? CFStringCreateCopy(NULL, other->className) : NULL;
             ADDITIONAL->filters   = other->filters   ? CFArrayCreateCopy (NULL, other->filters)   : NULL;
@@ -120,14 +120,14 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (void) dealloc
 {
-    if (m_additional) {
+    if (_additional) {
         if (ADDITIONAL->name)      CFRelease(ADDITIONAL->name);
         if (ADDITIONAL->className) CFRelease(ADDITIONAL->className);
         if (ADDITIONAL->filters)   CFRelease(ADDITIONAL->filters);
         if (ADDITIONAL->layerID)   CFRelease(ADDITIONAL->layerID);
 
-        free(m_additional);
-        m_additional = NULL;
+        free(_additional);
+        _additional = NULL;
     }
 }
 
@@ -146,13 +146,13 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (BOOL) hasAffineTransform
 {
-    return !CGAffineTransformIsIdentity(m_affineTransform);
+    return !CGAffineTransformIsIdentity(_affineTransform);
 }
 
 
 - (CGAffineTransform *) affineTransformPointer
 {
-    return &m_affineTransform;
+    return &_affineTransform;
 }
 
 
@@ -165,7 +165,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (BOOL) isHidden
 {
-    return m_additional ? ADDITIONAL->hidden : NO;
+    return _additional ? ADDITIONAL->hidden : NO;
 }
 
 
@@ -178,7 +178,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (BOOL) wantsLayer
 {
-    return m_additional ? ADDITIONAL->wantsLayer : NO;
+    return _additional ? ADDITIONAL->wantsLayer : NO;
 }
 
 
@@ -194,7 +194,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (NSString *) layerIdentifier
 {
-    return m_additional ? (__bridge NSString *) ADDITIONAL->layerID : nil;
+    return _additional ? (__bridge NSString *) ADDITIONAL->layerID : nil;
 }
 
 
@@ -207,7 +207,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (BOOL) placesImage
 {
-    return m_additional ? ADDITIONAL->placesImage : NO;
+    return _additional ? ADDITIONAL->placesImage : NO;
 }
 
 
@@ -220,7 +220,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (CGFloat) ratio
 {
-    return m_additional ? (ADDITIONAL->ratio / 65535.0) : 0;
+    return _additional ? (ADDITIONAL->ratio / 65535.0) : 0;
 }
 
 
@@ -234,7 +234,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (SwiffColorTransform) colorTransform
 {
-    if (m_additional && ADDITIONAL->hasColorTransform) {
+    if (_additional && ADDITIONAL->hasColorTransform) {
         return ADDITIONAL->colorTransform;
     } else {
         return SwiffColorTransformIdentity;
@@ -244,7 +244,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (SwiffColorTransform *) colorTransformPointer
 {
-    if (m_additional && ADDITIONAL->hasColorTransform) {
+    if (_additional && ADDITIONAL->hasColorTransform) {
         return &(ADDITIONAL->colorTransform);
     } else {
         return NULL;
@@ -254,7 +254,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (BOOL) hasColorTransform
 {
-    return m_additional && ADDITIONAL->hasColorTransform;
+    return _additional && ADDITIONAL->hasColorTransform;
 }
 
 
@@ -271,7 +271,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (NSString *) name
 {
-    return m_additional ? (__bridge NSString *) ADDITIONAL->name : nil;
+    return _additional ? (__bridge NSString *) ADDITIONAL->name : nil;
 }
 
 
@@ -286,7 +286,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (UInt16) clipDepth
 {
-    return m_additional ? ADDITIONAL->clipDepth : 0;
+    return _additional ? ADDITIONAL->clipDepth : 0;
 }
 
 
@@ -303,7 +303,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (NSString *) className
 {
-    return m_additional ? (__bridge NSString *) ADDITIONAL->className : nil;
+    return _additional ? (__bridge NSString *) ADDITIONAL->className : nil;
 }
 
 
@@ -318,7 +318,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (SwiffBlendMode) blendMode
 {
-    return m_additional ? ADDITIONAL->blendMode : SwiffBlendModeNormal;
+    return _additional ? ADDITIONAL->blendMode : SwiffBlendModeNormal;
 }
 
 
@@ -334,7 +334,7 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (BOOL) cachesAsBitmap
 {
-    return m_additional ? ADDITIONAL->cachesAsBitmap : NO;
+    return _additional ? ADDITIONAL->cachesAsBitmap : NO;
 }
 
 
@@ -421,12 +421,12 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 
 - (NSArray *) filters
 {
-    return m_additional ? (__bridge NSArray *)ADDITIONAL->filters : nil;
+    return _additional ? (__bridge NSArray *)ADDITIONAL->filters : nil;
 }
 
 
-@synthesize libraryID        = m_libraryID,
-            depth            = m_depth,
-            affineTransform  = m_affineTransform;
+@synthesize libraryID        = _libraryID,
+            depth            = _depth,
+            affineTransform  = _affineTransform;
 
 @end

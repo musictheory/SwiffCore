@@ -160,34 +160,34 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 
 @implementation SwiffFontDefinition
 
-@synthesize movie          = m_movie,
-            name           = m_name,
-            fullName       = m_fullName,
-            copyright      = m_copyright,
-            glyphCount     = m_glyphCount,
-            glyphPaths     = m_glyphPaths,
-            codeTable      = m_codeTable,
-            encoding       = m_encoding,
-            languageCode   = m_languageCode,
-            kerningCount   = m_kerningCount,
-            glyphAdvances  = m_glyphAdvances,
-            glyphBounds    = m_glyphBounds,
-            ascent         = m_ascent,
-            descent        = m_descent,
-            leading        = m_leading,
-            kerningRecords = m_kerningRecords,
-            libraryID      = m_libraryID,
-            bold           = m_bold,
-            italic         = m_italic,
-            smallText      = m_smallText,
-            hasLayout      = m_hasLayout;
+@synthesize movie          = _movie,
+            name           = _name,
+            fullName       = _fullName,
+            copyright      = _copyright,
+            glyphCount     = _glyphCount,
+            glyphPaths     = _glyphPaths,
+            codeTable      = _codeTable,
+            encoding       = _encoding,
+            languageCode   = _languageCode,
+            kerningCount   = _kerningCount,
+            glyphAdvances  = _glyphAdvances,
+            glyphBounds    = _glyphBounds,
+            ascent         = _ascent,
+            descent        = _descent,
+            leading        = _leading,
+            kerningRecords = _kerningRecords,
+            libraryID      = _libraryID,
+            bold           = _bold,
+            italic         = _italic,
+            smallText      = _smallText,
+            hasLayout      = _hasLayout;
 
 
 - (id) initWithLibraryID:(UInt16)libraryID movie:(SwiffMovie *)movie
 {
     if ((self = [super init])) {
-        m_movie = movie;
-        m_libraryID = libraryID;
+        _movie = movie;
+        _libraryID = libraryID;
     }
     
     return self;
@@ -196,24 +196,24 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 
 - (void) dealloc
 {
-    if (m_glyphPaths) {
-        for (NSInteger i = 0; i < m_glyphCount; i++) {
-            CGPathRelease(m_glyphPaths[i]);
-            m_glyphPaths[i] = NULL;
+    if (_glyphPaths) {
+        for (NSInteger i = 0; i < _glyphCount; i++) {
+            CGPathRelease(_glyphPaths[i]);
+            _glyphPaths[i] = NULL;
         }
     }
 
-    free(m_glyphPaths);       m_glyphPaths     = NULL;
-    free(m_codeTable);        m_codeTable      = NULL;
-    free(m_glyphAdvances);    m_glyphAdvances  = NULL;
-    free(m_glyphBounds);      m_glyphBounds    = NULL;
-    free(m_kerningRecords);   m_kerningRecords = NULL;
+    free(_glyphPaths);       _glyphPaths     = NULL;
+    free(_codeTable);        _codeTable      = NULL;
+    free(_glyphAdvances);    _glyphAdvances  = NULL;
+    free(_glyphBounds);      _glyphBounds    = NULL;
+    free(_kerningRecords);   _kerningRecords = NULL;
 }
 
 
 - (void) clearWeakReferences
 {
-    m_movie = nil;
+    _movie = nil;
 }
 
 
@@ -223,21 +223,21 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 
 - (void) _readGlyphPathsFromParser:(SwiffParser *)parser
 {
-    m_glyphPaths = calloc(sizeof(CGPathRef), m_glyphCount);
+    _glyphPaths = calloc(sizeof(CGPathRef), _glyphCount);
 
-    for (NSInteger i = 0; i < m_glyphCount; i++) {
-        m_glyphPaths[i] = sCreatePathFromShapeRecord(parser);
+    for (NSInteger i = 0; i < _glyphCount; i++) {
+        _glyphPaths[i] = sCreatePathFromShapeRecord(parser);
     }
 }
 
 
 - (void) _readCodeTableFromParser:(SwiffParser *)parser wide:(BOOL)wide
 {
-    if (!m_codeTable) {
-        m_codeTable = malloc(m_glyphCount * sizeof(UInt16));
+    if (!_codeTable) {
+        _codeTable = malloc(_glyphCount * sizeof(UInt16));
     }
 
-    for (NSUInteger i = 0; i < m_glyphCount; i++) {
+    for (NSUInteger i = 0; i < _glyphCount; i++) {
         UInt16 value;
 
         if (wide) {
@@ -248,7 +248,7 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
             value = value8;
         }
 
-        m_codeTable[i] = value;
+        _codeTable[i] = value;
     }
 }
 
@@ -264,11 +264,11 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
         //
         UInt16 offset;
         SwiffParserReadUInt16(parser, &offset);
-        m_glyphCount = (offset / 2);
+        _glyphCount = (offset / 2);
 
         // Skip through OffsetTable
-        if (m_glyphCount) {
-            SwiffParserAdvance(parser, sizeof(UInt16) * (m_glyphCount - 1));
+        if (_glyphCount) {
+            SwiffParserAdvance(parser, sizeof(UInt16) * (_glyphCount - 1));
             [self _readGlyphPathsFromParser:parser];
         }
 
@@ -285,29 +285,29 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
         SwiffParserReadUBits(parser, 1, &isItalic);
         SwiffParserReadUBits(parser, 1, &isBold);
 
-        m_italic = isItalic;
-        m_bold   = isBold;
-        m_smallText = isSmallText;
+        _italic = isItalic;
+        _bold   = isBold;
+        _smallText = isSmallText;
 
         if (isANSIEncoding) {
-            m_encoding = SwiffGetANSIStringEncoding();
+            _encoding = SwiffGetANSIStringEncoding();
         } else if (isShiftJIS) {
-            m_encoding = NSShiftJISStringEncoding;
+            _encoding = NSShiftJISStringEncoding;
         } else {
-            m_encoding = NSUnicodeStringEncoding;
+            _encoding = NSUnicodeStringEncoding;
         }
 
         UInt8 languageCode;
         SwiffParserReadUInt8(parser, &languageCode);
-        m_languageCode = languageCode;
+        _languageCode = languageCode;
     
         NSString *name = nil;
         SwiffParserReadLengthPrefixedString(parser, &name);
-        m_name = name;
+        _name = name;
         
         UInt16 glyphCount;
         SwiffParserReadUInt16(parser, &glyphCount);
-        m_glyphCount = glyphCount;
+        _glyphCount = glyphCount;
     
         // Skip OffsetTable and CodeTableOffset
         SwiffParserAdvance(parser, (usesWideOffsets ? sizeof(UInt32) : sizeof(UInt16)) * (glyphCount + 1));
@@ -316,57 +316,57 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
         [self _readCodeTableFromParser:parser wide:usesWideCodes];
 
         if (hasLayout) {
-            m_hasLayout = YES;
+            _hasLayout = YES;
 
             SInt16 ascent, descent, leading;
             SwiffParserReadSInt16(parser, &ascent);
             SwiffParserReadSInt16(parser, &descent);
             SwiffParserReadSInt16(parser, &leading);
 
-            m_ascent  = SwiffGetCGFloatFromTwips(ascent);
-            m_descent = SwiffGetCGFloatFromTwips(descent);
-            m_leading = SwiffGetCGFloatFromTwips(leading);
+            _ascent  = SwiffGetCGFloatFromTwips(ascent);
+            _descent = SwiffGetCGFloatFromTwips(descent);
+            _leading = SwiffGetCGFloatFromTwips(leading);
 
-            m_glyphAdvances = m_glyphCount ? malloc(sizeof(CGFloat) * m_glyphCount) : NULL;
-            for (NSInteger i = 0; i < m_glyphCount; i++) {
+            _glyphAdvances = _glyphCount ? malloc(sizeof(CGFloat) * _glyphCount) : NULL;
+            for (NSInteger i = 0; i < _glyphCount; i++) {
                 SInt16 advance;
                 SwiffParserReadSInt16(parser, &advance);
-                m_glyphAdvances[i] = SwiffGetCGFloatFromTwips(advance);
+                _glyphAdvances[i] = SwiffGetCGFloatFromTwips(advance);
             }
 
-            m_glyphBounds = m_glyphCount ? malloc(sizeof(CGRect) * m_glyphCount) : NULL;
-            for (NSInteger i = 0; i < m_glyphCount; i++) {
+            _glyphBounds = _glyphCount ? malloc(sizeof(CGRect) * _glyphCount) : NULL;
+            for (NSInteger i = 0; i < _glyphCount; i++) {
                 CGRect rect;
                 SwiffParserReadRect(parser, &rect);
-                m_glyphBounds[i] = rect;
+                _glyphBounds[i] = rect;
             }
 
             UInt16 kerningCount;
             SwiffParserReadUInt16(parser, &kerningCount);
-            m_kerningCount = kerningCount;
-            m_kerningRecords = kerningCount ? malloc(sizeof(SwiffFontKerningRecord) * m_kerningCount) : NULL;
+            _kerningCount = kerningCount;
+            _kerningRecords = kerningCount ? malloc(sizeof(SwiffFontKerningRecord) * _kerningCount) : NULL;
 
-            for (NSInteger i = 0; i < m_kerningCount; i++) {
+            for (NSInteger i = 0; i < _kerningCount; i++) {
                 if (usesWideCodes) {
                     UInt16 tmp;
                     SwiffParserReadUInt16(parser, &tmp);
-                    m_kerningRecords[i].leftCharacterCode = tmp;
+                    _kerningRecords[i].leftCharacterCode = tmp;
 
                     SwiffParserReadUInt16(parser, &tmp);
-                    m_kerningRecords[i].rightCharacterCode = tmp;
+                    _kerningRecords[i].rightCharacterCode = tmp;
     
                 } else {
                     UInt8 tmp;
                     SwiffParserReadUInt8(parser, &tmp);
-                    m_kerningRecords[i].leftCharacterCode = tmp;
+                    _kerningRecords[i].leftCharacterCode = tmp;
 
                     SwiffParserReadUInt8(parser, &tmp);
-                    m_kerningRecords[i].rightCharacterCode = tmp;
+                    _kerningRecords[i].rightCharacterCode = tmp;
                 }
                 
                 SInt16 adjustment;
                 SwiffParserReadSInt16(parser, &adjustment);
-                m_kerningRecords[i].adjustment = SwiffGetCGFloatFromTwips(adjustment);
+                _kerningRecords[i].adjustment = SwiffGetCGFloatFromTwips(adjustment);
             }
         }
 
@@ -380,11 +380,11 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 {
     NSString *name = nil;
     SwiffParserReadString(parser, &name);
-    m_fullName = name;
+    _fullName = name;
 
     NSString *copyright = nil;
     SwiffParserReadString(parser, &copyright);
-    m_copyright = copyright;
+    _copyright = copyright;
 }
 
 
@@ -394,7 +394,7 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 
     NSString *name;
     SwiffParserReadLengthPrefixedString(parser, &name);
-    m_name = name;
+    _name = name;
 
     SwiffParserReadUBits(parser, 2, &reserved);
     SwiffParserReadUBits(parser, 1, &isSmallText);
@@ -404,27 +404,27 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
     SwiffParserReadUBits(parser, 1, &isBold);
     SwiffParserReadUBits(parser, 1, &usesWideCodes);
     
-    m_italic = isItalic;
-    m_bold   = isBold;
-    m_smallText = isSmallText;
+    _italic = isItalic;
+    _bold   = isBold;
+    _smallText = isSmallText;
 
     if (isANSIEncoding) {
-        m_encoding = SwiffGetANSIStringEncoding();
+        _encoding = SwiffGetANSIStringEncoding();
     } else if (isShiftJIS) {
-        m_encoding = NSShiftJISStringEncoding;
+        _encoding = NSShiftJISStringEncoding;
     } else {
-        m_encoding = NSUnicodeStringEncoding;
+        _encoding = NSUnicodeStringEncoding;
     }
 
     NSInteger version = SwiffParserGetCurrentTagVersion(parser);
     if (version == 2) {
         UInt8 languageCode;
         SwiffParserReadUInt8(parser, &languageCode);
-        m_languageCode = languageCode;
+        _languageCode = languageCode;
     }
 
-    m_glyphCount = SwiffParserGetBytesRemainingInCurrentTag(parser);
-    if (usesWideCodes) m_glyphCount /= 2;
+    _glyphCount = SwiffParserGetBytesRemainingInCurrentTag(parser);
+    if (usesWideCodes) _glyphCount /= 2;
     
     [self _readCodeTableFromParser:parser wide:usesWideCodes];
 }

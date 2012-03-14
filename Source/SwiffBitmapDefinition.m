@@ -331,14 +331,14 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
 
 
 @implementation SwiffBitmapDefinition {
-    SwiffTag    m_tag;
-    NSData     *m_tagData;
-    NSData     *m_jpegTablesData;
-    CGImageRef  m_CGImage;
+    SwiffTag    _tag;
+    NSData     *_tagData;
+    NSData     *_jpegTablesData;
+    CGImageRef  _CGImage;
 }
 
-@synthesize movie     = m_movie,
-            libraryID = m_libraryID;
+@synthesize movie     = _movie,
+            libraryID = _libraryID;
 
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie
@@ -346,16 +346,16 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
     if ((self = [super init])) {
         UInt16 libraryID;
         SwiffParserReadUInt16(parser, &libraryID);
-        m_movie     = movie;
-        m_libraryID = libraryID;
+        _movie     = movie;
+        _libraryID = libraryID;
 
-        SwiffTagJoin(SwiffParserGetCurrentTag(parser), SwiffParserGetCurrentTagVersion(parser), &m_tag);
+        SwiffTagJoin(SwiffParserGetCurrentTag(parser), SwiffParserGetCurrentTagVersion(parser), &_tag);
 
         NSData *tagData = nil;
         UInt32 remainingBytes = SwiffParserGetBytesRemainingInCurrentTag(parser);
         SwiffParserReadData(parser, remainingBytes, &tagData);
         
-        m_tagData = tagData;
+        _tagData = tagData;
         
         if (!SwiffParserIsValid(parser)) {
             return nil;
@@ -368,39 +368,39 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
 
 - (void) dealloc
 {
-    CGImageRelease(m_CGImage);
-    m_CGImage = NULL;
+    CGImageRelease(_CGImage);
+    _CGImage = NULL;
 }
 
 
 - (void) clearWeakReferences
 {
-    m_movie = nil;
+    _movie = nil;
 }
 
 
 - (void) _generateImage
 {
-    if (!m_tagData) return;
+    if (!_tagData) return;
 
-    const UInt8 *bytes  = [m_tagData bytes];
-    NSUInteger   length = [m_tagData length];
+    const UInt8 *bytes  = [_tagData bytes];
+    NSUInteger   length = [_tagData length];
 
-    if ((m_tag == SwiffTagDefineBits) || (m_tag == SwiffTagDefineBitsJPEG2)) {
-        m_CGImage = sCreateImage_Bytes(bytes, length, m_jpegTablesData);
+    if ((_tag == SwiffTagDefineBits) || (_tag == SwiffTagDefineBitsJPEG2)) {
+        _CGImage = sCreateImage_Bytes(bytes, length, _jpegTablesData);
 
-    } else if ((m_tag == SwiffTagDefineBitsJPEG3) || (m_tag == SwiffTagDefineBitsJPEG4)) {
+    } else if ((_tag == SwiffTagDefineBitsJPEG3) || (_tag == SwiffTagDefineBitsJPEG4)) {
         UInt32 dataSize    = (bytes[3] << 24) | (bytes[2] << 16) | (bytes[1] << 8) | bytes[0];
         UInt16 imageOffset = 4;
         UInt16 alphaOffset = 4 + dataSize;
         
-        if (m_tag == SwiffTagDefineBitsJPEG4) {
+        if (_tag == SwiffTagDefineBitsJPEG4) {
             dataSize    -= 2;
             imageOffset += 2;
             alphaOffset += 2;
         }
 
-        CGImageRef image = sCreateImage_Bytes(bytes + imageOffset, dataSize, m_jpegTablesData);
+        CGImageRef image = sCreateImage_Bytes(bytes + imageOffset, dataSize, _jpegTablesData);
         
         if (image) {
             NSData *alphaData = sCreateUncompressedData(bytes + alphaOffset, length - alphaOffset);
@@ -416,7 +416,7 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
                 CGColorSpaceRelease(space);
 
                 if (alphaImage) {
-                    m_CGImage = CGImageCreateWithMask(image, alphaImage);
+                    _CGImage = CGImageCreateWithMask(image, alphaImage);
                 }
 
                 CGDataProviderRelease(provider);
@@ -425,14 +425,14 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
 
         }
 
-        if (m_CGImage) {
+        if (_CGImage) {
             CGImageRelease(image);
         } else {
-            m_CGImage = image;
+            _CGImage = image;
         }
        
-    } else if ((m_tag == SwiffTagDefineBitsLossless) || (m_tag == SwiffTagDefineBitsLossless2)) {
-        BOOL   alpha  = (m_tag == SwiffTagDefineBitsLossless2);
+    } else if ((_tag == SwiffTagDefineBitsLossless) || (_tag == SwiffTagDefineBitsLossless2)) {
+        BOOL   alpha  = (_tag == SwiffTagDefineBitsLossless2);
         UInt8  format =  bytes[0];
         size_t width  = (bytes[2] << 8) | bytes[1];
         size_t height = (bytes[4] << 8) | bytes[3];
@@ -441,21 +441,21 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
         NSData *imageData = sCreateUncompressedData(bytes + offsetForImage, length - offsetForImage);
  
         if (format == 3) {
-            m_CGImage = sCreateImage_Indexed(width, height, bytes[5] + 1, alpha, imageData);
+            _CGImage = sCreateImage_Indexed(width, height, bytes[5] + 1, alpha, imageData);
 
         } else if (format == 4) {
             //!issue: Untested code path, see issue #12
-            m_CGImage = sCreateImage_RGB_555(width, height, imageData);
+            _CGImage = sCreateImage_RGB_555(width, height, imageData);
 
         } else if (format == 5) {
-            m_CGImage = (alpha ? sCreateImage_ARGB_8888 : sCreateImage_XRGB_8888)(width, height, imageData);
+            _CGImage = (alpha ? sCreateImage_ARGB_8888 : sCreateImage_XRGB_8888)(width, height, imageData);
         }
 
     }
 
-    m_tagData = nil;
+    _tagData = nil;
     
-    m_jpegTablesData = nil;
+    _jpegTablesData = nil;
 }
 
 
@@ -464,19 +464,19 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
 
 - (void) _setJPEGTablesData:(NSData *)data
 {
-    if (m_jpegTablesData != data) {
-        m_jpegTablesData = data;
+    if (_jpegTablesData != data) {
+        _jpegTablesData = data;
     }
 }
 
 
 - (CGImageRef) CGImage
 {
-    if (!m_CGImage) {
+    if (!_CGImage) {
         [self _generateImage];
     }
     
-    return m_CGImage;
+    return _CGImage;
 }
 
 

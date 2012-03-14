@@ -50,27 +50,27 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 
 @implementation SwiffPlayhead {
-    NSInteger      m_frameIndex;
-    NSInteger      m_frameIndexForNextStep;
-    NSTimer       *m_timer;
-    CADisplayLink *m_displayLink;
-    CFTimeInterval m_timerPlayStart;
-    long           m_timerPlayIndex;
-    BOOL           m_hasFrameIndexForNextStep;
+    NSInteger      _frameIndex;
+    NSInteger      _frameIndexForNextStep;
+    NSTimer       *_timer;
+    CADisplayLink *_displayLink;
+    CFTimeInterval _timerPlayStart;
+    long           _timerPlayIndex;
+    BOOL           _hasFrameIndexForNextStep;
 }
 
-@synthesize delegate      = m_delegate,
-            movie         = m_movie,
-            loopsMovie    = m_loopsMovie,
-            loopsScene    = m_loopsScene;
+@synthesize delegate      = _delegate,
+            movie         = _movie,
+            loopsMovie    = _loopsMovie,
+            loopsScene    = _loopsScene;
 
 
 - (id) initWithMovie:(SwiffMovie *)movie delegate:(id<SwiffPlayheadDelegate>)delegate
 {
     if ((self = [super init])) {
-        m_frameIndex = -1;
-        m_movie = movie;
-        m_delegate = delegate;
+        _frameIndex = -1;
+        _movie = movie;
+        _delegate = delegate;
     }
     
     return self;
@@ -82,24 +82,24 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (void) invalidateTimers
 {
-    [m_timer invalidate];
-    m_timer = nil;
+    [_timer invalidate];
+    _timer = nil;
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-    [m_displayLink setPaused:YES];
-    [m_displayLink invalidate];
-    m_displayLink = nil;
+    [_displayLink setPaused:YES];
+    [_displayLink invalidate];
+    _displayLink = nil;
 #endif
 }
 
 
 - (void) handleTimerTick:(id)sender
 {
-    long currentIndex = (long)((CACurrentMediaTime() - m_timerPlayStart) * [m_movie frameRate]);
+    long currentIndex = (long)((CACurrentMediaTime() - _timerPlayStart) * [_movie frameRate]);
 
-    if (m_timerPlayIndex != currentIndex) {
+    if (_timerPlayIndex != currentIndex) {
         [self step];
-        m_timerPlayIndex = currentIndex;
+        _timerPlayIndex = currentIndex;
     }
 }
 
@@ -113,18 +113,18 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
     BOOL needsUpdate = NO;
     
     if (isPlaying) {
-        [[SwiffSoundPlayer sharedInstance] stopAllSoundsForMovie:m_movie];
+        [[SwiffSoundPlayer sharedInstance] stopAllSoundsForMovie:_movie];
     }
 
     if (play && isPlaying) {
-        m_frameIndexForNextStep = frameIndex;
-        m_hasFrameIndexForNextStep = YES;
+        _frameIndexForNextStep = frameIndex;
+        _hasFrameIndexForNextStep = YES;
 
         return;
     }
     
-    if (m_frameIndex != frameIndex) {
-        m_frameIndex = frameIndex;
+    if (_frameIndex != frameIndex) {
+        _frameIndex = frameIndex;
         needsUpdate = YES;
     }
 
@@ -135,8 +135,8 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
             if ([CADisplayLink class]) {
-                m_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleTimerTick:)];
-                [m_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+                _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleTimerTick:)];
+                [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
 
             } else
 #endif
@@ -148,28 +148,28 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
                 [invocation setTarget:self];
                 [invocation setSelector:@selector(handleTimerTick:)];
                 
-                m_timer = [NSTimer timerWithTimeInterval:(1 / 60.0) invocation:invocation repeats:YES];
-                [[NSRunLoop currentRunLoop] addTimer:m_timer forMode:NSRunLoopCommonModes];
+                _timer = [NSTimer timerWithTimeInterval:(1 / 60.0) invocation:invocation repeats:YES];
+                [[NSRunLoop currentRunLoop] addTimer:_timer forMode:NSRunLoopCommonModes];
                 
-                [invocation setArgument:(__bridge void *)m_timer atIndex:2];
+                [invocation setArgument:(__bridge void *)_timer atIndex:2];
             }
             
-            m_timerPlayStart = CACurrentMediaTime();
-            m_timerPlayIndex = 0;
+            _timerPlayStart = CACurrentMediaTime();
+            _timerPlayIndex = 0;
         }
         
         needsUpdate = YES;
     }
     
     if (needsUpdate) {
-        [m_delegate playheadDidUpdate:self step:NO];
+        [_delegate playheadDidUpdate:self step:NO];
     }
 }
 
 
 - (void) gotoScene:(SwiffScene *)inScene frameLabel:(NSString *)frameLabel play:(BOOL)play
 {
-    SwiffScene *scene = ([inScene movie] == m_movie) ? inScene : nil;
+    SwiffScene *scene = ([inScene movie] == _movie) ? inScene : nil;
     SwiffFrame *frame = [scene frameWithLabel:frameLabel];
 
     if (frame) {
@@ -182,7 +182,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (void) gotoScene:(SwiffScene *)inScene frameIndex1:(NSUInteger)frameIndex1 play:(BOOL)play
 {
-    SwiffScene *scene = ([inScene movie] == m_movie) ? inScene : nil;
+    SwiffScene *scene = ([inScene movie] == _movie) ? inScene : nil;
     SwiffFrame *frame = [scene frameAtIndex1:frameIndex1];
 
     if (frame) {
@@ -195,7 +195,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (void) gotoScene:(SwiffScene *)inScene frameIndex:(NSUInteger)frameIndex play:(BOOL)play
 {
-    SwiffScene *scene = [inScene movie] == m_movie ? inScene : nil;
+    SwiffScene *scene = [inScene movie] == _movie ? inScene : nil;
     SwiffFrame *frame = [scene frameAtIndex:frameIndex];
 
     if (frame) {
@@ -208,7 +208,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (void) gotoSceneWithName:(NSString *)sceneName frameLabel:(NSString *)frameLabel play:(BOOL)play
 {
-    SwiffScene *scene = [m_movie sceneWithName:sceneName];
+    SwiffScene *scene = [_movie sceneWithName:sceneName];
     SwiffFrame *frame = [scene frameWithLabel:frameLabel];
 
     if (frame) {
@@ -221,7 +221,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (void) gotoSceneWithName:(NSString *)sceneName frameIndex1:(NSUInteger)frameIndex1 play:(BOOL)play
 {
-    SwiffScene *scene = [m_movie sceneWithName:sceneName];
+    SwiffScene *scene = [_movie sceneWithName:sceneName];
     SwiffFrame *frame = [scene frameAtIndex1:frameIndex1];
 
     if (frame) {
@@ -234,7 +234,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (void) gotoSceneWithName:(NSString *)sceneName frameIndex:(NSUInteger)frameIndex play:(BOOL)play
 {
-    SwiffScene *scene = [m_movie sceneWithName:sceneName];
+    SwiffScene *scene = [_movie sceneWithName:sceneName];
     SwiffFrame *frame = [scene frameAtIndex:frameIndex];
 
     if (frame) {
@@ -247,7 +247,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (void) gotoFrameWithIndex1:(NSUInteger)frameIndex1 play:(BOOL)play
 {
-    if (frameIndex1 > 0 && frameIndex1 <= [[m_movie frames] count]) {
+    if (frameIndex1 > 0 && frameIndex1 <= [[_movie frames] count]) {
         [self _gotoFrameWithIndex:(frameIndex1 - 1) play:play];
     } else {
         SwiffPlayheadWarnForInvalidGotoArguments();
@@ -257,7 +257,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (void) gotoFrameWithIndex:(NSUInteger)frameIndex play:(BOOL)play
 {
-    if (frameIndex < [[m_movie frames] count]) {
+    if (frameIndex < [[_movie frames] count]) {
         [self _gotoFrameWithIndex:frameIndex play:play];
     } else {
         SwiffPlayheadWarnForInvalidGotoArguments();
@@ -267,7 +267,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (void) gotoFrame:(SwiffFrame *)frame play:(BOOL)play
 {
-    NSUInteger frameIndex = [m_movie indexOfFrame:frame];
+    NSUInteger frameIndex = [_movie indexOfFrame:frame];
     
     if (frameIndex != NSNotFound) {
         [self _gotoFrameWithIndex:frameIndex play:play];
@@ -280,7 +280,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 - (void) play
 {
     if (![self isPlaying]) {
-        [self _gotoFrameWithIndex:m_frameIndex play:YES];
+        [self _gotoFrameWithIndex:_frameIndex play:YES];
     }
 }
 
@@ -288,7 +288,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 - (void) stop
 {
     if ([self isPlaying]) {
-        [self _gotoFrameWithIndex:m_frameIndex play:NO];
+        [self _gotoFrameWithIndex:_frameIndex play:NO];
     }
 }
 
@@ -297,11 +297,11 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 {
     SwiffScene *lastScene = [self scene];
 
-    if (m_hasFrameIndexForNextStep) {
-        m_frameIndex = m_frameIndexForNextStep;
-        m_hasFrameIndexForNextStep = NO;
+    if (_hasFrameIndexForNextStep) {
+        _frameIndex = _frameIndexForNextStep;
+        _hasFrameIndexForNextStep = NO;
     } else {
-        m_frameIndex++;
+        _frameIndex++;
     }
 
     SwiffScene *currentScene = [self scene];
@@ -309,17 +309,17 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
     // If we switched scenes, see if we should loop
     if (lastScene != currentScene) {
-        if (m_loopsScene) {
-            m_frameIndex = [lastScene indexInMovie];
+        if (_loopsScene) {
+            _frameIndex = [lastScene indexInMovie];
         }
 
     // If frame is now nil, we hit the end of the movie
     } else if (![self frame]) {
-        if (m_loopsMovie) {
-            m_frameIndex = 0;
+        if (_loopsMovie) {
+            _frameIndex = 0;
         } else {
             atEnd = YES;
-            m_frameIndex--;
+            _frameIndex--;
         }
     }
     
@@ -327,7 +327,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
         [self stop];
     }
 
-    [m_delegate playheadDidUpdate:self step:YES];
+    [_delegate playheadDidUpdate:self step:YES];
 }
 
 
@@ -336,10 +336,10 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (SwiffFrame *) frame
 {
-    NSArray *frames = [m_movie frames];
+    NSArray *frames = [_movie frames];
 
-    if (m_frameIndex < [frames count]) {
-        return [frames objectAtIndex:m_frameIndex];
+    if (_frameIndex < [frames count]) {
+        return [frames objectAtIndex:_frameIndex];
     }
     
     return nil;
@@ -354,7 +354,7 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 - (BOOL) isPlaying
 {
-    return m_timer || m_displayLink;
+    return _timer || _displayLink;
 }
 
 @end

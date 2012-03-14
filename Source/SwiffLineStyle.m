@@ -34,17 +34,17 @@ const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
 
 @implementation SwiffLineStyle
 
-@synthesize width              = m_width,
-            color              = m_color,
-            fillStyle          = m_fillStyle,
-            startLineCap       = m_startLineCap,
-            endLineCap         = m_endLineCap,
-            lineJoin           = m_lineJoin,
-            miterLimit         = m_miterLimit,
-            scalesHorizontally = m_scalesHorizontally,
-            scalesVertically   = m_scalesVertically,
-            pixelAligned       = m_pixelAligned,
-            closesStroke       = m_closesStroke;
+@synthesize width              = _width,
+            color              = _color,
+            fillStyle          = _fillStyle,
+            startLineCap       = _startLineCap,
+            endLineCap         = _endLineCap,
+            lineJoin           = _lineJoin,
+            miterLimit         = _miterLimit,
+            scalesHorizontally = _scalesHorizontally,
+            scalesVertically   = _scalesVertically,
+            pixelAligned       = _pixelAligned,
+            closesStroke       = _closesStroke;
 
 
 + (NSArray *) lineStyleArrayWithParser:(SwiffParser *)parser
@@ -84,9 +84,9 @@ const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
         UInt16 width;
         SwiffParserReadUInt16(parser, &width);
         if (width == 1) {
-            m_width = SwiffLineStyleHairlineWidth;
+            _width = SwiffLineStyleHairlineWidth;
         } else {
-            m_width = SwiffGetCGFloatFromTwips(width);
+            _width = SwiffGetCGFloatFromTwips(width);
         }
 
         CGLineCap (^getLineCap)(UInt32) = ^(UInt32 capStyle) {
@@ -116,12 +116,12 @@ const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
         NSInteger version = SwiffParserGetCurrentTagVersion(parser);
 
         if (version < 3) {
-            SwiffParserReadColorRGB(parser, &m_color);
-            m_closesStroke = YES;
+            SwiffParserReadColorRGB(parser, &_color);
+            _closesStroke = YES;
 
         } else if (version == 3) {
-            SwiffParserReadColorRGBA(parser, &m_color);
-            m_closesStroke = YES;
+            SwiffParserReadColorRGBA(parser, &_color);
+            _closesStroke = YES;
 
         } else {
             UInt32 startCapStyle, joinStyle, hasFillFlag, noHScaleFlag, noVScaleFlag, pixelHintingFlag, reserved, noClose, endCapStyle;
@@ -136,28 +136,28 @@ const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
             SwiffParserReadUBits(parser, 1, &noClose);
             SwiffParserReadUBits(parser, 2, &endCapStyle);
             
-            m_startLineCap       =  getLineCap(startCapStyle);
-            m_endLineCap         =  getLineCap(endCapStyle);
-            m_lineJoin           =  getLineJoin(joinStyle);
-            m_scalesHorizontally = !noHScaleFlag && (m_width != SwiffLineStyleHairlineWidth);
-            m_scalesVertically   = !noVScaleFlag && (m_width != SwiffLineStyleHairlineWidth);
-            m_pixelAligned       =  pixelHintingFlag;
-            m_closesStroke       = !noClose;
+            _startLineCap       =  getLineCap(startCapStyle);
+            _endLineCap         =  getLineCap(endCapStyle);
+            _lineJoin           =  getLineJoin(joinStyle);
+            _scalesHorizontally = !noHScaleFlag && (_width != SwiffLineStyleHairlineWidth);
+            _scalesVertically   = !noVScaleFlag && (_width != SwiffLineStyleHairlineWidth);
+            _pixelAligned       =  pixelHintingFlag;
+            _closesStroke       = !noClose;
 
-            if (m_lineJoin == kCGLineJoinMiter) {
-                SwiffParserReadFixed8(parser, &m_miterLimit);
+            if (_lineJoin == kCGLineJoinMiter) {
+                SwiffParserReadFixed8(parser, &_miterLimit);
             }
 
             if (!hasFillFlag) {
-                SwiffParserReadColorRGBA(parser, &m_color);
+                SwiffParserReadColorRGBA(parser, &_color);
 
             } else {
-                m_color.red   = 0;
-                m_color.green = 0;
-                m_color.blue  = 0;
-                m_color.alpha = 255;
+                _color.red   = 0;
+                _color.green = 0;
+                _color.blue  = 0;
+                _color.alpha = 255;
                 
-                m_fillStyle = [[SwiffFillStyle alloc] initWithParser:parser];
+                _fillStyle = [[SwiffFillStyle alloc] initWithParser:parser];
             }
         }
 
@@ -172,7 +172,7 @@ const CGFloat SwiffLineStyleHairlineWidth = CGFLOAT_MIN;
 
 - (SwiffColor *) colorPointer
 {
-    return &m_color;
+    return &_color;
 }
 
 

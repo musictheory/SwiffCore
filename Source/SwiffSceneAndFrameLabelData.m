@@ -37,16 +37,16 @@
 
 
 @implementation SwiffSceneAndFrameLabelData {
-    SwiffMovie   *m_movie;
-    NSDictionary *m_offsetToSceneNameMap;
-    NSDictionary *m_numberToFrameLabelMap;
+    SwiffMovie   *_movie;
+    NSDictionary *_offsetToSceneNameMap;
+    NSDictionary *_numberToFrameLabelMap;
 }
 
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie
 {
     if ((self = [super init])) {
-        m_movie = movie;
+        _movie = movie;
     
         @autoreleasepool {
             UInt32 sceneCount;
@@ -55,7 +55,7 @@
             // Read scene names and offsets
             if (sceneCount) {
                 NSMutableDictionary *map = [[NSMutableDictionary alloc] initWithCapacity:sceneCount];
-                m_offsetToSceneNameMap = map;
+                _offsetToSceneNameMap = map;
 
                 for (UInt32 i = 0; i < sceneCount; i++) {
                     UInt32 frameOffset = 0;
@@ -76,7 +76,7 @@
             // Read frame labels
             if (labelCount) {
                 NSMutableDictionary *map = [[NSMutableDictionary alloc] initWithCapacity:labelCount];
-                m_numberToFrameLabelMap = map;
+                _numberToFrameLabelMap = map;
 
                 for (UInt32 i = 0; i < labelCount; i++) {
                     UInt32 frameNumber;
@@ -99,14 +99,14 @@
 
 - (void) clearWeakReferences
 {
-    m_movie = nil;
+    _movie = nil;
 }
 
 
 - (NSArray *) scenesForFrames:(NSArray *)frames
 {
-    NSMutableArray *result = [NSMutableArray arrayWithCapacity:[m_offsetToSceneNameMap count]];
-    NSArray        *keys   = [[m_offsetToSceneNameMap allKeys] sortedArrayUsingSelector:@selector(compare:)];
+    NSMutableArray *result = [NSMutableArray arrayWithCapacity:[_offsetToSceneNameMap count]];
+    NSArray        *keys   = [[_offsetToSceneNameMap allKeys] sortedArrayUsingSelector:@selector(compare:)];
 
     NSString *lastName   = nil;
     UInt32    lastOffset = 0;
@@ -115,7 +115,7 @@
         NSRange     range       = NSMakeRange(startOffset, endOffset - startOffset);
         NSArray    *sceneFrames = [frames subarrayWithRange:range];
 
-        SwiffScene *scene = [[SwiffScene alloc] initWithMovie:m_movie name:name indexInMovie:startOffset frames:sceneFrames];
+        SwiffScene *scene = [[SwiffScene alloc] initWithMovie:_movie name:name indexInMovie:startOffset frames:sceneFrames];
         [result addObject:scene];
     };
 
@@ -124,7 +124,7 @@
 
         if (lastName) addScene(lastOffset, offset, lastName);
 
-        lastName   = [m_offsetToSceneNameMap objectForKey:key];
+        lastName   = [_offsetToSceneNameMap objectForKey:key];
         lastOffset = offset;
     }
 
@@ -138,11 +138,11 @@
 {
     NSUInteger count = [frames count];
 
-    for (NSNumber *key in m_offsetToSceneNameMap) {
+    for (NSNumber *key in _offsetToSceneNameMap) {
         UInt32 frameNumber = [key unsignedIntValue];
         
         if (frameNumber < count) {
-            [[frames objectAtIndex:frameNumber] _updateLabel:[m_offsetToSceneNameMap objectForKey:key]];
+            [[frames objectAtIndex:frameNumber] _updateLabel:[_offsetToSceneNameMap objectForKey:key]];
         }
     }
 }

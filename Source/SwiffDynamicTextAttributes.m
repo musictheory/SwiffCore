@@ -119,46 +119,46 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
 
 
 @implementation SwiffDynamicTextAttributes {
-    NSString        *m_tabStopsString;
-    SwiffColor       m_fontColor;
-    NSInteger        m_mapType;
-    BOOL             m_hasFontColor;
+    NSString        *_tabStopsString;
+    SwiffColor       _fontColor;
+    NSInteger        _mapType;
+    BOOL             _hasFontColor;
 }
 
 
-@synthesize fontName           = m_fontName,
-            mappedFontName     = m_mappedFontName,
-            fontSizeInTwips    = m_fontSizeInTwips,
-            bold               = m_bold,
-            italic             = m_italic,
-            underline          = m_underline,
-            textAlignment      = m_textAlignment,
-            leftMarginInTwips  = m_leftMarginInTwips,
-            rightMarginInTwips = m_rightMarginInTwips,
-            indentInTwips      = m_indentInTwips,
-            leadingInTwips     = m_leadingInTwips,
-            tabStopsString     = m_tabStopsString;
+@synthesize fontName           = _fontName,
+            mappedFontName     = _mappedFontName,
+            fontSizeInTwips    = _fontSizeInTwips,
+            bold               = _bold,
+            italic             = _italic,
+            underline          = _underline,
+            textAlignment      = _textAlignment,
+            leftMarginInTwips  = _leftMarginInTwips,
+            rightMarginInTwips = _rightMarginInTwips,
+            indentInTwips      = _indentInTwips,
+            leadingInTwips     = _leadingInTwips,
+            tabStopsString     = _tabStopsString;
 
 
 - (id) copyWithZone:(NSZone *)zone
 {
     SwiffDynamicTextAttributes *result = [[SwiffDynamicTextAttributes alloc] init];
 
-    result->m_fontName           = [m_fontName copy];
-    result->m_mappedFontName     = [m_mappedFontName copy];
-    result->m_tabStopsString     = [m_tabStopsString copy];
-    result->m_fontSizeInTwips    = m_fontSizeInTwips;
-    result->m_fontColor          = m_fontColor;
-    result->m_textAlignment      = m_textAlignment;
-    result->m_leftMarginInTwips  = m_leftMarginInTwips;
-    result->m_rightMarginInTwips = m_rightMarginInTwips;
-    result->m_indentInTwips      = m_indentInTwips;
-    result->m_leadingInTwips     = m_leadingInTwips;
-    result->m_mapType            = m_mapType;
-    result->m_bold               = m_bold;
-    result->m_italic             = m_italic;
-    result->m_underline          = m_underline;
-    result->m_hasFontColor       = m_hasFontColor;
+    result->_fontName           = [_fontName copy];
+    result->_mappedFontName     = [_mappedFontName copy];
+    result->_tabStopsString     = [_tabStopsString copy];
+    result->_fontSizeInTwips    = _fontSizeInTwips;
+    result->_fontColor          = _fontColor;
+    result->_textAlignment      = _textAlignment;
+    result->_leftMarginInTwips  = _leftMarginInTwips;
+    result->_rightMarginInTwips = _rightMarginInTwips;
+    result->_indentInTwips      = _indentInTwips;
+    result->_leadingInTwips     = _leadingInTwips;
+    result->_mapType            = _mapType;
+    result->_bold               = _bold;
+    result->_italic             = _italic;
+    result->_underline          = _underline;
+    result->_hasFontColor       = _hasFontColor;
 
     return result;
 }
@@ -169,15 +169,15 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
 
 - (CTFontRef) copyCTFont
 {
-    CGFloat   fontSize = SwiffGetCGFloatFromTwips(m_fontSizeInTwips);
+    CGFloat   fontSize = SwiffGetCGFloatFromTwips(_fontSizeInTwips);
 
-    CTFontRef base   = CTFontCreateWithName((__bridge CFStringRef)m_mappedFontName, fontSize, NULL);
+    CTFontRef base   = CTFontCreateWithName((__bridge CFStringRef)_mappedFontName, fontSize, NULL);
     CTFontRef result = NULL;
 
     if (base) {
         CTFontSymbolicTraits desiredTraits = 0;
-        if (m_bold)   desiredTraits |= kCTFontBoldTrait;
-        if (m_italic) desiredTraits |= kCTFontItalicTrait;
+        if (_bold)   desiredTraits |= kCTFontBoldTrait;
+        if (_italic) desiredTraits |= kCTFontItalicTrait;
 
         CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(base);
         CTFontSymbolicTraits mask   = (kCTFontBoldTrait | kCTFontItalicTrait);
@@ -201,17 +201,17 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
 {
     NSMutableDictionary *result = [[NSMutableDictionary alloc] initWithCapacity:5];
 
-    CGFloat fontPointSize = SwiffGetCGFloatFromTwips(m_fontSizeInTwips);
+    CGFloat fontPointSize = SwiffGetCGFloatFromTwips(_fontSizeInTwips);
     CTFontRef font = [self copyCTFont];
 
     CGFloat leftMarginTweak     = 2.0;
     CGFloat rightMarginTweak    = 2.0;
     CGFloat verticalOffsetTweak = 3.0;
 
-    CGFloat firstLineHeadIndent = SwiffGetCGFloatFromTwips(  m_leftMarginInTwips + m_indentInTwips ) + leftMarginTweak;
-    CGFloat headIndent          = SwiffGetCGFloatFromTwips(  m_leftMarginInTwips)  + leftMarginTweak;
-    CGFloat tailIndent          = SwiffGetCGFloatFromTwips( -m_rightMarginInTwips) - rightMarginTweak;
-    CGFloat lineSpacingAdjust   = SwiffGetCGFloatFromTwips(  m_leadingInTwips );
+    CGFloat firstLineHeadIndent = SwiffGetCGFloatFromTwips(  _leftMarginInTwips + _indentInTwips ) + leftMarginTweak;
+    CGFloat headIndent          = SwiffGetCGFloatFromTwips(  _leftMarginInTwips)  + leftMarginTweak;
+    CGFloat tailIndent          = SwiffGetCGFloatFromTwips( -_rightMarginInTwips) - rightMarginTweak;
+    CGFloat lineSpacingAdjust   = SwiffGetCGFloatFromTwips(  _leadingInTwips );
     CGFloat minimumLineHeight   = 0.0;
     CGFloat maximumLineHeight   = 0.0;
 
@@ -220,7 +220,7 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
     CGFloat leading = CTFontGetLeading(font);
 
     // For direct fonts, Flash appears to use a line height exactly equal to the font size
-    if (m_mapType == SwiffFontMapTypeDirect) {
+    if (_mapType == SwiffFontMapTypeDirect) {
         minimumLineHeight = maximumLineHeight = SwiffFloor(ascent + descent) - SwiffFloor(leading);
         
     } else {
@@ -234,15 +234,15 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
     } 
 
    
-    if (m_hasFontColor) {
-        CGColorRef cgColor = SwiffColorCopyCGColor(m_fontColor);
+    if (_hasFontColor) {
+        CGColorRef cgColor = SwiffColorCopyCGColor(_fontColor);
         if (cgColor) {
             [result setObject:(__bridge id)cgColor forKey:(id)kCTForegroundColorAttributeName];
             CFRelease(cgColor);
         }
     }
 
-    if (m_underline) {
+    if (_underline) {
         NSNumber *number = [NSNumber numberWithInteger:kCTUnderlineStyleSingle];
         [result setObject:number forKey:(id)kCTUnderlineStyleAttributeName];
     }
@@ -251,7 +251,7 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
     [result setObject:number forKey:SwiffTextVerticalOffsetAttributeName];
 
     CTParagraphStyleSetting settings[] = {
-        { kCTParagraphStyleSpecifierAlignment,              sizeof(CTTextAlignment), &m_textAlignment        },
+        { kCTParagraphStyleSpecifierAlignment,              sizeof(CTTextAlignment), &_textAlignment        },
         { kCTParagraphStyleSpecifierFirstLineHeadIndent,    sizeof(CGFloat),         &firstLineHeadIndent    },
         { kCTParagraphStyleSpecifierHeadIndent,             sizeof(CGFloat),         &headIndent             },
         { kCTParagraphStyleSpecifierTailIndent,             sizeof(CGFloat),         &tailIndent             },
@@ -273,27 +273,27 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
 #pragma mark -
 #pragma mark Accessors
 
-- (void) setFontSize:(CGFloat)f    { m_fontSizeInTwips    = SwiffGetTwipsFromCGFloat(f); }
-- (void) setLeftMargin:(CGFloat)f  { m_leftMarginInTwips  = SwiffGetTwipsFromCGFloat(f); }
-- (void) setRightMargin:(CGFloat)f { m_rightMarginInTwips = SwiffGetTwipsFromCGFloat(f); }
-- (void) setIndent:(CGFloat)f      { m_indentInTwips      = SwiffGetTwipsFromCGFloat(f); }
-- (void) setLeading:(CGFloat)f     { m_leadingInTwips     = SwiffGetTwipsFromCGFloat(f); }
+- (void) setFontSize:(CGFloat)f    { _fontSizeInTwips    = SwiffGetTwipsFromCGFloat(f); }
+- (void) setLeftMargin:(CGFloat)f  { _leftMarginInTwips  = SwiffGetTwipsFromCGFloat(f); }
+- (void) setRightMargin:(CGFloat)f { _rightMarginInTwips = SwiffGetTwipsFromCGFloat(f); }
+- (void) setIndent:(CGFloat)f      { _indentInTwips      = SwiffGetTwipsFromCGFloat(f); }
+- (void) setLeading:(CGFloat)f     { _leadingInTwips     = SwiffGetTwipsFromCGFloat(f); }
 
-- (CGFloat) fontSize    { return SwiffGetCGFloatFromTwips(m_fontSizeInTwips);    }
-- (CGFloat) leftMargin  { return SwiffGetCGFloatFromTwips(m_leftMarginInTwips);  }
-- (CGFloat) rightMargin { return SwiffGetCGFloatFromTwips(m_rightMarginInTwips); }
-- (CGFloat) indent      { return SwiffGetCGFloatFromTwips(m_indentInTwips);      }
-- (CGFloat) leading     { return SwiffGetCGFloatFromTwips(m_leadingInTwips);     }
+- (CGFloat) fontSize    { return SwiffGetCGFloatFromTwips(_fontSizeInTwips);    }
+- (CGFloat) leftMargin  { return SwiffGetCGFloatFromTwips(_leftMarginInTwips);  }
+- (CGFloat) rightMargin { return SwiffGetCGFloatFromTwips(_rightMarginInTwips); }
+- (CGFloat) indent      { return SwiffGetCGFloatFromTwips(_indentInTwips);      }
+- (CGFloat) leading     { return SwiffGetCGFloatFromTwips(_leadingInTwips);     }
 
 - (void) setFontName:(NSString *)fontName
 {
-    if (m_fontName != fontName) {
-        m_fontName = [fontName copy];
+    if (_fontName != fontName) {
+        _fontName = [fontName copy];
         
         NSString *mappedName = nil;
-        sGetMapTypeAndName(fontName, &mappedName, &m_mapType);
+        sGetMapTypeAndName(fontName, &mappedName, &_mapType);
 
-        m_mappedFontName = [mappedName copy];
+        _mappedFontName = [mappedName copy];
     }
 }
 
@@ -301,17 +301,17 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
 - (void) setFontColor:(SwiffColor *)fontColor
 {
     if (fontColor) {
-        m_fontColor    = *fontColor;
-        m_hasFontColor = YES;
+        _fontColor    = *fontColor;
+        _hasFontColor = YES;
     } else {
-        m_hasFontColor = NO;
+        _hasFontColor = NO;
     }
 }
 
 
 - (SwiffColor *) fontColor
 {
-    return m_hasFontColor ? &m_fontColor : NULL;
+    return _hasFontColor ? &_fontColor : NULL;
 }
 
 

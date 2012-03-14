@@ -37,22 +37,22 @@
 
 
 @implementation SwiffScene {
-    NSDictionary *m_labelToFrameMap;
+    NSDictionary *_labelToFrameMap;
 }
 
-@synthesize movie        = m_movie,
-            name         = m_name,
-            frames       = m_frames,
-            indexInMovie = m_indexInMovie;
+@synthesize movie        = _movie,
+            name         = _name,
+            frames       = _frames,
+            indexInMovie = _indexInMovie;
 
 
 - (id) initWithMovie:(SwiffMovie *)movie name:(NSString *)name indexInMovie:(NSUInteger)indexInMovie frames:(NSArray *)frames
 {
     if ((self = [super init])) {
-        m_movie        = movie;
-        m_name         = name;
-        m_frames       = frames;
-        m_indexInMovie = indexInMovie;
+        _movie        = movie;
+        _name         = name;
+        _frames       = frames;
+        _indexInMovie = indexInMovie;
         
         NSInteger i = 0;
         for (SwiffFrame *frame in frames) {
@@ -66,37 +66,37 @@
 
 - (void) dealloc
 {
-    [m_frames makeObjectsPerformSelector:@selector(clearWeakReferences) withObject:nil];
+    [_frames makeObjectsPerformSelector:@selector(clearWeakReferences) withObject:nil];
 }
 
 
 - (void) clearWeakReferences
 {
-    m_movie = nil;
+    _movie = nil;
 }
 
 
 - (NSString *) description
 {
-    NSString *nameString = m_name ? [NSString stringWithFormat:@"name='%@', ", m_name] : @"";
-    return [NSString stringWithFormat:@"<%@: %p; %@%d frames>", [self class], self, nameString, [m_frames count]];
+    NSString *nameString = _name ? [NSString stringWithFormat:@"name='%@', ", _name] : @"";
+    return [NSString stringWithFormat:@"<%@: %p; %@%d frames>", [self class], self, nameString, [_frames count]];
 }
 
 
 - (SwiffFrame *) frameWithLabel:(NSString *)label
 {
-    if (!m_labelToFrameMap) {
+    if (!_labelToFrameMap) {
         NSMutableDictionary *map = [[NSMutableDictionary alloc] init];
 
-        for (SwiffFrame *frame in m_frames) {
+        for (SwiffFrame *frame in _frames) {
             NSString *frameLabel = [frame label];
             if (frameLabel) [map setObject:frame forKey:frameLabel];
         }
         
-        m_labelToFrameMap = map;
+        _labelToFrameMap = map;
     }
 
-    return [m_labelToFrameMap objectForKey:label];
+    return [_labelToFrameMap objectForKey:label];
 }
 
 
@@ -108,8 +108,8 @@
 
 - (SwiffFrame *) frameAtIndex1:(NSUInteger)index1
 {
-    if (index1 > 0 && index1 <= [m_frames count]) {
-        return [m_frames objectAtIndex:(index1 - 1)];
+    if (index1 > 0 && index1 <= [_frames count]) {
+        return [_frames objectAtIndex:(index1 - 1)];
     }
     
     return nil;
@@ -118,15 +118,15 @@
 
 - (NSUInteger) index1OfFrame:(SwiffFrame *)frame
 {
-    NSUInteger index = [m_frames indexOfObject:frame];
+    NSUInteger index = [_frames indexOfObject:frame];
     return index == NSNotFound ? NSNotFound : (index + 1);
 }
 
 
 - (SwiffFrame *) frameAtIndex:(NSUInteger)index
 {
-    if (index < [m_frames count]) {
-        return [m_frames objectAtIndex:index];
+    if (index < [_frames count]) {
+        return [_frames objectAtIndex:index];
     }
     
     return nil;
@@ -135,13 +135,13 @@
 
 - (NSUInteger) indexOfFrame:(SwiffFrame *)frame
 {
-    return [m_frames indexOfObject:frame];
+    return [_frames indexOfObject:frame];
 }
 
 
 - (NSUInteger) index1InMovie
 {
-    return m_indexInMovie + 1;
+    return _indexInMovie + 1;
 }
 
 

@@ -39,16 +39,16 @@
 
 
 @implementation SwiffFrame {
-    NSArray *m_placedObjectsWithNames;
+    NSArray *_placedObjectsWithNames;
 }
 
-@synthesize indexInScene  = m_indexInScene,
-            placedObjects = m_placedObjects,
-            scene         = m_scene,
-            label         = m_label,
-            soundEvents   = m_soundEvents,
-            streamSound   = m_streamSound,
-            streamBlock   = m_streamBlock;
+@synthesize indexInScene  = _indexInScene,
+            placedObjects = _placedObjects,
+            scene         = _scene,
+            label         = _label,
+            soundEvents   = _soundEvents,
+            streamSound   = _streamSound,
+            streamBlock   = _streamBlock;
 
 
 - (id) _initWithSortedPlacedObjects: (NSArray *) placedObjects
@@ -58,12 +58,12 @@
                         streamBlock: (SwiffSoundStreamBlock *) streamBlock
 {
     if ((self = [super init])) {
-        m_placedObjects = placedObjects;
-        m_soundEvents   = soundEvents;
-        m_streamSound   = streamSound;
-        m_streamBlock   = streamBlock;
+        _placedObjects = placedObjects;
+        _soundEvents   = soundEvents;
+        _streamSound   = streamSound;
+        _streamBlock   = streamBlock;
 
-        m_placedObjectsWithNames = placedObjectsWithNames;
+        _placedObjectsWithNames = placedObjectsWithNames;
     }
     
     return self;
@@ -72,7 +72,7 @@
 
 - (void) clearWeakReferences
 {
-    m_scene = nil;
+    _scene = nil;
 }
 
 
@@ -87,14 +87,14 @@
 
 - (void) _updateScene:(SwiffScene *)scene indexInScene:(NSUInteger)indexInScene
 {
-    m_scene = scene;
-    m_indexInScene = indexInScene;
+    _scene = scene;
+    _indexInScene = indexInScene;
 }
 
 
 - (void) _updateLabel:(NSString *)label 
 {
-    m_label = [label copy];
+    _label = [label copy];
 }
 
 
@@ -103,7 +103,7 @@
 
 - (SwiffPlacedObject *) placedObjectWithName:(NSString *)name
 {
-    for (SwiffPlacedObject *object in m_placedObjectsWithNames) {
+    for (SwiffPlacedObject *object in _placedObjectsWithNames) {
         if ([[object name] isEqualToString:name]) {
             return object;
         }
@@ -118,25 +118,25 @@
 
 - (NSUInteger) index1InScene
 {
-    return m_indexInScene + 1;
+    return _indexInScene + 1;
 }
 
 
 - (NSUInteger) index1InMovie
 {
-    return [m_scene index1InMovie] + m_indexInScene;
+    return [_scene index1InMovie] + _indexInScene;
 }
 
 
 - (NSUInteger) indexInMovie
 {
-    return [m_scene indexInMovie] + m_indexInScene;
+    return [_scene indexInMovie] + _indexInScene;
 }
 
 
 - (NSArray *) placedObjectsWithNames
 {
-    return m_placedObjectsWithNames;
+    return _placedObjectsWithNames;
 }
 
 

@@ -37,25 +37,25 @@
 
 
 @implementation SwiffView {
-    SwiffLayer *m_layer;
-    BOOL m_delegate_swiffView_willUpdateCurrentFrame;
-    BOOL m_delegate_swiffView_didUpdateCurrentFrame;
-    BOOL m_delegate_swiffView_shouldInterpolateFromFrame_toFrame;
+    SwiffLayer *_layer;
+    BOOL _delegate_swiffView_willUpdateCurrentFrame;
+    BOOL _delegate_swiffView_didUpdateCurrentFrame;
+    BOOL _delegate_swiffView_shouldInterpolateFromFrame_toFrame;
 }
 
-@synthesize delegate = m_delegate;
+@synthesize delegate = _delegate;
 
 
 - (void) dealloc
 {
-    [m_layer clearWeakReferences];
-    [m_layer setSwiffLayerDelegate:nil];
+    [_layer clearWeakReferences];
+    [_layer setSwiffLayerDelegate:nil];
 }
 
 
 - (void) redisplay
 {
-    [m_layer redisplay];
+    [_layer redisplay];
 }
 
 
@@ -76,9 +76,9 @@
     }
 
     if ((self = [super initWithFrame:frame])) {
-        m_layer = [[SwiffLayer alloc] initWithMovie:movie];
-        [m_layer setContentsScale:[[UIScreen mainScreen] scale]];
-        [[self layer] addSublayer:m_layer];
+        _layer = [[SwiffLayer alloc] initWithMovie:movie];
+        [_layer setContentsScale:[[UIScreen mainScreen] scale]];
+        [[self layer] addSublayer:_layer];
         [self _layoutMovieLayer];
     }
     
@@ -107,7 +107,7 @@
         if (scale < 1) scale = 1;
         [self setContentScaleFactor:scale];
         [[self layer] setContentsScale:scale];
-        [m_layer setContentsScale:scale];
+        [_layer setContentsScale:scale];
     }
 }
 
@@ -133,8 +133,8 @@
 
         [self setWantsLayer:YES];
         
-        m_layer = [[SwiffLayer alloc] initWithMovie:movie];
-        [[self layer] addSublayer:m_layer];
+        _layer = [[SwiffLayer alloc] initWithMovie:movie];
+        [[self layer] addSublayer:_layer];
 
         [self _layoutMovieLayer];
     }
@@ -172,7 +172,7 @@
     }
 
     CGRect movieFrame = CGRectMake(SwiffFloor((w - size.width) / 2.0), SwiffFloor((h - size.height) / 2.0), size.width, size.height);
-    [m_layer setFrame:movieFrame];
+    [_layer setFrame:movieFrame];
 }
 
 
@@ -181,23 +181,23 @@
 
 - (void) layer:(SwiffLayer *)layer willUpdateCurrentFrame:(SwiffFrame *)frame
 {
-    if (m_delegate_swiffView_willUpdateCurrentFrame) {
-        [m_delegate swiffView:self willUpdateCurrentFrame:frame];
+    if (_delegate_swiffView_willUpdateCurrentFrame) {
+        [_delegate swiffView:self willUpdateCurrentFrame:frame];
     }
 }
 
 - (void) layer:(SwiffLayer *)layer didUpdateCurrentFrame:(SwiffFrame *)frame
 {
-    if (m_delegate_swiffView_didUpdateCurrentFrame) {
-        [m_delegate swiffView:self didUpdateCurrentFrame:frame];
+    if (_delegate_swiffView_didUpdateCurrentFrame) {
+        [_delegate swiffView:self didUpdateCurrentFrame:frame];
     }
 }
 
 
 - (BOOL) layer:(SwiffLayer *)layer shouldInterpolateFromFrame:(SwiffFrame *)fromFrame toFrame:(SwiffFrame *)toFrame
 {
-    if (m_delegate_swiffView_shouldInterpolateFromFrame_toFrame) {
-        return [m_delegate swiffView:self shouldInterpolateFromFrame:fromFrame toFrame:toFrame];
+    if (_delegate_swiffView_shouldInterpolateFromFrame_toFrame) {
+        return [_delegate swiffView:self shouldInterpolateFromFrame:fromFrame toFrame:toFrame];
     }
         
     return NO;
@@ -209,50 +209,50 @@
 
 - (void) setDelegate:(id<SwiffViewDelegate>)delegate
 {
-    if (m_delegate != delegate) {
-        [m_layer setSwiffLayerDelegate:(delegate ? self : nil)];
+    if (_delegate != delegate) {
+        [_layer setSwiffLayerDelegate:(delegate ? self : nil)];
 
-        m_delegate = delegate;
+        _delegate = delegate;
 
-        m_delegate_swiffView_willUpdateCurrentFrame = [m_delegate respondsToSelector:@selector(swiffView:willUpdateCurrentFrame:)];
-        m_delegate_swiffView_didUpdateCurrentFrame  = [m_delegate respondsToSelector:@selector(swiffView:didUpdateCurrentFrame:)];
-        m_delegate_swiffView_shouldInterpolateFromFrame_toFrame = [m_delegate respondsToSelector:@selector(swiffView:shouldInterpolateFromFrame:toFrame:)];
+        _delegate_swiffView_willUpdateCurrentFrame = [_delegate respondsToSelector:@selector(swiffView:willUpdateCurrentFrame:)];
+        _delegate_swiffView_didUpdateCurrentFrame  = [_delegate respondsToSelector:@selector(swiffView:didUpdateCurrentFrame:)];
+        _delegate_swiffView_shouldInterpolateFromFrame_toFrame = [_delegate respondsToSelector:@selector(swiffView:shouldInterpolateFromFrame:toFrame:)];
     }
 }
 
 
 - (void) setDrawsBackground:(BOOL)drawsBackground
 {
-    [m_layer setDrawsBackground:drawsBackground];
+    [_layer setDrawsBackground:drawsBackground];
 
     if (drawsBackground) {
-        [[self layer] setBackgroundColor:[m_layer backgroundColor]];
+        [[self layer] setBackgroundColor:[_layer backgroundColor]];
     } else {
         [[self layer] setBackgroundColor:NULL];
     }
 }
 
-- (void) setMultiplyColor:(SwiffColor *)color         { [m_layer setMultiplyColor:color];             }
-- (void) setHairlineWidth:(CGFloat)width              { [m_layer setHairlineWidth:width];             }
-- (void) setFillHairlineWidth:(CGFloat)width          { [m_layer setFillHairlineWidth:width];         }
-- (void) setShouldAntialias:(BOOL)yn                  { [m_layer setShouldAntialias:yn];              }
-- (void) setShouldSmoothFonts:(BOOL)yn                { [m_layer setShouldSmoothFonts:yn];            }
-- (void) setShouldSubpixelPositionFonts:(BOOL)yn      { [m_layer setShouldSubpixelPositionFonts:yn];  }
-- (void) setShouldSubpixelQuantizeFonts:(BOOL)yn      { [m_layer setShouldSubpixelQuantizeFonts:yn];  }
-- (void) setShouldFlattenSublayers:(BOOL)yn           { [m_layer setShouldFlattenSublayers:yn];       }
-- (void) setShouldDrawDebugColors:(BOOL)yn            { [m_layer setShouldDrawDebugColors:yn];        }
+- (void) setMultiplyColor:(SwiffColor *)color         { [_layer setMultiplyColor:color];             }
+- (void) setHairlineWidth:(CGFloat)width              { [_layer setHairlineWidth:width];             }
+- (void) setFillHairlineWidth:(CGFloat)width          { [_layer setFillHairlineWidth:width];         }
+- (void) setShouldAntialias:(BOOL)yn                  { [_layer setShouldAntialias:yn];              }
+- (void) setShouldSmoothFonts:(BOOL)yn                { [_layer setShouldSmoothFonts:yn];            }
+- (void) setShouldSubpixelPositionFonts:(BOOL)yn      { [_layer setShouldSubpixelPositionFonts:yn];  }
+- (void) setShouldSubpixelQuantizeFonts:(BOOL)yn      { [_layer setShouldSubpixelQuantizeFonts:yn];  }
+- (void) setShouldFlattenSublayers:(BOOL)yn           { [_layer setShouldFlattenSublayers:yn];       }
+- (void) setShouldDrawDebugColors:(BOOL)yn            { [_layer setShouldDrawDebugColors:yn];        }
 
-- (SwiffMovie    *) movie                             { return [m_layer movie];                       }
-- (SwiffPlayhead *) playhead                          { return [m_layer playhead];                    }
-- (BOOL)            drawsBackground                   { return [m_layer drawsBackground];             }
-- (SwiffColor    *) multiplyColor                     { return [m_layer multiplyColor];               }
-- (CGFloat)         hairlineWidth                     { return [m_layer hairlineWidth];               }
-- (CGFloat)         fillHairlineWidth                 { return [m_layer fillHairlineWidth];           }       
-- (BOOL)            shouldAntialias                   { return [m_layer shouldAntialias];             }
-- (BOOL)            shouldSmoothFonts                 { return [m_layer shouldSmoothFonts];           }
-- (BOOL)            shouldSubpixelPositionFonts       { return [m_layer shouldSubpixelPositionFonts]; }
-- (BOOL)            shouldSubpixelQuantizeFonts       { return [m_layer shouldSubpixelQuantizeFonts]; }
-- (BOOL)            shouldFlattenSublayers            { return [m_layer shouldFlattenSublayers];      }
-- (BOOL)            shouldDrawDebugColors             { return [m_layer shouldDrawDebugColors];       }
+- (SwiffMovie    *) movie                             { return [_layer movie];                       }
+- (SwiffPlayhead *) playhead                          { return [_layer playhead];                    }
+- (BOOL)            drawsBackground                   { return [_layer drawsBackground];             }
+- (SwiffColor    *) multiplyColor                     { return [_layer multiplyColor];               }
+- (CGFloat)         hairlineWidth                     { return [_layer hairlineWidth];               }
+- (CGFloat)         fillHairlineWidth                 { return [_layer fillHairlineWidth];           }       
+- (BOOL)            shouldAntialias                   { return [_layer shouldAntialias];             }
+- (BOOL)            shouldSmoothFonts                 { return [_layer shouldSmoothFonts];           }
+- (BOOL)            shouldSubpixelPositionFonts       { return [_layer shouldSubpixelPositionFonts]; }
+- (BOOL)            shouldSubpixelQuantizeFonts       { return [_layer shouldSubpixelQuantizeFonts]; }
+- (BOOL)            shouldFlattenSublayers            { return [_layer shouldFlattenSublayers];      }
+- (BOOL)            shouldDrawDebugColors             { return [_layer shouldDrawDebugColors];       }
 
 @end

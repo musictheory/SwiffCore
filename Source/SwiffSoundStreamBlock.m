@@ -30,8 +30,8 @@
 
 @implementation SwiffSoundStreamBlock
 
-@synthesize frameOffset = m_frameOffset,
-            sampleCount = m_sampleCount,
-            sampleSeek  = m_sampleSeek;
+@synthesize frameOffset = _frameOffset,
+            sampleCount = _sampleCount,
+            sampleSeek  = _sampleSeek;
 
 @end

@@ -29,7 +29,7 @@
 
 @interface SwiffSparseArrayBucket : NSObject {
 @package
-    NSObject *m_objects[256];
+    NSObject *_objects[256];
 }
 @end
 
@@ -39,7 +39,7 @@
 
 
 @implementation SwiffSparseArray {
-    SwiffSparseArrayBucket *m_buckets[256];
+    SwiffSparseArrayBucket *_buckets[256];
 }
 
 - (NSUInteger) countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id __unsafe_unretained [])buffer count:(NSUInteger)count
@@ -55,7 +55,7 @@
 
         // Did we fail because we have no bucket?
         // If so, skip over the entire non-existant bucket
-        } else if (!m_buckets[i >> 8]) {
+        } else if (!_buckets[i >> 8]) {
             i += 256;
             continue;
         }
@@ -90,10 +90,10 @@ id SwiffSparseArrayGetObjectAtIndex(SwiffSparseArray *self, UInt16 index)
     UInt8 highByte = index >> 8;
     UInt8 lowByte  = index & 0xFF;
 
-    SwiffSparseArrayBucket *bucket = self->m_buckets[highByte];
+    SwiffSparseArrayBucket *bucket = self->_buckets[highByte];
 
     if (bucket) {
-        return bucket->m_objects[lowByte];
+        return bucket->_objects[lowByte];
     } else {
         return nil;
     }
@@ -107,13 +107,13 @@ void SwiffSparseArraySetObjectAtIndex(SwiffSparseArray *self, UInt16 index, id o
     UInt8 highByte = index >> 8;
     UInt8 lowByte  = index & 0xFF;
 
-    SwiffSparseArrayBucket *bucket = self->m_buckets[highByte];
+    SwiffSparseArrayBucket *bucket = self->_buckets[highByte];
     if (!bucket) {
-        bucket = self->m_buckets[highByte] = [[SwiffSparseArrayBucket alloc] init];
+        bucket = self->_buckets[highByte] = [[SwiffSparseArrayBucket alloc] init];
     }
 
     if (bucket) {
-        bucket->m_objects[lowByte] = object;
+        bucket->_objects[lowByte] = object;
     }
 }
 

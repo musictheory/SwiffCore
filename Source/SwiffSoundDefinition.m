@@ -38,22 +38,22 @@
 
 
 @implementation SwiffSoundDefinition {
-    NSMutableData *m_data;
-    NSUInteger    *m_frames;
-    NSInteger      m_framesCount;
-    NSInteger      m_framesCapacity;
-    UInt8          m_rawSampleRate;
-    SInt16         m_latencySeek;
-    UInt16         m_averageSampleCount;
+    NSMutableData *_data;
+    NSUInteger    *_frames;
+    NSInteger      _framesCount;
+    NSInteger      _framesCapacity;
+    UInt8          _rawSampleRate;
+    SInt16         _latencySeek;
+    UInt16         _averageSampleCount;
 }
 
-@synthesize stereo             = m_stereo,
-            bitsPerChannel     = m_bitsPerChannel,
-            movie              = m_movie,
-            libraryID          = m_libraryID,
-            data               = m_data,
-            sampleCount        = m_sampleCount,
-            format             = m_format;
+@synthesize stereo             = _stereo,
+            bitsPerChannel     = _bitsPerChannel,
+            movie              = _movie,
+            libraryID          = _libraryID,
+            data               = _data,
+            sampleCount        = _sampleCount,
+            format             = _format;
 
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie
@@ -62,7 +62,7 @@
         SwiffTag tag = SwiffParserGetCurrentTag(parser);
 
         if (tag == SwiffTagDefineSound) {
-            SwiffParserReadUInt16(parser, &m_libraryID);
+            SwiffParserReadUInt16(parser, &_libraryID);
 
         } else if (tag == SwiffTagSoundStreamHead) {
             UInt32 reserved, playbackSoundRate, playbackSoundSize, playbackSoundType;
@@ -83,26 +83,26 @@
         SwiffParserReadUBits(parser, 1, &soundSize);
         SwiffParserReadUBits(parser, 1, &soundType);
         
-        m_movie          = movie;
-        m_format         = soundFormat;
-        m_rawSampleRate  = soundRate;
-        m_bitsPerChannel = (soundSize == 1) ? 16 : 8;
-        m_stereo         = (soundType == 1) ? YES : NO;
-        m_data           = [[NSMutableData alloc] init];
+        _movie          = movie;
+        _format         = soundFormat;
+        _rawSampleRate  = soundRate;
+        _bitsPerChannel = (soundSize == 1) ? 16 : 8;
+        _stereo         = (soundType == 1) ? YES : NO;
+        _data           = [[NSMutableData alloc] init];
 
         if (tag == SwiffTagDefineSound) {
-            SwiffParserReadUInt32(parser, &m_sampleCount);
+            SwiffParserReadUInt32(parser, &_sampleCount);
 
             if (soundFormat == SwiffSoundFormatMP3) {
-                SwiffParserReadSInt16(parser, &m_latencySeek);
+                SwiffParserReadSInt16(parser, &_latencySeek);
                 [self _readMP3FramesFromParser:parser];
             }
 
         } else if (tag == SwiffTagSoundStreamHead) {
-            SwiffParserReadUInt16(parser, &m_averageSampleCount);
+            SwiffParserReadUInt16(parser, &_averageSampleCount);
             
             if (soundFormat == SwiffSoundFormatMP3) {
-                SwiffParserReadSInt16(parser, &m_latencySeek);
+                SwiffParserReadSInt16(parser, &_latencySeek);
             }
         }
     }
@@ -113,14 +113,14 @@
 
 - (void) dealloc
 {
-    free(m_frames);
-    m_frames = NULL;
+    free(_frames);
+    _frames = NULL;
 }
 
 
 - (void) clearWeakReferences
 {
-    m_movie = nil;
+    _movie = nil;
 }
 
 
@@ -138,15 +138,15 @@
             SwiffWarn(@"Sound", @"SwiffMPEGReadHeader() returned %d", error);
         }
 
-        if (m_framesCount == m_framesCapacity) {
-            m_framesCapacity = m_framesCapacity ? m_framesCapacity * 2 : 256;
-            m_frames = realloc(m_frames, sizeof(NSUInteger) * m_framesCapacity);
+        if (_framesCount == _framesCapacity) {
+            _framesCapacity = _framesCapacity ? _framesCapacity * 2 : 256;
+            _frames = realloc(_frames, sizeof(NSUInteger) * _framesCapacity);
         }
 
-        m_frames[m_framesCount] = [m_data length];
-        m_framesCount++;
+        _frames[_framesCount] = [_data length];
+        _framesCount++;
         
-        [m_data appendBytes:frameStart length:header.frameSize];
+        [_data appendBytes:frameStart length:header.frameSize];
 
         SwiffParserAdvance(parser, header.frameSize);
     }
@@ -158,14 +158,14 @@
 
 CFDataRef SwiffSoundDefinitionGetData(SwiffSoundDefinition *self)
 {
-    return (__bridge CFDataRef)self->m_data;
+    return (__bridge CFDataRef)self->_data;
 }
 
 
 extern CFIndex SwiffSoundDefinitionGetOffsetForFrame(SwiffSoundDefinition *self, CFIndex frame)
 {
-    if ((frame >= 0) && (frame < self->m_framesCount)) {
-        return self->m_frames[frame];
+    if ((frame >= 0) && (frame < self->_framesCount)) {
+        return self->_frames[frame];
     }
     
     return kCFNotFound;
@@ -193,14 +193,14 @@ extern CFIndex SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *self,
     if ([self isStreaming]) {
         result = [[SwiffSoundStreamBlock alloc] init];
         
-        [result setFrameOffset:m_framesCount];
+        [result setFrameOffset:_framesCount];
         
-        if (m_format == SwiffSoundFormatMP3) {
+        if (_format == SwiffSoundFormatMP3) {
             UInt16 sampleCount = 0;
             SwiffParserReadUInt16(parser, &sampleCount);
             [result setSampleCount:sampleCount];
 
-            m_sampleCount += sampleCount;
+            _sampleCount += sampleCount;
 
             SInt16 seekSamples = 0;
             SwiffParserReadSInt16(parser, &seekSamples);
@@ -223,14 +223,14 @@ extern CFIndex SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *self,
 
 - (float) sampleRate
 {
-    if      (m_rawSampleRate == 0)  return  5512.5f;
-    else if (m_rawSampleRate == 1)  return 11025.0f;
-    else if (m_rawSampleRate == 2)  return 22050.0f;
+    if      (_rawSampleRate == 0)  return  5512.5f;
+    else if (_rawSampleRate == 1)  return 11025.0f;
+    else if (_rawSampleRate == 2)  return 22050.0f;
     else                            return 44100.0f;
 }
 
-- (BOOL)      isStreaming        { return m_libraryID == 0;     }
-- (NSInteger) averageSampleCount { return m_averageSampleCount; }
-- (NSInteger) latencySeek        { return m_latencySeek;        }
+- (BOOL)      isStreaming        { return _libraryID == 0;     }
+- (NSInteger) averageSampleCount { return _averageSampleCount; }
+- (NSInteger) latencySeek        { return _latencySeek;        }
 
 @end

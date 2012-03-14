@@ -747,11 +747,11 @@ static void sDrawPlacedDynamicText(SwiffRenderState *state, SwiffPlacedDynamicTe
 
 static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placedObject)
 {
-    UInt16      placedObjectClipDepth = placedObject->m_additional ? [placedObject clipDepth] : 0;
-    UInt16      placedObjectDepth     = placedObject->m_depth;
-    BOOL        placedObjectIsHidden  = placedObject->m_additional ? [placedObject isHidden] : NO;
-    BOOL        hasColorTransform     = placedObject->m_additional ? [placedObject hasColorTransform] : NO;
-    CGBlendMode blendMode             = placedObject->m_additional ? [placedObject CGBlendMode] : kCGBlendModeNormal;
+    UInt16      placedObjectClipDepth = placedObject->_additional ? [placedObject clipDepth] : 0;
+    UInt16      placedObjectDepth     = placedObject->_depth;
+    BOOL        placedObjectIsHidden  = placedObject->_additional ? [placedObject isHidden] : NO;
+    BOOL        hasColorTransform     = placedObject->_additional ? [placedObject hasColorTransform] : NO;
+    CGBlendMode blendMode             = placedObject->_additional ? [placedObject CGBlendMode] : kCGBlendModeNormal;
 
     // If we are in a clipping mask...
     if (state->clipDepth) {
@@ -838,28 +838,28 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
 #pragma mark SwiffRenderer Class
 
 @implementation SwiffRenderer {
-    CGAffineTransform m_baseAffineTransform;
-    SwiffColor        m_multiplyColor;
-    BOOL              m_hasBaseAffineTransform;
-    BOOL              m_hasMultiplyColor;
+    CGAffineTransform _baseAffineTransform;
+    SwiffColor        _multiplyColor;
+    BOOL              _hasBaseAffineTransform;
+    BOOL              _hasMultiplyColor;
 }
 
-@synthesize movie                       = m_movie,
-            scaleFactorHint             = m_scaleFactorHint,
-            hairlineWidth               = m_hairlineWidth,
-            fillHairlineWidth           = m_fillHairlineWidth,
-            shouldAntialias             = m_shouldAntialias,
-            shouldSmoothFonts           = m_shouldSmoothFonts,
-            shouldSubpixelPositionFonts = m_shouldSubpixelPositionFonts,
-            shouldSubpixelQuantizeFonts = m_shouldSubpixelQuantizeFonts;
+@synthesize movie                       = _movie,
+            scaleFactorHint             = _scaleFactorHint,
+            hairlineWidth               = _hairlineWidth,
+            fillHairlineWidth           = _fillHairlineWidth,
+            shouldAntialias             = _shouldAntialias,
+            shouldSmoothFonts           = _shouldSmoothFonts,
+            shouldSubpixelPositionFonts = _shouldSubpixelPositionFonts,
+            shouldSubpixelQuantizeFonts = _shouldSubpixelQuantizeFonts;
 
 
 - (id) initWithMovie:(SwiffMovie *)movie
 {
     if ((self = [super init])) {
-        m_movie = movie;
-        m_shouldAntialias = YES;
-        m_scaleFactorHint = 1.0;
+        _movie = movie;
+        _shouldAntialias = YES;
+        _scaleFactorHint = 1.0;
     }
 
     return self;
@@ -871,37 +871,37 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
     SwiffRenderState state;
     memset(&state, 0, sizeof(SwiffRenderState));
 
-    state.movie   = m_movie;
+    state.movie   = _movie;
     state.context = context;
 
-    if (m_hasMultiplyColor && (m_multiplyColor.alpha > 0)) {
-        state.multiplyRed   = (m_multiplyColor.red   * m_multiplyColor.alpha);
-        state.multiplyGreen = (m_multiplyColor.green * m_multiplyColor.alpha);
-        state.multiplyBlue  = (m_multiplyColor.blue  * m_multiplyColor.alpha);
+    if (_hasMultiplyColor && (_multiplyColor.alpha > 0)) {
+        state.multiplyRed   = (_multiplyColor.red   * _multiplyColor.alpha);
+        state.multiplyGreen = (_multiplyColor.green * _multiplyColor.alpha);
+        state.multiplyBlue  = (_multiplyColor.blue  * _multiplyColor.alpha);
         state.hasMultiplyColor = YES;
     }
     
-    if (m_hasBaseAffineTransform) {
-        state.affineTransform = m_baseAffineTransform;
+    if (_hasBaseAffineTransform) {
+        state.affineTransform = _baseAffineTransform;
     } else {
         state.affineTransform = CGAffineTransformIdentity;
     }
 
     state.ceilX = CGContextGetCTM(context).a < 0;
     state.ceilY = CGContextGetCTM(context).d > 0;
-    state.hairlineWidth     = m_hairlineWidth ? m_hairlineWidth : 1.0;
-    state.fillHairlineWidth = m_fillHairlineWidth;
-    state.scaleFactorHint   = m_scaleFactorHint;
+    state.hairlineWidth     = _hairlineWidth ? _hairlineWidth : 1.0;
+    state.fillHairlineWidth = _fillHairlineWidth;
+    state.scaleFactorHint   = _scaleFactorHint;
     state.clipBoundingBox   = CGContextGetClipBoundingBox(context);
 
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 
     CGContextSetInterpolationQuality(context, kCGInterpolationDefault);
 
-    CGContextSetShouldAntialias(context, m_shouldAntialias);
-    CGContextSetShouldSmoothFonts(context, m_shouldSmoothFonts);
-    CGContextSetShouldSubpixelPositionFonts(context, m_shouldSubpixelPositionFonts);
-    CGContextSetShouldSubpixelQuantizeFonts(context, m_shouldSubpixelQuantizeFonts);
+    CGContextSetShouldAntialias(context, _shouldAntialias);
+    CGContextSetShouldSmoothFonts(context, _shouldSmoothFonts);
+    CGContextSetShouldSubpixelPositionFonts(context, _shouldSubpixelPositionFonts);
+    CGContextSetShouldSubpixelQuantizeFonts(context, _shouldSubpixelQuantizeFonts);
 
     CGContextSetLineCap(context, kCGLineCapRound);
     CGContextSetLineJoin(context, kCGLineJoinRound);
@@ -928,18 +928,18 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
 - (void) setBaseAffineTransform:(CGAffineTransform *)transform
 {
     if (transform && !CGAffineTransformIsIdentity(*transform)) {
-        m_baseAffineTransform = *transform;
-        m_hasBaseAffineTransform = YES;
+        _baseAffineTransform = *transform;
+        _hasBaseAffineTransform = YES;
     } else {
-        m_hasBaseAffineTransform = NO;
+        _hasBaseAffineTransform = NO;
     }
 }
 
 
 - (CGAffineTransform *) baseAffineTransform
 {
-    if (m_hasBaseAffineTransform) {
-        return &m_baseAffineTransform;
+    if (_hasBaseAffineTransform) {
+        return &_baseAffineTransform;
     } else {
         return NULL;
     }
@@ -949,18 +949,18 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
 - (void) setMultiplyColor:(SwiffColor *)color
 {
     if (color && (color->alpha > 0)) {
-        m_multiplyColor = *color;
-        m_hasMultiplyColor = YES;
+        _multiplyColor = *color;
+        _hasMultiplyColor = YES;
     } else {
-        m_hasMultiplyColor = NO;
+        _hasMultiplyColor = NO;
     }
 }
 
 
 - (SwiffColor *) multiplyColor
 {
-    if (m_hasMultiplyColor) {
-        return &m_multiplyColor;
+    if (_hasMultiplyColor) {
+        return &_multiplyColor;
     } else {
         return NULL;
     }

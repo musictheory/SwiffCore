@@ -33,38 +33,38 @@
 
 
 @implementation SwiffDynamicTextDefinition {
-    UInt16      m_fontHeightInTwips;
-    UInt16      m_leftMarginInTwips;
-    UInt16      m_rightMarginInTwips;
-    UInt16      m_indentInTwips;
-    SInt16      m_leadingInTwips;
+    UInt16      _fontHeightInTwips;
+    UInt16      _leftMarginInTwips;
+    UInt16      _rightMarginInTwips;
+    UInt16      _indentInTwips;
+    SInt16      _leadingInTwips;
 
-    BOOL        m_wordWrap;
-    BOOL        m_password;
-    BOOL        m_multiline;
-    BOOL        m_autosize;
-    BOOL        m_border;
-    BOOL        m_wasStatic;
-    BOOL        m_useOutlines;
+    BOOL        _wordWrap;
+    BOOL        _password;
+    BOOL        _multiline;
+    BOOL        _autosize;
+    BOOL        _border;
+    BOOL        _wasStatic;
+    BOOL        _useOutlines;
 }
 
-@synthesize movie         = m_movie,
-            libraryID     = m_libraryID,
-            bounds        = m_bounds,
-            variableName  = m_variableName,
-            initialText   = m_initialText,
-            maxLength     = m_maxLength,
-            textAlignment = m_textAlignment,
-            editable      = m_editable,
-            selectable    = m_selectable,
-            HTML          = m_HTML,
-            hasLayout     = m_hasLayout,
-            hasFont       = m_hasFont,
-            hasFontClass  = m_hasFontClass,
-            fontClass     = m_fontClass,
-            fontID        = m_fontID,
-            hasColor      = m_hasColor,
-            color         = m_color;
+@synthesize movie         = _movie,
+            libraryID     = _libraryID,
+            bounds        = _bounds,
+            variableName  = _variableName,
+            initialText   = _initialText,
+            maxLength     = _maxLength,
+            textAlignment = _textAlignment,
+            editable      = _editable,
+            selectable    = _selectable,
+            HTML          = _HTML,
+            hasLayout     = _hasLayout,
+            hasFont       = _hasFont,
+            hasFontClass  = _hasFontClass,
+            fontClass     = _fontClass,
+            fontID        = _fontID,
+            hasColor      = _hasColor,
+            color         = _color;
 
 
 + (Class) placedObjectClass
@@ -82,87 +82,87 @@
            
         UInt16 libraryID;
         SwiffParserReadUInt16(parser, &libraryID);
-        m_movie     = movie;
-        m_libraryID = libraryID;
+        _movie     = movie;
+        _libraryID = libraryID;
         
-        SwiffParserReadRect(parser, &m_bounds);
+        SwiffParserReadRect(parser, &_bounds);
 
         SwiffParserReadUBits(parser, 1, &hasText);
-        SwiffParserReadUBits(parser, 1, &wordWrap);       m_wordWrap     = wordWrap;
-        SwiffParserReadUBits(parser, 1, &multiline);      m_multiline    = multiline;
-        SwiffParserReadUBits(parser, 1, &password);       m_password     = password;
+        SwiffParserReadUBits(parser, 1, &wordWrap);       _wordWrap     = wordWrap;
+        SwiffParserReadUBits(parser, 1, &multiline);      _multiline    = multiline;
+        SwiffParserReadUBits(parser, 1, &password);       _password     = password;
 
-        SwiffParserReadUBits(parser, 1, &readOnly);       m_editable     = !readOnly;
-        SwiffParserReadUBits(parser, 1, &hasColor);       m_hasColor     = hasColor;
+        SwiffParserReadUBits(parser, 1, &readOnly);       _editable     = !readOnly;
+        SwiffParserReadUBits(parser, 1, &hasColor);       _hasColor     = hasColor;
         SwiffParserReadUBits(parser, 1, &hasMaxLength);
         SwiffParserReadUBits(parser, 1, &hasFont);
 
         SwiffParserReadUBits(parser, 1, &hasFontClass);
-        SwiffParserReadUBits(parser, 1, &autosize);       m_autosize     = autosize;
-        SwiffParserReadUBits(parser, 1, &hasLayout);      m_hasLayout    = hasLayout;
-        SwiffParserReadUBits(parser, 1, &noSelect);       m_selectable   = !noSelect;
+        SwiffParserReadUBits(parser, 1, &autosize);       _autosize     = autosize;
+        SwiffParserReadUBits(parser, 1, &hasLayout);      _hasLayout    = hasLayout;
+        SwiffParserReadUBits(parser, 1, &noSelect);       _selectable   = !noSelect;
 
-        SwiffParserReadUBits(parser, 1, &border);         m_border       = border;
-        SwiffParserReadUBits(parser, 1, &wasStatic);      m_wasStatic    = wasStatic;
-        SwiffParserReadUBits(parser, 1, &html);           m_HTML         = html;
-        SwiffParserReadUBits(parser, 1, &useOutlines);    m_useOutlines  = useOutlines;
+        SwiffParserReadUBits(parser, 1, &border);         _border       = border;
+        SwiffParserReadUBits(parser, 1, &wasStatic);      _wasStatic    = wasStatic;
+        SwiffParserReadUBits(parser, 1, &html);           _HTML         = html;
+        SwiffParserReadUBits(parser, 1, &useOutlines);    _useOutlines  = useOutlines;
 
         if (hasFont) {
             UInt16 fontID;
             SwiffParserReadUInt16(parser, &fontID);
-            m_fontID  = fontID;
-            m_hasFont = YES;
+            _fontID  = fontID;
+            _hasFont = YES;
         }
 
         if (hasFontClass) {
             NSString *fontClass = nil;
             SwiffParserReadString( parser, &fontClass);
-            m_fontClass = fontClass;
-            m_hasFontClass = YES;
+            _fontClass = fontClass;
+            _hasFontClass = YES;
         }
     
         if (hasFont) {
-            SwiffParserReadUInt16(parser, &m_fontHeightInTwips);
+            SwiffParserReadUInt16(parser, &_fontHeightInTwips);
         }
         
         if (hasColor) {
-            SwiffParserReadColorRGBA(parser, &m_color);
-            m_hasColor = YES;
+            SwiffParserReadColorRGBA(parser, &_color);
+            _hasColor = YES;
         }
 
         if (hasMaxLength) {
             UInt16 maxLength;
             SwiffParserReadUInt16(parser, &maxLength);
-            m_maxLength = maxLength;
+            _maxLength = maxLength;
         } else {
-            m_maxLength = NSIntegerMax;
+            _maxLength = NSIntegerMax;
         }
 
         if (hasLayout) {
             UInt8  align;
             SwiffParserReadUInt8(parser, &align);
 
-            if      (align == 1) {  m_textAlignment = kCTRightTextAlignment;      }
-            else if (align == 2) {  m_textAlignment = kCTCenterTextAlignment;     }
-            else if (align == 3) {  m_textAlignment = kCTJustifiedTextAlignment;  }
-            else                 {  m_textAlignment = kCTLeftTextAlignment;       }
+            if      (align == 1) {  _textAlignment = kCTRightTextAlignment;      }
+            else if (align == 2) {  _textAlignment = kCTCenterTextAlignment;     }
+            else if (align == 3) {  _textAlignment = kCTJustifiedTextAlignment;  }
+            else                 {  _textAlignment = kCTLeftTextAlignment;       }
 
-            SwiffParserReadUInt16(parser, &m_leftMarginInTwips);
-            SwiffParserReadUInt16(parser, &m_rightMarginInTwips);
-            SwiffParserReadUInt16(parser, &m_indentInTwips);
-            SwiffParserReadSInt16(parser, &m_leadingInTwips);
+            SwiffParserReadUInt16(parser, &_leftMarginInTwips);
+            SwiffParserReadUInt16(parser, &_rightMarginInTwips);
+            SwiffParserReadUInt16(parser, &_indentInTwips);
+            SwiffParserReadSInt16(parser, &_leadingInTwips);
             
-            m_hasLayout = YES;
+            _hasLayout = YES;
         }
 
         NSString *variableName;
         SwiffParserReadString(parser, &variableName);
-        m_variableName = variableName;
+        _variableName = variableName;
         
         if (hasText) {
             NSString *initialText;
             SwiffParserReadString(parser, &initialText);
-            m_initialText = initialText;
+            _initialText = initialText;
         }
 
     }
@@ -173,7 +173,7 @@
 
 - (void) clearWeakReferences
 {
-    m_movie = nil;
+    _movie = nil;
 }
 
 
@@ -182,26 +182,26 @@
 
 - (SwiffColor *) colorPointer
 {
-    return m_hasColor ? &m_color : NULL;
+    return _hasColor ? &_color : NULL;
 }
 
 
 - (CGRect) renderBounds
 {
-    return m_bounds;
+    return _bounds;
 }
 
 
-- (CGFloat) fontHeight  { return SwiffGetCGFloatFromTwips(m_fontHeightInTwips);  }
-- (CGFloat) leftMargin  { return SwiffGetCGFloatFromTwips(m_leftMarginInTwips);  }
-- (CGFloat) rightMargin { return SwiffGetCGFloatFromTwips(m_rightMarginInTwips); }
-- (CGFloat) indent      { return SwiffGetCGFloatFromTwips(m_indentInTwips);      }
-- (CGFloat) leading     { return SwiffGetCGFloatFromTwips(m_leadingInTwips);     }
+- (CGFloat) fontHeight  { return SwiffGetCGFloatFromTwips(_fontHeightInTwips);  }
+- (CGFloat) leftMargin  { return SwiffGetCGFloatFromTwips(_leftMarginInTwips);  }
+- (CGFloat) rightMargin { return SwiffGetCGFloatFromTwips(_rightMarginInTwips); }
+- (CGFloat) indent      { return SwiffGetCGFloatFromTwips(_indentInTwips);      }
+- (CGFloat) leading     { return SwiffGetCGFloatFromTwips(_leadingInTwips);     }
 
-- (SwiffTwips) fontHeightInTwips  { return m_fontHeightInTwips;  }
-- (SwiffTwips) leftMarginInTwips  { return m_leftMarginInTwips;  }
-- (SwiffTwips) rightMarginInTwips { return m_rightMarginInTwips; }
-- (SwiffTwips) indentInTwips      { return m_indentInTwips;      }
-- (SwiffTwips) leadingInTwips     { return m_leadingInTwips;     }
+- (SwiffTwips) fontHeightInTwips  { return _fontHeightInTwips;  }
+- (SwiffTwips) leftMarginInTwips  { return _leftMarginInTwips;  }
+- (SwiffTwips) rightMarginInTwips { return _rightMarginInTwips; }
+- (SwiffTwips) indentInTwips      { return _indentInTwips;      }
+- (SwiffTwips) leadingInTwips     { return _leadingInTwips;     }
 
 @end
