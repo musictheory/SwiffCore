@@ -778,6 +778,7 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
         return;
     }
 
+    __unsafe_unretained // Workaround for <rdar://11044357> clang 3.1 crashes in ObjCARCOpt::runOnFunction()
     id<SwiffDefinition> definition = SwiffMovieGetDefinition(state->movie, [placedObject libraryID]);
 
     CGAffineTransform newTransform = CGAffineTransformConcat([placedObject affineTransform], state->affineTransform);
