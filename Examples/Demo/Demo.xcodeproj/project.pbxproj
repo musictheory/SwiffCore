@@ -16,6 +16,9 @@
 		550B60421446B4B500F8C138 /* DemoMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 550B60411446B4B500F8C138 /* DemoMain.m */; };
 		550B60471446B5C200F8C138 /* DemoApp.m in Sources */ = {isa = PBXBuildFile; fileRef = 550B60461446B5C200F8C138 /* DemoApp.m */; };
 		550B60531446B95100F8C138 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 550B60521446B95100F8C138 /* QuartzCore.framework */; };
+		553135B5153ED1C00028EFF7 /* Bitmaps.swf in Resources */ = {isa = PBXBuildFile; fileRef = 553135B2153ED0D90028EFF7 /* Bitmaps.swf */; };
+		553135B6153ED1C00028EFF7 /* DynamicText.swf in Resources */ = {isa = PBXBuildFile; fileRef = 553135B3153ED0D90028EFF7 /* DynamicText.swf */; };
+		553135B7153ED1C00028EFF7 /* TestSuite.swf in Resources */ = {isa = PBXBuildFile; fileRef = 553135B4153ED0D90028EFF7 /* TestSuite.swf */; };
 		5574A09B145BFAAD00DA4FB7 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5574A09A145BFAAD00DA4FB7 /* AudioToolbox.framework */; };
 		558CE76F14B123FE001C8669 /* libSwiffCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 558CE76E14B123FE001C8669 /* libSwiffCore.a */; };
 		55BA68E9144B9C4B00D83AA8 /* DemoMovies.plist in Resources */ = {isa = PBXBuildFile; fileRef = 55BA68E8144B9C4B00D83AA8 /* DemoMovies.plist */; };
@@ -60,6 +63,9 @@
 		550B60461446B5C200F8C138 /* DemoApp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DemoApp.m; path = Source/DemoApp.m; sourceTree = SOURCE_ROOT; };
 		550B60501446B94600F8C138 /* libz.1.1.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.1.3.dylib; path = usr/lib/libz.1.1.3.dylib; sourceTree = SDKROOT; };
 		550B60521446B95100F8C138 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		553135B2153ED0D90028EFF7 /* Bitmaps.swf */ = {isa = PBXFileReference; lastKnownFileType = file; name = Bitmaps.swf; path = ../../Tests/Bitmaps.swf; sourceTree = "<group>"; };
+		553135B3153ED0D90028EFF7 /* DynamicText.swf */ = {isa = PBXFileReference; lastKnownFileType = file; name = DynamicText.swf; path = ../../Tests/DynamicText.swf; sourceTree = "<group>"; };
+		553135B4153ED0D90028EFF7 /* TestSuite.swf */ = {isa = PBXFileReference; lastKnownFileType = file; name = TestSuite.swf; path = ../../Tests/TestSuite.swf; sourceTree = "<group>"; };
 		5574A09A145BFAAD00DA4FB7 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		558B13DE1446BB230054AF76 /* DemoPrefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DemoPrefix.pch; path = Source/DemoPrefix.pch; sourceTree = SOURCE_ROOT; };
 		558B13DF1446BB2C0054AF76 /* DemoInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = DemoInfo.plist; path = Resources/DemoInfo.plist; sourceTree = SOURCE_ROOT; };
@@ -141,8 +147,8 @@
 		558CE77714B125BB001C8669 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				558CE77C14B125BB001C8669 /* lib.a */,
-				558CE77E14B125BB001C8669 /* lib.a */,
+				558CE77C14B125BB001C8669 /* libSwiffCore.a */,
+				558CE77E14B125BB001C8669 /* libSwiffCoreMac.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -152,6 +158,9 @@
 			children = (
 				558B13DF1446BB2C0054AF76 /* DemoInfo.plist */,
 				55BA68E8144B9C4B00D83AA8 /* DemoMovies.plist */,
+				553135B2153ED0D90028EFF7 /* Bitmaps.swf */,
+				553135B3153ED0D90028EFF7 /* DynamicText.swf */,
+				553135B4153ED0D90028EFF7 /* TestSuite.swf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -209,18 +218,16 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		558CE77C14B125BB001C8669 /* lib.a */ = {
+		558CE77C14B125BB001C8669 /* libSwiffCore.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			name = lib.a;
 			path = libSwiffCore.a;
 			remoteRef = 558CE77B14B125BB001C8669 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		558CE77E14B125BB001C8669 /* lib.a */ = {
+		558CE77E14B125BB001C8669 /* libSwiffCoreMac.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			name = lib.a;
 			path = libSwiffCoreMac.a;
 			remoteRef = 558CE77D14B125BB001C8669 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -232,6 +239,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				553135B5153ED1C00028EFF7 /* Bitmaps.swf in Resources */,
+				553135B6153ED1C00028EFF7 /* DynamicText.swf in Resources */,
+				553135B7153ED1C00028EFF7 /* TestSuite.swf in Resources */,
 				55BA68E9144B9C4B00D83AA8 /* DemoMovies.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -308,6 +318,7 @@
 		550B60301446B35600F8C138 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = Source/DemoPrefix.pch;
 				INFOPLIST_FILE = Resources/DemoInfo.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
@@ -320,6 +331,7 @@
 		550B60311446B35600F8C138 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = Source/DemoPrefix.pch;
 				INFOPLIST_FILE = Resources/DemoInfo.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 4.3;

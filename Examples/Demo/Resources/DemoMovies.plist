@@ -30,7 +30,23 @@
 		</dict>
 		<dict>
 			<key>url</key>
-			<string>bundle:lesson44.swf</string>
+			<string>bundle:DynamicText.swf</string>
+			<key>name</key>
+			<string>Dynamic Text</string>
+			<key>author</key>
+			<string>SwiffCore</string>
+		</dict>
+		<dict>
+			<key>url</key>
+			<string>bundle:Bitmaps.swf</string>
+			<key>name</key>
+			<string>Bitmaps</string>
+			<key>author</key>
+			<string>SwiffCore</string>
+		</dict>
+		<dict>
+			<key>url</key>
+			<string>http://musictheory.net/v2/swf/lesson44.swf</string>
 			<key>name</key>
 			<string>Roman Numeral Analysis: Triads</string>
 			<key>author</key>
@@ -38,7 +54,7 @@
 		</dict>
 		<dict>
 			<key>url</key>
-			<string>bundle:lesson48.swf</string>
+			<string>http://musictheory.net/v2/swf/lesson48.swf</string>
 			<key>name</key>
 			<string>More Seventh Chords</string>
 			<key>author</key>
@@ -46,7 +62,7 @@
 		</dict>
 		<dict>
 			<key>url</key>
-			<string>bundle:lesson51.swf</string>
+			<string>http://musictheory.net/v2/swf/lesson51.swf</string>
 			<key>name</key>
 			<string>Voicing Chords</string>
 			<key>author</key>

@@ -44,7 +44,7 @@ static NSString *sCurrentMovieKey = @"CurrentMovie";
         NSData   *plistData =  [NSData dataWithContentsOfFile:plistPath];
         
         NSError *error = nil;
-        m_moviesPlist = [[NSPropertyListSerialization propertyListWithData:plistData options:NSPropertyListImmutable format:NULL error:&error] retain];
+        m_moviesPlist = [NSPropertyListSerialization propertyListWithData:plistData options:NSPropertyListImmutable format:NULL error:&error];
 
         [self setTitle:@"Movies"];
     }
@@ -55,15 +55,6 @@ static NSString *sCurrentMovieKey = @"CurrentMovie";
 
 #pragma mark -
 #pragma mark Superclass Overrides
-
-- (void) viewWillAppear:(BOOL)animated
-{
-    NSString *currentURLString = [[NSUserDefaults standardUserDefaults] objectForKey:sCurrentMovieKey];
-    if (currentURLString) {
-        [self _pushMovieWithURLString:currentURLString animated:NO];
-    }
-}
-
 
 - (void) viewDidAppear:(BOOL)animated
 {
@@ -99,8 +90,8 @@ static NSString *sCurrentMovieKey = @"CurrentMovie";
 
             DemoMovieController *vc = [[DemoMovieController alloc] initWithURL:url];
             [vc setTitle:title];
+            
             [[self navigationController] pushViewController:vc animated:animated];
-            [vc release];
 
             [[NSUserDefaults standardUserDefaults] setObject:urlString forKey:sCurrentMovieKey];
             [[NSUserDefaults standardUserDefaults] synchronize];
@@ -136,7 +127,7 @@ static NSString *sCurrentMovieKey = @"CurrentMovie";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
     
     if (!cell) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier];
     }
 
     NSDictionary *dictionary = [[self _movieDictionaries] objectAtIndex:[indexPath row]];
@@ -155,26 +146,22 @@ static NSString *sCurrentMovieKey = @"CurrentMovie";
 
 @implementation DemoAppDelegate
 
-- (void) dealloc
-{
-    [m_window release];
-    [m_viewController release];
-
-    [super dealloc];
-}
-
 - (BOOL) application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     m_window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
     DemoTableViewController *vc = [[DemoTableViewController alloc] initWithStyle:UITableViewStylePlain];
     UINavigationController  *nc = [[UINavigationController  alloc] initWithRootViewController:vc];
-    [vc release];
 
     m_viewController = nc;
 
     [m_window setRootViewController:m_viewController];
     [m_window makeKeyAndVisible];
+
+    NSString *currentURLString = [[NSUserDefaults standardUserDefaults] objectForKey:sCurrentMovieKey];
+    if (currentURLString) {
+        [vc _pushMovieWithURLString:currentURLString animated:NO];
+    }
 
     return YES;
 }

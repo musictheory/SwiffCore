@@ -52,8 +52,6 @@ static void sSetCachedData(NSURL *url, NSData *data)
     
     [defaults setObject:dictionary forKey:sMovieCache];
     [defaults synchronize];
-    
-    [dictionary release];
 }
 
 
@@ -68,7 +66,7 @@ static NSData *sGetCachedData(NSURL *url)
 - (id) initWithURL:(NSURL *)url
 {
     if ((self = [self init])) {
-        m_movieURL = [url retain];
+        m_movieURL = url;
     }
     
     return self;
@@ -78,11 +76,6 @@ static NSData *sGetCachedData(NSURL *url)
 - (void) dealloc
 {
     [self _cleanupViews];
-    
-    [m_movieURL release];
-    m_movieURL = nil;
-    
-    [super dealloc];
 }
 
 
@@ -91,7 +84,6 @@ static NSData *sGetCachedData(NSURL *url)
     [super viewDidLoad];
     
     UIView *selfView = [self view];
-
     CGRect bounds = [selfView bounds];
     CGFloat bottomHeight = 44.0;
 
@@ -120,7 +112,7 @@ static NSData *sGetCachedData(NSURL *url)
 
     NSData *movieData = sGetCachedData(m_movieURL);
     if (movieData) {
-        m_movieData = [movieData retain];
+        m_movieData = movieData;
         [self _loadMovie];
     } else {
         [self _loadMovieData];
@@ -170,6 +162,7 @@ static NSData *sGetCachedData(NSURL *url)
 
     m_movieView = [[SwiffView alloc] initWithFrame:movieFrame movie:m_movie];
     [m_movieView setDelegate:self];
+    [m_movieView setBackgroundColor:[UIColor whiteColor]];   
     [m_movieView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
     [[self view] addSubview:m_movieView];
 }
@@ -195,7 +188,7 @@ static NSData *sGetCachedData(NSURL *url)
             NSData *movieData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
         
             dispatch_async(dispatch_get_main_queue(), ^{
-                m_movieData = [movieData retain];
+                m_movieData = movieData;
                 sSetCachedData(m_movieURL, m_movieData);
 
                 if ([m_movieData length]) {
@@ -210,15 +203,12 @@ static NSData *sGetCachedData(NSURL *url)
 - (void) _cleanupViews
 {
     [m_timelineSlider removeTarget:self action:@selector(_handleSliderDidChange:) forControlEvents:UIControlEventValueChanged];
-    [m_timelineSlider release];
     m_timelineSlider = nil;
 
     [m_playButton removeTarget:self action:@selector(_handlePlayButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    [m_playButton release];
     m_playButton = nil;
 
     [m_movieView setDelegate:nil];
-    [m_movieView release];
     m_movieView = nil;
 }
 
