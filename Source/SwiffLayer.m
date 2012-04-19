@@ -69,18 +69,28 @@ static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";
             shouldDrawDebugColors  = _shouldDrawDebugColors;
 
 
+- (id) init
+{
+    return [self initWithMovie:nil];
+}
+
+
 - (id) initWithMovie:(SwiffMovie *)movie
 {
-    if ((self = [self init])) {
+    if ((self = [super init])) {
+        if (!movie) {
+            SwiffWarn(@"View", @"-[SwiffLayer initWithMovie:] called with nil movie)");
+        }
+
         _movie = movie;
 
-        _renderer = [[SwiffRenderer alloc] initWithMovie:movie];
+        _renderer = movie ? [[SwiffRenderer alloc] initWithMovie:movie] : nil;
         
         _contentLayer = [[CALayer alloc] init];
         [_contentLayer setDelegate:self];
         [self addSublayer:_contentLayer];
 
-        _playhead = [[SwiffPlayhead alloc] initWithMovie:movie delegate:self];
+        _playhead = movie ? [[SwiffPlayhead alloc] initWithMovie:movie delegate:self] : nil;
         [_playhead gotoFrameWithIndex:0 play:NO];
         
         [_contentLayer setNeedsDisplay];

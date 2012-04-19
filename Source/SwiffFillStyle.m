@@ -80,7 +80,7 @@
 
 - (id) initWithParser:(SwiffParser *)parser
 {
-    if ((self = [self init])) {
+    if ((self = [super init])) {
         SwiffParserReadUInt8(parser, &_type);
 
         if (IS_COLOR_TYPE) {

@@ -65,7 +65,7 @@ static NSData *sGetCachedData(NSURL *url)
 
 - (id) initWithURL:(NSURL *)url
 {
-    if ((self = [self init])) {
+    if ((self = [super init])) {
         m_movieURL = url;
     }
     

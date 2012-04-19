@@ -69,10 +69,15 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
             stageRect       = _stageRect,
             backgroundColor = _backgroundColor;
 
+- (id) init
+{
+    return [self initWithData:nil];
+}
+
 
 - (id) initWithData:(NSData *)data
 {
-    if ((self = [self init])) {
+    if ((self = [super init])) {
         SwiffColor white = { 1.0, 1.0, 1.0, 1.0 };
 
         _backgroundColor = white;
