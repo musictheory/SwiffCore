@@ -52,7 +52,7 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
 @end
 
 @interface SwiffSpriteDefinition (Protected)
-@property (nonatomic, swiff_weak) SwiffMovie *movie;
+@property (nonatomic, weak) SwiffMovie *movie;
 
 - (void) _decodeData:(NSData *)data;
 - (void) _parser:(SwiffParser *)parser didFindTag:(SwiffTag)tag version:(NSInteger)version;
@@ -64,10 +64,6 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
     SwiffSparseArray *_definitions;
 }
 
-@synthesize version         = _version,
-            frameRate       = _frameRate,
-            stageRect       = _stageRect,
-            backgroundColor = _backgroundColor;
 
 - (id) init
 {

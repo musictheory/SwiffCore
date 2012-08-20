@@ -39,7 +39,7 @@
 
 @property (nonatomic, copy, readonly) NSString *label;
 
-@property (nonatomic, swiff_weak, readonly) SwiffScene *scene;
+@property (nonatomic, weak, readonly) SwiffScene *scene;
 
 @property (nonatomic, assign, readonly) NSUInteger index1InScene;
 @property (nonatomic, assign, readonly) NSUInteger indexInScene;

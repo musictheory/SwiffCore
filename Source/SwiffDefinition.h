@@ -35,7 +35,7 @@
 
 - (void) clearWeakReferences;
 
-@property (nonatomic, swiff_weak, readonly) SwiffMovie *movie;
+@property (nonatomic, weak, readonly) SwiffMovie *movie;
 
 @property (nonatomic, assign, readonly) UInt16 libraryID;
 @property (nonatomic, assign, readonly) CGRect bounds;

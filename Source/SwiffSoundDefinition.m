@@ -33,7 +33,6 @@
 
 
 @interface SwiffSoundDefinition ()
-- (void) _readMP3FramesFromParser:(SwiffParser *)parser;
 @end
 
 
@@ -47,13 +46,8 @@
     UInt16         _averageSampleCount;
 }
 
-@synthesize stereo             = _stereo,
-            bitsPerChannel     = _bitsPerChannel,
-            movie              = _movie,
-            libraryID          = _libraryID,
-            data               = _data,
-            sampleCount        = _sampleCount,
-            format             = _format;
+@synthesize movie     = _movie,
+            libraryID = _libraryID;
 
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie
@@ -135,7 +129,7 @@
         SwiffMPEGHeader header;
         SwiffMPEGError  error = SwiffMPEGReadHeader(frameStart, &header);
         if (error != SwiffMPEGErrorNone) {
-            SwiffWarn(@"Sound", @"SwiffMPEGReadHeader() returned %d", error);
+            SwiffWarn(@"Sound", @"SwiffMPEGReadHeader() returned %ld", (long)error);
         }
 
         if (_framesCount == _framesCapacity) {

@@ -31,8 +31,7 @@
 
 @class SwiffGradient;
 
-
-enum {
+typedef NS_ENUM(UInt8, SwiffFillStyleType) {
     SwiffFillStyleTypeColor = 0,
 
     SwiffFillStyleTypeLinearGradient             = 0x10,
@@ -44,7 +43,6 @@ enum {
     SwiffFillStyleTypeNonSmoothedRepeatingBitmap = 0x42,
     SwiffFillStyleTypeNonSmoothedClippedBitmap   = 0x43
 };
-typedef UInt8 SwiffFillStyleType;
 
 
 @interface SwiffFillStyle : NSObject

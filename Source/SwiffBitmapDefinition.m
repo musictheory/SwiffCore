@@ -337,8 +337,9 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
     CGImageRef  _CGImage;
 }
 
-@synthesize movie     = _movie,
-            libraryID = _libraryID;
+@synthesize libraryID = _libraryID,
+            movie     = _movie,
+            bounds    = _bounds;
 
 
 - (id) initWithParser:(SwiffParser *)parser movie:(SwiffMovie *)movie

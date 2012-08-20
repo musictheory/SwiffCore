@@ -32,19 +32,6 @@
 
 @implementation SwiffStaticTextRecord
 
-@synthesize hasFont           = _hasFont,
-            fontID            = _fontID,
-            textHeight        = _textHeight,
-            hasColor          = _hasColor,
-            color             = _color,
-            hasXOffset        = _hasXOffset,
-            xOffset           = _xOffset,
-            hasYOffset        = _hasYOffset,
-            yOffset           = _yOffset,
-            glyphEntriesCount = _glyphEntriesCount,
-            glyphEntries      = _glyphEntries;
-
-
 + (NSArray *) textRecordArrayWithParser:(SwiffParser *)parser glyphBits:(UInt8)glyphBits advanceBits:(UInt8)advanceBits
 {
     NSMutableArray  *result = [NSMutableArray array];

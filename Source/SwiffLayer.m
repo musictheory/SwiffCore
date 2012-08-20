@@ -60,13 +60,7 @@ static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";
     BOOL               _interpolateCurrentFrame;
 }
 
-@synthesize swiffLayerDelegate     = _delegate,
-            movie                  = _movie,
-            playhead               = _playhead,
-            currentFrame           = _currentFrame,
-            drawsBackground        = _drawsBackground,
-            shouldFlattenSublayers = _shouldFlattenSublayers,
-            shouldDrawDebugColors  = _shouldDrawDebugColors;
+@synthesize swiffLayerDelegate = _delegate;
 
 
 - (id) init
@@ -328,9 +322,9 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 
         // Old placed object but new scale factor
         [sublayer setValue:oldPlacedObject forKey:SwiffPlacedObjectKey];
-        [sublayer setValue:[NSNumber numberWithDouble:newScaleFactor] forKey:SwiffRenderScaleFactorKey];
-        [sublayer setValue:[NSNumber numberWithDouble:toTranslate.x]  forKey:SwiffRenderTranslationXKey];
-        [sublayer setValue:[NSNumber numberWithDouble:toTranslate.y]  forKey:SwiffRenderTranslationYKey];
+        [sublayer setValue:@(newScaleFactor) forKey:SwiffRenderScaleFactorKey];
+        [sublayer setValue:@(toTranslate.x)  forKey:SwiffRenderTranslationXKey];
+        [sublayer setValue:@(toTranslate.y)  forKey:SwiffRenderTranslationYKey];
 
         [sublayer setBounds:fromBounds];
         [sublayer setAffineTransform:fromTransform];
@@ -356,9 +350,9 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
     }
     {
         [sublayer setValue:placedObject forKey:SwiffPlacedObjectKey];
-        [sublayer setValue:[NSNumber numberWithDouble:newScaleFactor] forKey:SwiffRenderScaleFactorKey];
-        [sublayer setValue:[NSNumber numberWithDouble:toTranslate.x]  forKey:SwiffRenderTranslationXKey];
-        [sublayer setValue:[NSNumber numberWithDouble:toTranslate.y]  forKey:SwiffRenderTranslationYKey];
+        [sublayer setValue:@(newScaleFactor) forKey:SwiffRenderScaleFactorKey];
+        [sublayer setValue:@(toTranslate.x)  forKey:SwiffRenderTranslationXKey];
+        [sublayer setValue:@(toTranslate.y)  forKey:SwiffRenderTranslationYKey];
 
         [sublayer setBounds:toBounds];
         [sublayer setAnchorPoint:toAnchor];

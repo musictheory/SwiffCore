@@ -41,7 +41,7 @@
 - (void) clearWeakReferences;
 - (void) redisplay;
 
-@property (nonatomic, swiff_weak) id<SwiffLayerDelegate> swiffLayerDelegate;
+@property (nonatomic, weak) id<SwiffLayerDelegate> swiffLayerDelegate;
 
 @property (nonatomic, strong, readonly) SwiffMovie *movie;
 @property (nonatomic, strong, readonly) SwiffPlayhead *playhead;

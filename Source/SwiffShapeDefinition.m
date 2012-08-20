@@ -33,8 +33,7 @@
 #import "SwiffPath.h"
 #import "SwiffUtils.h"
 
-
-enum {
+typedef NS_ENUM(UInt8, SwiffShapeOperationType) {
     SwiffShapeOperationTypeHeader = 0,
     SwiffShapeOperationTypeLine   = 1,
     SwiffShapeOperationTypeCurve  = 2,
@@ -43,7 +42,7 @@ enum {
 
 
 typedef struct SwiffShapeOperation {
-    UInt8      type;
+    SwiffShapeOperationType type;
     BOOL       duplicate;
     UInt16     lineStyleIndex;
     UInt16     fillStyleIndex;
@@ -87,15 +86,10 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
     NSArray    *_paths;
 }
 
-@synthesize movie                 = _movie,
-            libraryID             = _libraryID,
-            bounds                = _bounds,
-            renderBounds          = _renderBounds,
-            edgeBounds            = _edgeBounds,
-            usesFillWindingRule   = _usesFillWindingRule,
-            usesNonScalingStrokes = _usesNonScalingStrokes,
-            usesScalingStrokes    = _usesScalingStrokes,
-            hasEdgeBounds         = _hasEdgeBounds;
+@synthesize movie        = _movie,
+            libraryID    = _libraryID,
+            bounds       = _bounds,
+            renderBounds = _renderBounds;
 
 
 #pragma mark -

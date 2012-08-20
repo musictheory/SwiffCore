@@ -45,7 +45,6 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
 
 
 @interface SwiffPlayhead ()
-- (void) handleTimerTick:(NSTimer *)timer;
 @end
 
 
@@ -58,11 +57,6 @@ void SwiffPlayheadWarnForInvalidGotoArguments()
     long           _timerPlayIndex;
     BOOL           _hasFrameIndexForNextStep;
 }
-
-@synthesize delegate      = _delegate,
-            movie         = _movie,
-            loopsMovie    = _loopsMovie,
-            loopsScene    = _loopsScene;
 
 
 - (id) initWithMovie:(SwiffMovie *)movie delegate:(id<SwiffPlayheadDelegate>)delegate

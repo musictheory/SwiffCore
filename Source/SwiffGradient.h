@@ -30,19 +30,17 @@
 #import <SwiffParser.h>
 
 
-enum {
+typedef NS_ENUM(NSInteger, SwiffGradientSpreadMode) {
     SwiffGradientSpreadModePad = 0,
     SwiffGradientSpreadModeReflect,
     SwiffGradientSpreadModeRepeat
 };
-typedef NSInteger SwiffGradientSpreadMode;
 
 
-enum {
+typedef NS_ENUM(NSInteger, SwiffGradientInterpolationMode) {
     SwiffGradientInterpolationModeNormalRGB = 0,
     SwiffGradientInterpolationModeLinearRGB = 1
 };
-typedef NSInteger SwiffGradientInterpolationMode;
 
 
 @interface SwiffGradient : NSObject

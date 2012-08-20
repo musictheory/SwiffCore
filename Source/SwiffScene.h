@@ -49,7 +49,7 @@
 @property (nonatomic, assign, readonly) NSUInteger indexInMovie;
 @property (nonatomic, assign, readonly) NSUInteger index1InMovie;
 
-@property (nonatomic, swiff_weak, readonly) SwiffMovie *movie;
+@property (nonatomic, weak, readonly) SwiffMovie *movie;
 @property (nonatomic, strong, readonly) NSString *name;
 @property (nonatomic, strong, readonly) NSArray *frames;
 

@@ -80,11 +80,6 @@
 
 @implementation SwiffBlurFilter
 
-@synthesize blurX          = _blurX,
-            blurY          = _blurY,
-            numberOfPasses = _numberOfPasses;
-
-
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [super init])) {
@@ -134,16 +129,6 @@
 
 @implementation SwiffConvolutionFilter
 
-@synthesize matrixWidth    = _matrixWidth,
-            matrixHeight   = _matrixHeight,
-            matrixValues   = _matrixValues,
-            divisor        = _divisor,
-            bias           = _bias,
-            color          = _color,
-            clamp          = _clamp,
-            preservesAlpha = _preservesAlpha;
-
-
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [super init])) {
@@ -184,17 +169,6 @@
 
 @implementation SwiffDropShadowFilter
 
-@synthesize color          = _color,
-            blurX          = _blurX,
-            blurY          = _blurY,
-            angle          = _angle,
-            distance       = _distance,
-            strength       = _strength,
-            innerShadow    = _innerShadow,
-            knockout       = _knockout,
-            numberOfPasses = _numberOfPasses;
-
-
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [super init])) {
@@ -221,15 +195,6 @@
 #pragma mark Glow Filter
 
 @implementation SwiffGlowFilter
-
-@synthesize color          = _color,
-            blurX          = _blurX,
-            blurY          = _blurY,
-            strength       = _strength,
-            innerGlow      = _innerGlow,
-            knockout       = _knockout,
-            numberOfPasses = _numberOfPasses;
-
 
 - (id) initWithParser:(SwiffParser *)parser
 {
@@ -300,18 +265,6 @@
 
 @implementation SwiffGradientGlowFilter
 
-@synthesize gradient       = _gradient,
-            blurX          = _blurX,
-            blurY          = _blurY,
-            angle          = _angle,
-            distance       = _distance,
-            strength       = _strength,
-            innerGlow      = _innerGlow,
-            knockout       = _knockout,
-            onTop          = _onTop,
-            numberOfPasses = _numberOfPasses;
-
-
 - (id) initWithParser:(SwiffParser *)parser
 {
     if ((self = [super init])) {
@@ -341,18 +294,6 @@
 #pragma mark Gradient Bevel Filter
 
 @implementation SwiffGradientBevelFilter 
-
-@synthesize gradient       = _gradient,
-            blurX          = _blurX,
-            blurY          = _blurY,
-            angle          = _angle,
-            distance       = _distance,
-            strength       = _strength,
-            innerShadow    = _innerShadow,
-            knockout       = _knockout,
-            onTop          = _onTop,
-            numberOfPasses = _numberOfPasses;
-
 
 - (id) initWithParser:(SwiffParser *)parser
 {

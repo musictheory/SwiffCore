@@ -65,7 +65,7 @@
                     SwiffParserReadString(parser, &name);
                     
                     if (name) {
-                        [map setObject:name forKey:[NSNumber numberWithUnsignedInt:frameOffset]];
+                        [map setObject:name forKey:@(frameOffset)];
                     }
                 }
             }
@@ -86,7 +86,7 @@
                     SwiffParserReadString(parser, &label);
 
                     if (label) {
-                        [map setObject:label forKey:[NSNumber numberWithUnsignedInt:frameNumber]];
+                        [map setObject:label forKey:@(frameNumber)];
                     }
                 }
             }

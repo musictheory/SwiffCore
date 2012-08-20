@@ -59,7 +59,7 @@
 - (SwiffScene *) scene;
 - (SwiffFrame *) frame;
 
-@property (nonatomic, swiff_weak) id<SwiffPlayheadDelegate> delegate;
+@property (nonatomic, weak) id<SwiffPlayheadDelegate> delegate;
 @property (nonatomic, assign) BOOL loopsMovie;
 @property (nonatomic, assign) BOOL loopsScene;
 

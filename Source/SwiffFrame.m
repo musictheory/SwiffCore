@@ -42,15 +42,6 @@
     NSArray *_placedObjectsWithNames;
 }
 
-@synthesize indexInScene  = _indexInScene,
-            placedObjects = _placedObjects,
-            scene         = _scene,
-            label         = _label,
-            soundEvents   = _soundEvents,
-            streamSound   = _streamSound,
-            streamBlock   = _streamBlock;
-
-
 - (id) _initWithSortedPlacedObjects: (NSArray *) placedObjects
                           withNames: (NSArray *) placedObjectsWithNames
                         soundEvents: (NSArray *) soundEvents

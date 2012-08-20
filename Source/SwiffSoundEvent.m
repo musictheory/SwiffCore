@@ -32,16 +32,6 @@
     SwiffSoundEnvelope   *_envelopes;
 }
 
-@synthesize libraryID      = _libraryID,
-            className      = _className,
-            definition     = _definition,
-            inPoint        = _inPoint,
-            outPoint       = _outPoint,
-            loopCount      = _loopCount,
-            envelopeCount  = _envelopeCount,
-            shouldStop     = _shouldStop,
-            allowsMultiple = _allowsMultiple;
-
 
 - (id) initWithParser:(SwiffParser *)parser
 {

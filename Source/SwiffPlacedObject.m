@@ -425,8 +425,4 @@ SwiffPlacedObject *SwiffPlacedObjectCreate(SwiffMovie *movie, UInt16 libraryID, 
 }
 
 
-@synthesize libraryID        = _libraryID,
-            depth            = _depth,
-            affineTransform  = _affineTransform;
-
 @end

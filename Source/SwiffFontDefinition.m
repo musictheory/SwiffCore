@@ -160,27 +160,8 @@ static CGPathRef sCreatePathFromShapeRecord(SwiffParser *parser)
 
 @implementation SwiffFontDefinition
 
-@synthesize movie          = _movie,
-            name           = _name,
-            fullName       = _fullName,
-            copyright      = _copyright,
-            glyphCount     = _glyphCount,
-            glyphPaths     = _glyphPaths,
-            codeTable      = _codeTable,
-            encoding       = _encoding,
-            languageCode   = _languageCode,
-            kerningCount   = _kerningCount,
-            glyphAdvances  = _glyphAdvances,
-            glyphBounds    = _glyphBounds,
-            ascent         = _ascent,
-            descent        = _descent,
-            leading        = _leading,
-            kerningRecords = _kerningRecords,
-            libraryID      = _libraryID,
-            bold           = _bold,
-            italic         = _italic,
-            smallText      = _smallText,
-            hasLayout      = _hasLayout;
+@synthesize movie     = _movie,
+            libraryID = _libraryID;
 
 
 - (id) initWithLibraryID:(UInt16)libraryID movie:(SwiffMovie *)movie

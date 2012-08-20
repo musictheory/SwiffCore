@@ -35,11 +35,6 @@
     SwiffColor    _colors[15];
 }
 
-@synthesize recordCount       = _recordCount,
-            spreadMode        = _spreadMode,
-            interpolationMode = _interpolationMode,
-            focalPoint        = _focalPoint;
-
 
 - (id) initWithParser:(SwiffParser *)parser isFocalGradient:(BOOL)isFocalGradient
 {

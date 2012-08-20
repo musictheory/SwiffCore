@@ -153,9 +153,9 @@ BOOL SwiffParserReadHeader(SwiffParser *parser, SwiffHeader *outHeader)
     if (sig1 == 'C' && sig2 == 'W' && sig3 == 'S') {
         isCompressed = YES;
 
-        UInt8 *newBuffer = (UInt8 *)malloc(fileLength);
+        UInt8 *newBuffer = fileLength ? (UInt8 *)malloc(fileLength) : NULL;
 
-        if (sInflate(parser->b, parser->length - 8, newBuffer, fileLength)) {
+        if (newBuffer && sInflate(parser->b, parser->length - 8, newBuffer, fileLength)) {
             parser->buffer = newBuffer;
             parser->b      = parser->buffer;
             parser->length = fileLength;
@@ -167,13 +167,13 @@ BOOL SwiffParserReadHeader(SwiffParser *parser, SwiffHeader *outHeader)
         }
     }
     
-    CGRect stageRect;
+    CGRect stageRect = CGRectZero;
     SwiffParserReadRect(parser, &stageRect);
     
-    CGFloat frameRate;
+    CGFloat frameRate = 0;
     SwiffParserReadFixed8(parser, &frameRate);
 
-    UInt16 frameCount;
+    UInt16 frameCount = 0;
     SwiffParserReadUInt16(parser, &frameCount);
     
     if (outHeader) {
@@ -258,7 +258,7 @@ id SwiffParserGetAssociatedValue(SwiffParser *parser, NSString *key)
 
 void SwiffParserAdvanceToNextTag(SwiffParser *parser)
 {
-    UInt16 tagCodeAndLength;
+    UInt16 tagCodeAndLength = 0;
 
     if (parser->nextTagB) {
         parser->b = parser->nextTagB;
@@ -478,7 +478,7 @@ void SwiffParserReadFixed8(SwiffParser *parser, CGFloat *outValue)
 void SwiffParserReadEncodedU32(SwiffParser *parser, UInt32 *outValue)
 {
     UInt32 result = 0;
-    UInt8  byte;
+    UInt8  byte   = 0;
 
     {
         SwiffParserReadUInt8(parser, &byte);
@@ -518,16 +518,20 @@ void SwiffParserReadEncodedU32(SwiffParser *parser, UInt32 *outValue)
 
 void SwiffParserReadRect(SwiffParser *parser, CGRect *outValue)
 {
-    UInt32 nBits;
+    UInt32 nBits = 0;
     SInt32 minX, maxX, minY, maxY;
+
+    minX = maxX = minY = maxY = 0;
 
     SwiffParserByteAlign(parser);
     
-    SwiffParserReadUBits(parser, 5,     &nBits );
-    SwiffParserReadSBits(parser, nBits, &(minX));
-    SwiffParserReadSBits(parser, nBits, &(maxX));
-    SwiffParserReadSBits(parser, nBits, &(minY));
-    SwiffParserReadSBits(parser, nBits, &(maxY));
+    SwiffParserReadUBits(parser, 5, &nBits);
+    if (nBits) {
+        SwiffParserReadSBits(parser, nBits, &(minX));
+        SwiffParserReadSBits(parser, nBits, &(maxX));
+        SwiffParserReadSBits(parser, nBits, &(minY));
+        SwiffParserReadSBits(parser, nBits, &(maxY));
+    }
     
     if (outValue) {
         outValue->origin.x    = SwiffGetCGFloatFromTwips(minX);
@@ -588,6 +592,7 @@ void SwiffParserReadColorRGB(SwiffParser *parser, SwiffColor *outValue)
 {
     UInt8 r, g, b;
 
+    r = g = b = 0;
     SwiffParserReadUInt8(parser, &r);
     SwiffParserReadUInt8(parser, &g);
     SwiffParserReadUInt8(parser, &b);
@@ -605,6 +610,7 @@ void SwiffParserReadColorRGBA(SwiffParser *parser, SwiffColor *outValue)
 {
     UInt8 r, g, b, a;
 
+    r = g = b = a = 0;
     SwiffParserReadUInt8(parser, &r);
     SwiffParserReadUInt8(parser, &g);
     SwiffParserReadUInt8(parser, &b);
@@ -623,6 +629,7 @@ void SwiffParserReadColorARGB(SwiffParser *parser, SwiffColor *outValue)
 {
     UInt8 r, g, b, a;
 
+    r = g = b = a = 0;
     SwiffParserReadUInt8(parser, &a);
     SwiffParserReadUInt8(parser, &r);
     SwiffParserReadUInt8(parser, &g);
@@ -723,7 +730,7 @@ void SwiffParserReadData(SwiffParser *parser, UInt32 length, NSData **outValue)
 
 void SwiffParserReadString(SwiffParser *parser, NSString **outValue)
 {
-    UInt8 i;
+    UInt8 i = 0;
     const UInt8 *start = parser->b;
     
     do {
@@ -744,7 +751,7 @@ void SwiffParserReadString(SwiffParser *parser, NSString **outValue)
 
 void SwiffParserReadLengthPrefixedString(SwiffParser *parser, NSString **outValue)
 {
-    UInt8 length;
+    UInt8 length = 0;
     SwiffParserReadUInt8(parser, &length);
 
     if (!sEnsureBuffer(parser, length)) {

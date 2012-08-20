@@ -27,13 +27,6 @@
 
 #import <SwiffImport.h>
 
-#if __has_feature(objc_arc_weak) 
-    #define swiff_weak weak
-#else
-    #define swiff_weak unsafe_unretained
-#endif
-
-
 typedef NSInteger SwiffTwips;
 
 
@@ -75,7 +68,7 @@ typedef struct SwiffHeader {
 } SwiffHeader;
 
 
-enum {
+typedef NS_ENUM(NSInteger, SwiffSoundFormat) {
 //                                                     Description                      Minimum .swf version
     SwiffSoundFormatUncompressedNativeEndian = 0,   // Uncompressed, native-endian      1
     SwiffSoundFormatADPCM                    = 1,   // ADPCM                            1
@@ -86,10 +79,9 @@ enum {
     SwiffSoundFormatNellymoser               = 6,   // Nellymoser                       6
     SwiffSoundFormatSpeex                    = 11   // Speex                            10
 };
-typedef NSInteger SwiffSoundFormat;
 
 
-enum {
+typedef NS_ENUM(NSInteger, SwiffLanguageCode) {
     SwiffFontLanguageCodeNone               = 0,
     SwiffFontLanguageCodeLatin              = 1,
     SwiffFontLanguageCodeJapanese           = 2,
@@ -97,10 +89,9 @@ enum {
     SwiffFontLanguageCodeSimplifiedChinese  = 4,
     SwiffFontLanguageCodeTraditionalChinese = 5
 };
-typedef NSInteger SwiffLanguageCode;
 
 
-enum {
+typedef NS_ENUM(NSInteger, SwiffBlendMode) {
     SwiffBlendModeNormal     = 0,
     SwiffBlendModeLayer      = 2,
     SwiffBlendModeMultiply   = 3,
@@ -117,10 +108,9 @@ enum {
     SwiffBlendModeHardlight  = 14,
     SwiffBlendModeOther      = 256
 };
-typedef NSInteger SwiffBlendMode;
 
 
-enum {
+typedef NS_ENUM(NSInteger, SwiffTag) {
     SwiffTagEnd                          = 0,
     SwiffTagShowFrame                    = 1,
     SwiffTagDefineShape                  = 2,
@@ -188,44 +178,38 @@ enum {
 
     SwiffTagCount
 };
-typedef NSInteger SwiffTag;
 
 
-enum {
+typedef NS_ENUM(UInt8, SwiffMPEGVersion) {
     SwiffMPEGVersion25 = 0,
     SwiffMPEGVersion2  = 2,
     SwiffMPEGVersion1  = 3,
 };
-typedef UInt8 SwiffMPEGVersion;
 
 
-enum {
+typedef NS_ENUM(UInt8, SwiffMPEGLayer) {
     SwiffMPEGLayer3 = 1,
     SwiffMPEGLayer2 = 2,
     SwiffMPEGLayer1 = 3
 };
-typedef UInt8 SwiffMPEGLayer;
 
 
-enum {
+typedef NS_ENUM(UInt8, SwiffMPEGEmphasis) {
     SwiffMPEGEmphasisNone     = 0,
     SwiffMPEGEmphasis50_15ms  = 1,
     SwiffMPEGEmphasisCCIT_J17 = 3
 };
-typedef UInt8 SwiffMPEGEmphasis;
 
 
-enum {
+typedef NS_ENUM(UInt8, SwiffMPEGChannelMode) {
     SwiffMPEGChannelModeStereo      = 0,
     SwiffMPEGChannelModeJointStereo = 1,
     SwiffMPEGChannelModeDual        = 2,
     SwiffMPEGChannelModeMono        = 3
-
 };
-typedef UInt8 SwiffMPEGChannelMode;
 
 
-enum {
+typedef NS_ENUM(NSInteger, SwiffMPEGError) {
     SwiffMPEGErrorNone                 =  0,
     SwiffMPEGErrorInvalidFrameSync     = -1,
     SwiffMPEGErrorBadBitrate           = -2,
@@ -235,7 +219,6 @@ enum {
     SwiffMPEGErrorReservedSamplingRate =  3,
     SwiffMPEGErrorReservedEmphasis     =  4
 };
-typedef NSInteger SwiffMPEGError;
 
 
 typedef struct SwiffMPEGHeader {

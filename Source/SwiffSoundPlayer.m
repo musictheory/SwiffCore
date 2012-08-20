@@ -62,7 +62,7 @@ static NSString *sGetStringForAudioError(SInt32 err)
 {
     NSMutableString *result = [NSMutableString string];
     
-    [result appendFormat:@"0x%x, %d", err, err]; 
+    [result appendFormat:@"0x%lx, %ld", (long)err, (long)err];
     
     #define IsPrintable(C) ((C) >= 0x20 && (C) < 0x80)
     UInt32 fourcc = ntohl(*((UInt32 *)&err));
@@ -122,8 +122,7 @@ static void sFillASBDForSoundDefinition(AudioStreamBasicDescription *asbd, Swiff
     BOOL                  _isStopping;
 }
 
-@synthesize event      = _event,
-            definition = _definition;
+@synthesize definition = _definition;
 
 
 static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer)

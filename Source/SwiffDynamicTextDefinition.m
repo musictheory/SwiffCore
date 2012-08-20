@@ -48,23 +48,9 @@
     BOOL        _useOutlines;
 }
 
-@synthesize movie         = _movie,
-            libraryID     = _libraryID,
-            bounds        = _bounds,
-            variableName  = _variableName,
-            initialText   = _initialText,
-            maxLength     = _maxLength,
-            textAlignment = _textAlignment,
-            editable      = _editable,
-            selectable    = _selectable,
-            HTML          = _HTML,
-            hasLayout     = _hasLayout,
-            hasFont       = _hasFont,
-            hasFontClass  = _hasFontClass,
-            fontClass     = _fontClass,
-            fontID        = _fontID,
-            hasColor      = _hasColor,
-            color         = _color;
+@synthesize libraryID = _libraryID,
+            movie     = _movie,
+            bounds    = _bounds;
 
 
 + (Class) placedObjectClass

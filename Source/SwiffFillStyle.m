@@ -41,11 +41,6 @@
     CGAffineTransform  _transform;
 }
 
-@synthesize type     = _type,
-            color    = _color,
-            gradient = _gradient,
-            bitmapID = _bitmapID;
-
 
 + (NSArray *) fillStyleArrayWithParser:(SwiffParser *)parser
 {

@@ -32,14 +32,13 @@
 static NSString * const SwiffTextVerticalOffsetAttributeName = @"SwiffTextVerticalOffset";
 
 
-enum {
-    SwiffFontMapTypeDirect             = 0,
+typedef NS_ENUM(NSInteger, SwiffFontMapType) {
+    SwiffFontMapTypeDirect             =  0,
     SwiffFontMapTypeIndirectUnknown    = -1,
-    SwiffFontMapTypeIndirectSans       = 1,
-    SwiffFontMapTypeIndirectSerif      = 2,
-    SwiffFontMapTypeIndirectTypewriter = 3
+    SwiffFontMapTypeIndirectSans       =  1,
+    SwiffFontMapTypeIndirectSerif      =  2,
+    SwiffFontMapTypeIndirectTypewriter =  3
 }; 
-typedef NSInteger SwiffFontMapType;
 
 
 CGFloat SwiffTextGetMaximumVerticalOffset(CFAttributedStringRef as, CFRange range)
@@ -124,20 +123,6 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
     NSInteger        _mapType;
     BOOL             _hasFontColor;
 }
-
-
-@synthesize fontName           = _fontName,
-            mappedFontName     = _mappedFontName,
-            fontSizeInTwips    = _fontSizeInTwips,
-            bold               = _bold,
-            italic             = _italic,
-            underline          = _underline,
-            textAlignment      = _textAlignment,
-            leftMarginInTwips  = _leftMarginInTwips,
-            rightMarginInTwips = _rightMarginInTwips,
-            indentInTwips      = _indentInTwips,
-            leadingInTwips     = _leadingInTwips,
-            tabStopsString     = _tabStopsString;
 
 
 - (id) copyWithZone:(NSZone *)zone
@@ -243,11 +228,11 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
     }
 
     if (_underline) {
-        NSNumber *number = [NSNumber numberWithInteger:kCTUnderlineStyleSingle];
+        NSNumber *number = @(kCTUnderlineStyleSingle);
         [result setObject:number forKey:(id)kCTUnderlineStyleAttributeName];
     }
 
-    NSNumber *number = [NSNumber numberWithDouble:(double)verticalOffsetTweak];
+    NSNumber *number = @((double)verticalOffsetTweak);
     [result setObject:number forKey:SwiffTextVerticalOffsetAttributeName];
 
     CTParagraphStyleSetting settings[] = {

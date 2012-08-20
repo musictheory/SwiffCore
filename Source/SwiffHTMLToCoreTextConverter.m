@@ -32,7 +32,7 @@
 
 #include <libxml/HTMLparser.h>
 
-enum {
+typedef NS_ENUM(NSInteger, SwiffHTMLToCoreTextConverterTag) {
     SwiffHTMLToCoreTextConverterTag_Unknown = 0,
 
     SwiffHTMLToCoreTextConverterTag_A,
@@ -46,7 +46,6 @@ enum {
     SwiffHTMLToCoreTextConverterTag_FONT,
     SwiffHTMLToCoreTextConverterTag_TEXTFORMAT
 };
-typedef NSInteger SwiffHTMLToCoreTextConverterTag;
 
 
 @implementation SwiffHTMLToCoreTextConverter {
@@ -286,7 +285,7 @@ static void sStartElement(SwiffHTMLToCoreTextConverter *self, xmlElementPtr elem
         [self _flush];  self->_italicCount++;
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_LI) {
-        [self->_characters appendFormat:@"%C ", 0x2022];
+        [self->_characters appendFormat:@"%C ", (unsigned short)0x2022];
 
     } else if (tag == SwiffHTMLToCoreTextConverterTag_P) {
         if (self->_needsParagraphBreak) {

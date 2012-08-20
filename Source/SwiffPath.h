@@ -29,7 +29,7 @@
 
 @class SwiffLineStyle, SwiffFillStyle;
 
-enum {
+typedef NS_ENUM(UInt8, SwiffPathOperation) {
     SwiffPathOperationEnd            = 0,
     SwiffPathOperationMove           = 1,  // Corresponds to 2 floats in -floats : { CGFloat toX, CGFloat toY }
     SwiffPathOperationLine           = 2,  // Corresponds to 2 floats in -floats : { CGFloat toX, CGFloat toY }
@@ -37,7 +37,6 @@ enum {
     SwiffPathOperationVerticalLine   = 4,  // Corresponds to 1 float  in -floats : { CGFloat toY }
     SwiffPathOperationCurve          = 5   // Corresponds to 4 floats in -floats : { CGFloat toX, CGFloat toY, CGFloat controlX, CGFloat controlY }
 };
-typedef UInt8 SwiffPathOperation;
 
 
 @class SwiffPath;

@@ -32,11 +32,9 @@
 
 @implementation SwiffStaticTextDefinition
 
-@synthesize movie         = _movie,
-            libraryID     = _libraryID,
-            bounds        = _bounds,
-            textRecords   = _textRecords,
-            textTransform = _textTransform;
+@synthesize movie     = _movie,
+            libraryID = _libraryID,
+            bounds    = _bounds;
 
 
 #pragma mark -

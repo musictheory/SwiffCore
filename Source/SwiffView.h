@@ -28,7 +28,7 @@
 #import <SwiffImport.h>
 #import <SwiffTypes.h>
 
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR || TARGET_HAS_UIKIT
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 #define SwiffViewUsesUIKit 1
 #endif
 
@@ -53,7 +53,7 @@
 
 - (void) redisplay;
 
-@property (nonatomic, swiff_weak) id<SwiffViewDelegate> delegate;
+@property (nonatomic, weak) id<SwiffViewDelegate> delegate;
 
 @property (nonatomic, strong, readonly) SwiffMovie *movie;
 @property (nonatomic, strong, readonly) SwiffPlayhead *playhead;

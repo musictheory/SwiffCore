@@ -38,10 +38,6 @@
     CFAttributedStringRef  _attributedText;
 }
 
-@synthesize text       = _text,
-            definition = _definition,
-            HTML       = _HTML;
-
 
 - (id) initWithPlacedObject:(SwiffPlacedObject *)placedObject
 {
