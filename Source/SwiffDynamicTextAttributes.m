@@ -232,7 +232,7 @@ static void sGetMapTypeAndName(NSString *inName, NSString **outName, SwiffFontMa
         [result setObject:number forKey:(id)kCTUnderlineStyleAttributeName];
     }
 
-    NSNumber *number = @((double)verticalOffsetTweak);
+    NSNumber *number = @(verticalOffsetTweak);
     [result setObject:number forKey:SwiffTextVerticalOffsetAttributeName];
 
     CTParagraphStyleSetting settings[] = {
