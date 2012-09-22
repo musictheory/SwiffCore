@@ -432,6 +432,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5595A5F31442BFFA00DECD41 /* Build configuration list for PBXNativeTarget "SwiffCore" */;
 			buildPhases = (
+				558F94BE160DA881002ED658 /* rchook */,
 				5595A5E51442BFFA00DECD41 /* Sources */,
 				5595A5E61442BFFA00DECD41 /* Frameworks */,
 			);
@@ -469,6 +470,23 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		558F94BE160DA881002ED658 /* rchook */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = rchook;
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This build phase is for the musictheory.net build system.  Please ignore :)\n#\nwhich rchook\n\nif [ $? -eq 0 ]; then\n    rchook xcode-build-phase\n    exit $?\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5516B4C01446D0EA00231D67 /* Sources */ = {
