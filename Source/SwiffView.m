@@ -128,12 +128,34 @@
         [self setWantsLayer:YES];
         
         _layer = [[SwiffLayer alloc] initWithMovie:movie];
+        [_layer setDelegate:self];
+        
+        [[self layer] setDelegate:self];
+
         [[self layer] addSublayer:_layer];
 
         [self _layoutMovieLayer];
     }
     
     return self;
+}
+
+
+- (BOOL) layer:(CALayer *)layer shouldInheritContentsScale:(CGFloat)newScale fromWindow:(NSWindow *)window
+{
+    return YES;
+}
+
+
+- (id<CAAction>) actionForLayer:(CALayer *)layer forKey:(NSString *)event
+{
+    return (id)[NSNull null];
+}
+
+
+- (BOOL) isFlipped
+{
+    return YES;
 }
 
 

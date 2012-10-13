@@ -36,6 +36,7 @@
 		5539A640148EFB1800E8FA86 /* SwiffDynamicTextAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 5539A63E148EFB0400E8FA86 /* SwiffDynamicTextAttributes.m */; };
 		5539A64614905CB700E8FA86 /* SwiffBitmapDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 5539A64514905CB600E8FA86 /* SwiffBitmapDefinition.m */; };
 		5539A64814905E1200E8FA86 /* SwiffBitmapDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 5539A64514905CB600E8FA86 /* SwiffBitmapDefinition.m */; };
+		5543D71B1629564D001E7EB5 /* SwiffView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5566707415E1BACF001E9BA7 /* SwiffView.m */; };
 		5545A6B11458B70A001428F6 /* SwiffSoundDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 5545A6B01458B70A001428F6 /* SwiffSoundDefinition.m */; };
 		55468098145F558C00BB74EB /* SwiffWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 5574A0A2145D238700DA4FB7 /* SwiffWriter.m */; };
 		55468099145F558C00BB74EB /* SwiffSoundDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 5545A6B01458B70A001428F6 /* SwiffSoundDefinition.m */; };
@@ -493,6 +494,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5543D71B1629564D001E7EB5 /* SwiffView.m in Sources */,
 				55B079C314884D60006769C8 /* SwiffLayer.m in Sources */,
 				55468098145F558C00BB74EB /* SwiffWriter.m in Sources */,
 				55468099145F558C00BB74EB /* SwiffSoundDefinition.m in Sources */,
@@ -575,6 +577,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 55C1B1F014688E5B0010CB82 /* SwiffCore_Mac_Debug.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/usr/include/libxml2",
@@ -586,6 +589,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 55C1B1F114688E5B0010CB82 /* SwiffCore_Mac_Release.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/usr/include/libxml2",
@@ -615,6 +619,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 55955E0E147089F000BAB75E /* SwiffCore_Mac_Profile.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/usr/include/libxml2",
