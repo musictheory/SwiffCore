@@ -79,7 +79,7 @@
 - (NSString *) description
 {
     NSString *nameString = _name ? [NSString stringWithFormat:@"name='%@', ", _name] : @"";
-    return [NSString stringWithFormat:@"<%@: %p; %@%d frames>", [self class], self, nameString, [_frames count]];
+    return [NSString stringWithFormat:@"<%@: %p; %@%lu frames>", [self class], self, nameString, (unsigned long) [_frames count]];
 }
 
 

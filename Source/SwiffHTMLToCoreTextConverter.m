@@ -247,6 +247,7 @@ static void sStartTextFormatElement(SwiffHTMLToCoreTextConverter *self, xmlEleme
     if (tabStopsCString) {
         NSString *tabStops = [[NSString alloc] initWithBytesNoCopy:tabStopsCString length:strlen(tabStopsCString) encoding:NSUTF8StringEncoding freeWhenDone:YES];
         [attributes setTabStopsString:tabStops];
+        tabStopsCString = NULL;
     }
 
     // What is the difference between block indent and left margin?

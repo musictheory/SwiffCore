@@ -220,7 +220,7 @@ extern CFIndex SwiffSoundDefinitionGetLengthForFrame(SwiffSoundDefinition *self,
     if      (_rawSampleRate == 0)  return  5512.5f;
     else if (_rawSampleRate == 1)  return 11025.0f;
     else if (_rawSampleRate == 2)  return 22050.0f;
-    else                            return 44100.0f;
+    else                           return 44100.0f;
 }
 
 - (BOOL)      isStreaming        { return _libraryID == 0;     }
