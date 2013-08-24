@@ -105,13 +105,23 @@
 }
 
 
-- (CGGradientRef) copyCGGradientWithColorTransformStack:(CFArrayRef)stack;
+- (CGGradientRef) copyCGGradientWithColorTransformStack:(CFArrayRef)stack
+{
+    return [self copyCGGradientWithColorTransformStack:stack colorModificationBlock:NULL];
+}
+
+
+- (CGGradientRef) copyCGGradientWithColorTransformStack:(CFArrayRef)stack colorModificationBlock:(SwiffColorModificationBlock)colorModificationBlock
 {
     CGColorSpaceRef   colorSpace = CGColorSpaceCreateDeviceRGB();
     CFMutableArrayRef colors     = CFArrayCreateMutable(NULL, _recordCount, &kCFTypeArrayCallBacks);
 
     for (NSInteger i = 0; i < _recordCount; i++) {
         SwiffColor color = SwiffColorApplyColorTransformStack(_colors[i], stack);
+    
+        if (colorModificationBlock) {
+            colorModificationBlock(&color);
+        }
     
         CGColorRef cgColor = CGColorCreate(colorSpace, &color.red);
         CFArrayAppendValue(colors, cgColor);

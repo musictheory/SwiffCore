@@ -34,6 +34,6 @@
 
 + (id) sharedInstance;
 
-- (CFAttributedStringRef) copyAttributedStringForHTML:(NSString *)string baseAttributes:(SwiffDynamicTextAttributes *)baseAttributes CF_RETURNS_RETAINED;
+- (NSAttributedString *) copyAttributedStringForHTML:(NSString *)string baseAttributes:(SwiffDynamicTextAttributes *)baseAttributes NS_RETURNS_RETAINED;
 
 @end

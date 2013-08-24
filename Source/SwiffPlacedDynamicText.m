@@ -35,7 +35,7 @@
 
 
 @implementation SwiffPlacedDynamicText {
-    CFAttributedStringRef  _attributedText;
+    NSAttributedString *_attributedText;
 }
 
 
@@ -50,21 +50,12 @@
             _HTML =  placedText->_HTML;
 
             if (placedText->_attributedText) {
-                _attributedText = CFAttributedStringCreateCopy(NULL, placedText->_attributedText);
+                _attributedText = [placedText->_attributedText copy];
             }
         }
     }
     
     return self;
-}
-
-
-- (void) dealloc
-{
-    if (_attributedText) {
-        CFRelease(_attributedText);
-        _attributedText = NULL;
-    }
 }
 
 
@@ -114,8 +105,7 @@
 
         _HTML = isHTML;
 
-        if (_attributedText) CFRelease(_attributedText);
-        _attributedText = NULL;
+        _attributedText = nil;
         
     }
 }
@@ -127,7 +117,7 @@
 }
 
 
-- (CFAttributedStringRef) attributedText
+- (NSAttributedString *) attributedText
 {
     if (!_attributedText && _text) {
         if (_HTML) {
@@ -140,7 +130,7 @@
             SwiffDynamicTextAttributes *attributes = [self _newBaseAttributes];
             NSDictionary *dictionary = [attributes copyCoreTextAttributes];
 
-            _attributedText = CFAttributedStringCreate(NULL, (__bridge CFStringRef)_text, (__bridge CFDictionaryRef)dictionary);
+            _attributedText = [[NSAttributedString alloc] initWithString:_text attributes:dictionary];
         }
     }
 

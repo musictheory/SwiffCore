@@ -60,6 +60,7 @@ static NSString * const SwiffRenderTranslationYKey = @"SwiffRenderTranslationY";
     BOOL               _interpolateCurrentFrame;
 }
 
+@dynamic colorModificationBlock;
 @synthesize swiffLayerDelegate = _delegate;
 
 
@@ -861,12 +862,11 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 }
 
 
-- (void) setMultiplyColor:(SwiffColor *)color
+- (void) setColorModificationBlock:(SwiffColorModificationBlock)block
 {
-    [_renderer setMultiplyColor:color];
+    [_renderer setColorModificationBlock:block];
     [self _setNeedsRedisplay];
 }
-
 
 
 - (void) setHairlineWidth:(CGFloat)width
@@ -932,7 +932,12 @@ static BOOL sShouldUseSameLayer(SwiffPlacedObject *a, SwiffPlacedObject *b)
 }
 
 
-- (SwiffColor *) multiplyColor          { return [_renderer multiplyColor];               }
+- (SwiffColorModificationBlock) colorModificationBlock
+{
+    return [_renderer colorModificationBlock];
+}
+
+
 - (CGFloat) hairlineWidth               { return [_renderer hairlineWidth];               }
 - (CGFloat) fillHairlineWidth           { return [_renderer fillHairlineWidth];           }
 - (BOOL)    shouldAntialias             { return [_renderer shouldAntialias];             }

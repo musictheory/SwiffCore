@@ -45,7 +45,7 @@
 @property (nonatomic, assign) CGFloat scaleFactorHint;
 
 // When non-NULL, all rendered colors are multiplied by the specified color
-@property (nonatomic, assign) SwiffColor *multiplyColor;
+@property (nonatomic, strong) SwiffColorModificationBlock colorModificationBlock;
 
 @property (nonatomic, assign) CGFloat hairlineWidth;
 @property (nonatomic, assign) CGFloat fillHairlineWidth;

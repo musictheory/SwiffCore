@@ -38,7 +38,7 @@
 
 @property (nonatomic, copy) NSString *text;
 
-@property (nonatomic, readonly /*strong*/) CFAttributedStringRef attributedText;
+@property (nonatomic, readonly /*strong*/) NSAttributedString *attributedText;
 @property (nonatomic, assign, readonly, getter=isHTML) BOOL HTML;
 
 @property (nonatomic, strong, readonly) SwiffDynamicTextDefinition *definition;

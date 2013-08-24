@@ -41,16 +41,15 @@ typedef NS_ENUM(NSInteger, SwiffFontMapType) {
 }; 
 
 
-CGFloat SwiffTextGetMaximumVerticalOffset(CFAttributedStringRef as, CFRange range)
+CGFloat SwiffTextGetMaximumVerticalOffset(NSAttributedString *as, CFRange range)
 {
     CFIndex i = range.location;
     CFIndex endI = i + range.length;
     CGFloat result = -INFINITY;
 
     while (i < endI) {
-
         CFRange effectiveRange;
-        CFNumberRef type = CFAttributedStringGetAttribute(as, i, (__bridge CFStringRef)SwiffTextVerticalOffsetAttributeName, &effectiveRange);
+        CFNumberRef type = CFAttributedStringGetAttribute((__bridge CFAttributedStringRef)as, i, (__bridge CFStringRef)SwiffTextVerticalOffsetAttributeName, &effectiveRange);
     
         if (type) {
             CGFloat value;

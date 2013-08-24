@@ -57,7 +57,7 @@ typedef NS_ENUM(NSInteger, SwiffHTMLToCoreTextConverterTag) {
     NSInteger        _underlineCount;
     BOOL             _needsParagraphBreak;
 
-    CFMutableAttributedStringRef _output;
+    NSMutableAttributedString *_output;
 }
 
 
@@ -86,9 +86,8 @@ typedef NS_ENUM(NSInteger, SwiffHTMLToCoreTextConverterTag) {
 
         NSDictionary *coreTextAttributes = [_attributes copyCoreTextAttributes];
        
-        CFAttributedStringRef replacement = CFAttributedStringCreate(NULL, (__bridge CFStringRef)_characters, (__bridge CFDictionaryRef)coreTextAttributes); 
-        CFAttributedStringReplaceAttributedString(_output, CFRangeMake(CFAttributedStringGetLength(_output), 0), replacement);
-        CFRelease(replacement);
+        NSAttributedString *toAppend = [[NSAttributedString alloc] initWithString:_characters attributes:coreTextAttributes];
+        [_output appendAttributedString:toAppend];
         
         _characters = [[NSMutableString alloc] init];
     }
@@ -380,7 +379,7 @@ static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
 }
 
 
-- (CFAttributedStringRef) copyAttributedStringForHTML:(NSString *)string baseAttributes:(SwiffDynamicTextAttributes *)baseAttributes
+- (NSAttributedString *) copyAttributedStringForHTML:(NSString *)string baseAttributes:(SwiffDynamicTextAttributes *)baseAttributes
 {
     if (!string) return NULL;
 
@@ -396,7 +395,7 @@ static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
     htmlDocPtr htmlDoc = htmlReadMemory((const char *)buffer, length, NULL, "UTF-8", 0);
    
     _characters     = [[NSMutableString alloc] init];
-    _output         = CFAttributedStringCreateMutable(NULL, 0);
+    _output         = [[NSMutableAttributedString alloc] init];
     _attributes     = baseAttributes;
     _boldCount      = [baseAttributes isBold]      ? 1 : 0;
     _italicCount    = [baseAttributes isItalic]    ? 1 : 0;
@@ -414,7 +413,7 @@ static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
         [self _flush];
     }
 
-    CFAttributedStringRef output = _output;
+    NSAttributedString *output = _output;
     _output = NULL;
 
     _attributes = nil;

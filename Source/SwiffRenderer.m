@@ -48,6 +48,7 @@
 
 typedef struct SwiffRenderState {
     __unsafe_unretained SwiffMovie *movie;
+    __unsafe_unretained SwiffColorModificationBlock colorModificationBlock;
 
     CGContextRef      context;
     CGRect            clipBoundingBox;
@@ -56,15 +57,11 @@ typedef struct SwiffRenderState {
     CGFloat           scaleFactorHint;
     CGFloat           hairlineWidth;
     CGFloat           fillHairlineWidth;
-    CGFloat           multiplyRed;
-    CGFloat           multiplyGreen;
-    CGFloat           multiplyBlue;
     UInt16            clipDepth;
     BOOL              isBuildingClippingPath;
     BOOL              ceilX;
     BOOL              ceilY;
     BOOL              skipUntilClipDepth;
-    BOOL              hasMultiplyColor;
 } SwiffRenderState;
 
 
@@ -92,14 +89,6 @@ static void sStopClipping(SwiffRenderState *state)
         state->clipDepth = 0;
         state->skipUntilClipDepth = NO;
     }
-}
-
-
-static void sApplyMultiplyColor(SwiffRenderState *state, SwiffColor *color)
-{
-    color->red   *= state->multiplyRed;
-    color->green *= state->multiplyGreen;
-    color->blue  *= state->multiplyBlue;
 }
 
 
@@ -473,7 +462,9 @@ static void sStrokePath(SwiffRenderState *state, SwiffPath *path)
     }
 
     SwiffColor color = SwiffColorApplyColorTransformStack([lineStyle color], state->colorTransforms);
-    if (state->hasMultiplyColor) sApplyMultiplyColor(state, &color);
+    if (state->colorModificationBlock) {
+        state->colorModificationBlock(&color);
+    }
 
     CGContextSetStrokeColor(context, (CGFloat *)&color);
     CGContextDrawPath(context, kCGPathStroke);
@@ -504,31 +495,18 @@ static void sFillPath(SwiffRenderState *state, SwiffPath *path)
 
     } else if (type == SwiffFillStyleTypeColor) {
         SwiffColor color = SwiffColorApplyColorTransformStack([style color], state->colorTransforms);
-        if (state->hasMultiplyColor) sApplyMultiplyColor(state, &color);
+
+        if (state->colorModificationBlock) {
+            state->colorModificationBlock(&color);
+        }
+
         CGContextSetFillColor(context, (CGFloat *)&color);
         CGContextDrawPath(context, kCGPathFill);
 
     } else if ((type == SwiffFillStyleTypeLinearGradient) || (type == SwiffFillStyleTypeRadialGradient)) {
         CGContextEOClip(context);
 
-        if (state->hasMultiplyColor) {
-            SwiffColorTransform tintAsTransform = {
-                state->multiplyRed,
-                state->multiplyGreen,
-                state->multiplyBlue,
-                1.0,
-                0.0, 0.0, 0.0, 0.0
-            };
-
-            sPushColorTransform(state, &tintAsTransform);
-        }
-
-        CGGradientRef gradient = [[style gradient] copyCGGradientWithColorTransformStack:state->colorTransforms];
-
-        if (state->hasMultiplyColor) {
-            sPopColorTransform(state);
-        }
-
+        CGGradientRef gradient = [[style gradient] copyCGGradientWithColorTransformStack:state->colorTransforms colorModificationBlock:state->colorModificationBlock];
         CGGradientDrawingOptions options = (kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
 
         if (type == SwiffFillStyleTypeLinearGradient) {
@@ -702,12 +680,34 @@ static void sDrawStaticTextDefinition(SwiffRenderState *state, SwiffStaticTextDe
 
 static void sDrawPlacedDynamicText(SwiffRenderState *state, SwiffPlacedDynamicText *placedDynamicText)
 {
-    CFAttributedStringRef as = [placedDynamicText attributedText];
+    NSMutableAttributedString *as = [[placedDynamicText attributedText] mutableCopy];
     SwiffDynamicTextDefinition *definition = [placedDynamicText definition];
     CGRect rect = [definition bounds];
 
+    NSRange entireString = NSMakeRange(0, [as length]);
+
+    // Iterate over the attributed string and apply the color transform stack and
+    // colorModificationBlock to all kCTForegroundColorAttributeName values
+    //
+    [as enumerateAttribute:(__bridge NSString *)kCTForegroundColorAttributeName inRange:entireString options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(id value, NSRange range, BOOL *stop) {
+        SwiffColor swiffColor = SwiffColorFromCGColor((__bridge CGColorRef)value);
+
+        swiffColor = SwiffColorApplyColorTransformStack(swiffColor, state->colorTransforms);
+
+        if (state->colorModificationBlock) {
+            state->colorModificationBlock(&swiffColor);
+        }
+
+        CGColorRef replacementColor = SwiffColorCopyCGColor(swiffColor);
+        if (replacementColor) {
+            [as addAttribute:(__bridge NSString *)kCTForegroundColorAttributeName value:(__bridge id)replacementColor range:range];
+            CGColorRelease(replacementColor);
+        }
+    }];
+
+
     CGContextRef context = state->context;
-    CTFramesetterRef framesetter = as ? CTFramesetterCreateWithAttributedString(as) : NULL;
+    CTFramesetterRef framesetter = as ? CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)as) : NULL;
     
     if (framesetter) {
         CGPathRef  path  = CGPathCreateWithRect(CGRectMake(0, 0, rect.size.width, rect.size.height), NULL);
@@ -874,14 +874,8 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
 
     state.movie   = _movie;
     state.context = context;
+    state.colorModificationBlock = _colorModificationBlock;
 
-    if (_hasMultiplyColor && (_multiplyColor.alpha > 0)) {
-        state.multiplyRed   = (_multiplyColor.red   * _multiplyColor.alpha);
-        state.multiplyGreen = (_multiplyColor.green * _multiplyColor.alpha);
-        state.multiplyBlue  = (_multiplyColor.blue  * _multiplyColor.alpha);
-        state.hasMultiplyColor = YES;
-    }
-    
     if (_hasBaseAffineTransform) {
         state.affineTransform = _baseAffineTransform;
     } else {
@@ -919,6 +913,7 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
 
     state.movie   = nil;
     state.context = NULL;
+    state.colorModificationBlock = NULL;
     
     if (state.colorTransforms) {
         CFRelease(state.colorTransforms);
@@ -946,26 +941,6 @@ static void sDrawPlacedObject(SwiffRenderState *state, SwiffPlacedObject *placed
     }
 }
 
-
-- (void) setMultiplyColor:(SwiffColor *)color
-{
-    if (color && (color->alpha > 0)) {
-        _multiplyColor = *color;
-        _hasMultiplyColor = YES;
-    } else {
-        _hasMultiplyColor = NO;
-    }
-}
-
-
-- (SwiffColor *) multiplyColor
-{
-    if (_hasMultiplyColor) {
-        return &_multiplyColor;
-    } else {
-        return NULL;
-    }
-} 
 
 @end
 

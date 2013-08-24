@@ -28,7 +28,7 @@
 #import <SwiffImport.h>
 #import <SwiffTypes.h>
 
-extern CGFloat SwiffTextGetMaximumVerticalOffset(CFAttributedStringRef as, CFRange range);
+extern CGFloat SwiffTextGetMaximumVerticalOffset(NSAttributedString *as, CFRange range);
 
 @interface SwiffDynamicTextAttributes : NSObject <NSCopying>
 

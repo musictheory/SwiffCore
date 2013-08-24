@@ -51,6 +51,7 @@ typedef NS_ENUM(NSInteger, SwiffGradientInterpolationMode) {
 - (void) getColor:(SwiffColor *)outColor ratio:(CGFloat *)outRatio forRecord:(NSUInteger)index;
 
 - (CGGradientRef) copyCGGradientWithColorTransformStack:(CFArrayRef)stack CF_RETURNS_RETAINED;
+- (CGGradientRef) copyCGGradientWithColorTransformStack:(CFArrayRef)stack colorModificationBlock:(SwiffColorModificationBlock)colorModificationBlock CF_RETURNS_RETAINED;
 
 @property (nonatomic, readonly, assign) SwiffGradientSpreadMode spreadMode;
 @property (nonatomic, readonly, assign) SwiffGradientInterpolationMode interpolationMode;

@@ -39,6 +39,8 @@
     SwiffLayer *_layer;
 }
 
+@dynamic colorModificationBlock;
+
 
 - (void) dealloc
 {
@@ -244,7 +246,19 @@
     }
 }
 
-- (void) setMultiplyColor:(SwiffColor *)color         { [_layer setMultiplyColor:color];             }
+
+- (void) setColorModificationBlock:(SwiffColorModificationBlock)block
+{
+    [_layer setColorModificationBlock:block];
+}
+
+
+- (SwiffColorModificationBlock) colorModificationBlock
+{
+    return [_layer colorModificationBlock];
+}
+
+
 - (void) setHairlineWidth:(CGFloat)width              { [_layer setHairlineWidth:width];             }
 - (void) setFillHairlineWidth:(CGFloat)width          { [_layer setFillHairlineWidth:width];         }
 - (void) setShouldAntialias:(BOOL)yn                  { [_layer setShouldAntialias:yn];              }
@@ -257,7 +271,6 @@
 - (SwiffMovie    *) movie                             { return [_layer movie];                       }
 - (SwiffPlayhead *) playhead                          { return [_layer playhead];                    }
 - (BOOL)            drawsBackground                   { return [_layer drawsBackground];             }
-- (SwiffColor    *) multiplyColor                     { return [_layer multiplyColor];               }
 - (CGFloat)         hairlineWidth                     { return [_layer hairlineWidth];               }
 - (CGFloat)         fillHairlineWidth                 { return [_layer fillHairlineWidth];           }       
 - (BOOL)            shouldAntialias                   { return [_layer shouldAntialias];             }

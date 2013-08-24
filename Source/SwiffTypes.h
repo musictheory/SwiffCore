@@ -58,6 +58,8 @@ typedef struct SwiffColor {
 } SwiffColor;
 
 
+typedef void (^SwiffColorModificationBlock)(SwiffColor *);
+
 typedef struct SwiffHeader {
     UInt8   version;
     BOOL    isCompressed;
