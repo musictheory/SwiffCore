@@ -393,7 +393,7 @@ UInt32 SwiffMPEGGetBitrate(SwiffMPEGVersion version, SwiffMPEGLayer layer, UInt8
 {
     BOOL isVersion2x = (version == SwiffMPEGVersion2) || (version == SwiffMPEGVersion25);
 
-    const NSInteger map[2][4][16] = {
+    const UInt32 map[2][4][16] = {
         {
             {   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 },  // Layer bit reserved
             {   0,  32,  40,  48,  56,  64,  80,  96, 112, 128, 160, 192, 224, 256, 320,   0 },  // MPEG1, Layer 3
@@ -413,7 +413,7 @@ UInt32 SwiffMPEGGetBitrate(SwiffMPEGVersion version, SwiffMPEGLayer layer, UInt8
 
 UInt32 SwiffMPEGGetSamplesPerFrame(SwiffMPEGVersion version, SwiffMPEGLayer layer)
 {
-    static const NSInteger map[2][4] = {
+    static const UInt32 map[2][4] = {
         {   0, 1152, 1152, 384 },  // MPEG 1
         {   0,  576, 1152, 384 }   // MPEG 2, MPEG 2.5
     };
@@ -425,7 +425,7 @@ UInt32 SwiffMPEGGetSamplesPerFrame(SwiffMPEGVersion version, SwiffMPEGLayer laye
 
 UInt16 SwiffMPEGGetSamplingRate(SwiffMPEGVersion version, UInt8 rateIndex)
 {
-    static const NSInteger map[4][3] = {
+    static const UInt16 map[4][3] = {
         { 11025, 12000,  8000 },  // MPEG 2.5
         {     0,     0,     0 },  // reserved
         { 22050, 24000, 16000 },  // MPEG 2
@@ -436,9 +436,9 @@ UInt16 SwiffMPEGGetSamplingRate(SwiffMPEGVersion version, UInt8 rateIndex)
 }
 
 
-extern NSInteger SwiffMPEGGetCoefficients(SwiffMPEGVersion version, SwiffMPEGLayer layer)
+extern UInt32 SwiffMPEGGetCoefficients(SwiffMPEGVersion version, SwiffMPEGLayer layer)
 {
-    static const NSInteger map[2][4] = {
+    static const UInt32 map[2][4] = {
         {   0, 144, 144,  12 },  // MPEG 1
         {   0,  72, 144,  12 }   // MPEG 2, MPEG 2.5
     };
@@ -448,20 +448,20 @@ extern NSInteger SwiffMPEGGetCoefficients(SwiffMPEGVersion version, SwiffMPEGLay
 }
 
 
-extern NSInteger SwiffMPEGGetSlotSize(SwiffMPEGLayer layer)
+extern UInt32 SwiffMPEGGetSlotSize(SwiffMPEGLayer layer)
 {
-    static const NSInteger map[4] = { 0, 1, 1, 4 };
+    static const UInt32 map[4] = { 0, 1, 1, 4 };
     return map[layer % 4];
 }
 
 
 extern UInt32 SwiffMPEGGetFrameSize(SwiffMPEGVersion version, SwiffMPEGLayer layer, NSInteger bitrate, NSInteger samplingRate, BOOL hasPadding)
 {
-    NSInteger coefficients = SwiffMPEGGetCoefficients(version, layer);
-    NSInteger slotSize     = SwiffMPEGGetSlotSize(layer);
+    UInt32 coefficients = SwiffMPEGGetCoefficients(version, layer);
+    UInt32 slotSize     = SwiffMPEGGetSlotSize(layer);
 
     if (samplingRate) {
-        return (NSInteger)(((coefficients * bitrate / samplingRate) + (hasPadding ? 1 : 0))) * slotSize;
+        return (UInt32)(((coefficients * bitrate / samplingRate) + (hasPadding ? 1 : 0))) * slotSize;
     } else {
         return 0;
     }

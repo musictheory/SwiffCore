@@ -436,7 +436,7 @@ static void sPathAddShapeOperation(SwiffPath *path, SwiffShapeOperation *op, Swi
     // Collect operations by fill style
     SwiffShapeOperation *operation = inOperations;
     while (operation->type != SwiffShapeOperationTypeEnd) {
-        const void *key = (const void *)(0 + operation->fillStyleIndex);
+        const void *key = (const void *)((NSInteger)operation->fillStyleIndex);
         if (!key) {
             operation++;
             continue;

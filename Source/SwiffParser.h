@@ -31,12 +31,12 @@
 
 typedef struct SwiffParser SwiffParser;
 
-extern SwiffParser *SwiffParserCreate(const UInt8 *buffer, UInt32 length);
+extern SwiffParser *SwiffParserCreate(const UInt8 *buffer, NSUInteger length);
 extern void SwiffParserFree(SwiffParser *reader);
 
 extern BOOL SwiffParserReadHeader(SwiffParser *parser, SwiffHeader *outHeader);
 
-extern void SwiffParserAdvance(SwiffParser *parser, UInt32 length);
+extern void SwiffParserAdvance(SwiffParser *parser, NSUInteger length);
 extern BOOL SwiffParserIsValid(SwiffParser *parser);
 
 // Allow the parser to store key-value pairs at parse time
@@ -53,7 +53,7 @@ extern NSStringEncoding SwiffParserGetStringEncoding(SwiffParser *parser);
 // Tags
 //
 extern void SwiffParserAdvanceToNextTag(SwiffParser *parser);
-extern UInt32 SwiffParserGetBytesRemainingInCurrentTag(SwiffParser *parser);
+extern NSUInteger SwiffParserGetBytesRemainingInCurrentTag(SwiffParser *parser);
 
 extern SwiffTag  SwiffParserGetCurrentTag(SwiffParser *parser);
 extern NSInteger SwiffParserGetCurrentTagVersion(SwiffParser *parser);
@@ -100,7 +100,7 @@ extern void SwiffParserReadColorTransformWithAlpha(SwiffParser *parser, SwiffCol
 
 // Objects
 //
-extern void SwiffParserReadData(SwiffParser *parser, UInt32 length, NSData **outValue);
+extern void SwiffParserReadData(SwiffParser *parser, NSUInteger length, NSData **outValue);
 
 extern void SwiffParserReadString(SwiffParser *parser, NSString **outValue);
 extern void SwiffParserReadLengthPrefixedString(SwiffParser *parser, NSString **outValue);

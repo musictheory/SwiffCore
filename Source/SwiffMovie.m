@@ -153,7 +153,7 @@ static NSString * const SwiffMovieNeedsJPEGTablesDataKey = @"SwiffMovieNeedsJPEG
         //!issue1: MorphShape Support
 
     } else if (tag == SwiffTagJPEGTables) {
-        UInt32 remaining = SwiffParserGetBytesRemainingInCurrentTag(parser);
+        NSUInteger remaining = SwiffParserGetBytesRemainingInCurrentTag(parser);
 
         if (!SwiffParserGetAssociatedValue(parser, SwiffMovieJPEGTablesDataKey)) {
             NSData *data = nil;

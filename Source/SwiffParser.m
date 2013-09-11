@@ -44,7 +44,7 @@ struct SwiffParser {
     CFMutableDictionaryRef values;
     NSStringEncoding encoding;
 
-    UInt32        length;
+    NSUInteger    length;
 
     UInt8         bitPosition;
     UInt8         bitByte;
@@ -58,7 +58,7 @@ struct SwiffParser {
 void SwiffParserEnsureBufferError(SwiffParser *parser);
 
 
-SwiffParser *SwiffParserCreate(const UInt8 *buffer, UInt32 length)
+SwiffParser *SwiffParserCreate(const UInt8 *buffer, NSUInteger length)
 {
     SwiffParser *parser = calloc(1, sizeof(SwiffParser));
 
@@ -123,7 +123,7 @@ void SwiffParserEnsureBufferError(SwiffParser *parser)
 }
 
 
-static BOOL sEnsureBuffer(SwiffParser *parser, int length)
+static BOOL sEnsureBuffer(SwiffParser *parser, NSUInteger length)
 {
     BOOL yn = ((parser->b + length) <= (parser->buffer + parser->length));
 
@@ -199,7 +199,7 @@ BOOL SwiffParserIsValid(SwiffParser *parser)
 }
 
 
-void SwiffParserAdvance(SwiffParser *parser, UInt32 length)
+void SwiffParserAdvance(SwiffParser *parser, NSUInteger length)
 {
     if (!sEnsureBuffer(parser, length)) {
         return;
@@ -287,7 +287,7 @@ void SwiffParserAdvanceToNextTag(SwiffParser *parser)
 }
 
 
-UInt32 SwiffParserGetBytesRemainingInCurrentTag(SwiffParser *parser)
+NSUInteger SwiffParserGetBytesRemainingInCurrentTag(SwiffParser *parser)
 {
     return (parser->nextTagB - parser->b);
 }
@@ -714,7 +714,7 @@ void SwiffParserReadColorTransformWithAlpha(SwiffParser *parser, SwiffColorTrans
 #pragma mark -
 #pragma mark Objects
 
-void SwiffParserReadData(SwiffParser *parser, UInt32 length, NSData **outValue)
+void SwiffParserReadData(SwiffParser *parser, NSUInteger length, NSData **outValue)
 {
     if (!sEnsureBuffer(parser, length)) {
         return;
@@ -737,7 +737,7 @@ void SwiffParserReadString(SwiffParser *parser, NSString **outValue)
         SwiffParserReadUInt8(parser, &i);
     } while (i != 0);
     
-    UInt32 length = (parser->b - start);
+    NSUInteger length = (parser->b - start);
     if (outValue) {
         if (length) {
             length--;

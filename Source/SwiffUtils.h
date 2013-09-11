@@ -144,8 +144,8 @@ extern UInt32 SwiffMPEGGetBitrate(SwiffMPEGVersion version, SwiffMPEGLayer layer
 extern UInt32 SwiffMPEGGetSamplesPerFrame(SwiffMPEGVersion version, SwiffMPEGLayer layer);
 extern UInt16 SwiffMPEGGetSamplingRate(SwiffMPEGVersion version, UInt8 rateIndex);
 
-extern NSInteger SwiffMPEGGetCoefficients(SwiffMPEGVersion version, SwiffMPEGLayer layer);
-extern NSInteger SwiffMPEGGetSlotSize(SwiffMPEGLayer layer);
+extern UInt32 SwiffMPEGGetCoefficients(SwiffMPEGVersion version, SwiffMPEGLayer layer);
+extern UInt32 SwiffMPEGGetSlotSize(SwiffMPEGLayer layer);
 
 extern UInt32 SwiffMPEGGetFrameSize(SwiffMPEGVersion version, SwiffMPEGLayer layer, NSInteger bitrate, NSInteger samplingRate, BOOL hasPadding);
 

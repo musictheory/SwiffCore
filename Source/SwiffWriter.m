@@ -46,6 +46,28 @@ struct SwiffWriter {
 };
 
 
+static SInt32 sSwiffWriterGetInt32ForLong(long l)
+{
+#if defined(__LP64__) && __LP64__
+    SInt32 result;
+    
+    // We should probably set a warning flag on the SwiffWriter when the result is cropped
+    if (l < INT32_MIN) {
+        result = INT32_MIN;
+    } else if (l > INT32_MAX) {
+        result = INT32_MAX;
+    } else {
+        result = (SInt32)result;
+    }
+    
+    return result;
+
+#else
+    return l;
+#endif
+}
+
+
 #pragma mark -
 #pragma mark Lifecycle
 
@@ -84,7 +106,7 @@ NSData *SwiffWriterGetDataWithHeader(SwiffWriter *writer, SwiffHeader header)
     SwiffWriterAppendUInt16(subwriter, writer->frameCount);
     SwiffWriterAppendData(subwriter, (__bridge NSData *)writer->data);
 
-    UInt32 fileSize = CFDataGetLength(subwriter->data) + 8;
+    NSUInteger fileSize = CFDataGetLength(subwriter->data) + 8;
 
     UInt8 signature[4];
     signature[0] = (header.isCompressed ? 'C' : 'F');
@@ -315,10 +337,10 @@ void SwiffWriterAppendFixed8(SwiffWriter *writer, CGFloat value)
 
 void SwiffWriterAppendRect(SwiffWriter *writer, CGRect rect)
 {
-    SInt32 xMin = lround(CGRectGetMinX(rect) * 20);
-    SInt32 xMax = lround(CGRectGetMaxX(rect) * 20);
-    SInt32 yMin = lround(CGRectGetMinY(rect) * 20);
-    SInt32 yMax = lround(CGRectGetMaxY(rect) * 20);
+    SInt32 xMin = sSwiffWriterGetInt32ForLong(lround(CGRectGetMinX(rect) * 20));
+    SInt32 xMax = sSwiffWriterGetInt32ForLong(lround(CGRectGetMaxX(rect) * 20));
+    SInt32 yMin = sSwiffWriterGetInt32ForLong(lround(CGRectGetMinY(rect) * 20));
+    SInt32 yMax = sSwiffWriterGetInt32ForLong(lround(CGRectGetMaxY(rect) * 20));
 
     UInt32 nBits = 0;
     sCalculateBitsForSInt32(xMin, &nBits);

@@ -185,10 +185,14 @@ static NSData *sCreateUncompressedData(const UInt8 *bytes, NSUInteger length)
     z_stream stream;
     bzero(&stream, sizeof(z_stream));
 
+    if (length > UINT32_MAX) {
+        return nil;
+    }
+
     NSMutableData *outData = [[NSMutableData alloc] initWithLength:(8 * 1024)];
 
     stream.next_in  = (Bytef *)bytes;
-    stream.avail_in = length;
+    stream.avail_in = (UInt32)length;
 
     if (inflateInit(&stream) == Z_OK) {
         do {
@@ -305,8 +309,8 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
     bytes  += i;
     length -= i;
 
-    UInt32  outLength = sizeof(UInt32) * length;
-    UInt32 *outBytes  = malloc(outLength);
+    NSUInteger outLength = sizeof(UInt32) * length;
+    UInt32    *outBytes  = malloc(outLength);
 
     // "Row widths in the pixel data fields of these structures must be rounded up to the next 32-bit word boundary."
     UInt8 bytesPerRow = ((width + 3) / 4) * 4;
@@ -353,7 +357,7 @@ static CGImageRef sCreateImage_Indexed(size_t width, size_t height, NSInteger in
         SwiffTagJoin(SwiffParserGetCurrentTag(parser), SwiffParserGetCurrentTagVersion(parser), &_tag);
 
         NSData *tagData = nil;
-        UInt32 remainingBytes = SwiffParserGetBytesRemainingInCurrentTag(parser);
+        NSUInteger remainingBytes = SwiffParserGetBytesRemainingInCurrentTag(parser);
         SwiffParserReadData(parser, remainingBytes, &tagData);
         
         _tagData = tagData;
