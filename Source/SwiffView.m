@@ -37,6 +37,7 @@
 
 @implementation SwiffView {
     SwiffLayer *_layer;
+    CGSize _forcedSize;
 }
 
 @dynamic colorModificationBlock;
@@ -52,6 +53,23 @@
 - (void) redisplay
 {
     [_layer redisplay];
+}
+
+
+- (void) forcePixelSize:(CGSize)size
+{
+    if (!CGSizeEqualToSize(_forcedSize, size)) {
+        _forcedSize = size;
+        [self _layoutMovieLayer];
+    }
+}
+
+
+- (void) resetForcedPixelSize
+{
+    if (!isnan(_forcedSize.width)) {
+        [self forcePixelSize:CGSizeMake(NAN, NAN)];
+    }
 }
 
 
@@ -72,6 +90,8 @@
     }
 
     if ((self = [super initWithFrame:frame])) {
+        _forcedSize = CGSizeMake(NAN, NAN);
+    
         _layer = [[SwiffLayer alloc] initWithMovie:movie];
         [_layer setContentsScale:[[UIScreen mainScreen] scale]];
         [[self layer] addSublayer:_layer];
@@ -96,15 +116,9 @@
 }
 
 
-- (void) willMoveToWindow:(UIWindow *)newWindow
+- (void) didMoveToWindow
 {
-    if (newWindow != [self window]) {
-        CGFloat scale = [newWindow contentScaleFactor];
-        if (scale < 1) scale = 1;
-        [self setContentScaleFactor:scale];
-        [[self layer] setContentsScale:scale];
-        [_layer setContentsScale:scale];
-    }
+    [self _layoutMovieLayer];
 }
 
 #endif
@@ -179,18 +193,34 @@
     SwiffMovie *movie = [self movie];
     if (!movie) return;
 
+    CGFloat scale = [[self window] contentScaleFactor];
+    if (!scale) scale = [[UIScreen mainScreen] scale];
+
+    [self setContentScaleFactor:scale];
+    [[self layer] setContentsScale:scale];
+
     CGFloat w = [self bounds].size.width;
     CGFloat h = [self bounds].size.height;
-    CGSize  stageSize   = [movie stageRect].size;
-    CGFloat aspectRatio = stageSize.width / stageSize.height;
-    
-    CGSize size = CGSizeMake(w, SwiffFloor(w  / aspectRatio));
-    if (size.height > h) {
-        size = CGSizeMake(SwiffFloor(h * aspectRatio), h);
-    }
 
-    CGRect movieFrame = CGRectMake(SwiffFloor((w - size.width) / 2.0), SwiffFloor((h - size.height) / 2.0), size.width, size.height);
-    [_layer setFrame:movieFrame];
+    if (isnan(_forcedSize.width)) {
+        CGSize  stageSize   = [movie stageRect].size;
+        CGFloat aspectRatio = stageSize.width / stageSize.height;
+        
+        CGSize size = CGSizeMake(w, SwiffFloor(w  / aspectRatio));
+        if (size.height > h) {
+            size = CGSizeMake(SwiffFloor(h * aspectRatio), h);
+        }
+
+        CGRect movieFrame = CGRectMake(SwiffFloor((w - size.width) / 2.0), SwiffFloor((h - size.height) / 2.0), size.width, size.height);
+        [_layer setContentsScale:scale];
+        [_layer setFrame:movieFrame];
+
+    } else {
+        [_layer setContentsScale:1];
+        [_layer setBounds:CGRectMake(0, 0, _forcedSize.width, _forcedSize.height)];
+        [_layer setPosition:CGPointMake(w / 2.0, h / 2.0)];
+        [_layer setTransform:CATransform3DMakeScale(1.0 / scale, 1.0 / scale, 1.0 / scale)];
+    }
 }
 
 

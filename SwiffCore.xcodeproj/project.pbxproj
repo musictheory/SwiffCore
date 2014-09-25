@@ -452,7 +452,7 @@
 		55F65A3014429BCB00E12C27 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0430;
+				LastUpgradeCheck = 0600;
 			};
 			buildConfigurationList = 55F65A3314429BCB00E12C27 /* Build configuration list for PBXProject "SwiffCore" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -577,7 +577,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 55C1B1F014688E5B0010CB82 /* SwiffCore_Mac_Debug.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/usr/include/libxml2",
@@ -589,7 +589,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 55C1B1F114688E5B0010CB82 /* SwiffCore_Mac_Release.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/usr/include/libxml2",
@@ -619,7 +619,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 55955E0E147089F000BAB75E /* SwiffCore_Mac_Profile.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/usr/include/libxml2",
@@ -654,6 +654,7 @@
 		55F65A3514429BCB00E12C27 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ONLY_ACTIVE_ARCH = YES;
 			};
 			name = Debug;
 		};

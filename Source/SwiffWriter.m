@@ -57,7 +57,7 @@ static SInt32 sSwiffWriterGetInt32ForLong(long l)
     } else if (l > INT32_MAX) {
         result = INT32_MAX;
     } else {
-        result = (SInt32)result;
+        result = (SInt32)l;
     }
     
     return result;
@@ -125,7 +125,7 @@ NSData *SwiffWriterGetDataWithHeader(SwiffWriter *writer, SwiffHeader header)
         NSMutableData *compressedData = [[NSMutableData alloc] initWithLength:(32 * 1024)];
 
         stream.next_in  = (Bytef *)CFDataGetBytePtr(subwriter->data);
-        stream.avail_in = CFDataGetLength(subwriter->data);
+        stream.avail_in = (uInt)CFDataGetLength(subwriter->data);
 
         if (deflateInit(&stream, Z_BEST_COMPRESSION) == Z_OK) {
             do {
@@ -201,7 +201,7 @@ void SwiffWriterEndTag(SwiffWriter *writer)
         SwiffWriterAppendUInt16(writer, (tag << 6) | (needsLong ? 0x3F : length));
 
         if (needsLong) {
-            SwiffWriterAppendSInt32(writer, length);
+            SwiffWriterAppendSInt32(writer, (SInt32)length);
         }
 
         SwiffWriterAppendData(writer, (__bridge NSData *)tagData);

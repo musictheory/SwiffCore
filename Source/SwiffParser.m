@@ -155,7 +155,7 @@ BOOL SwiffParserReadHeader(SwiffParser *parser, SwiffHeader *outHeader)
 
         UInt8 *newBuffer = fileLength ? (UInt8 *)malloc(fileLength) : NULL;
 
-        if (newBuffer && sInflate(parser->b, parser->length - 8, newBuffer, fileLength)) {
+        if (newBuffer && sInflate(parser->b, (UInt32)(parser->length - 8), newBuffer, fileLength)) {
             parser->buffer = newBuffer;
             parser->b      = parser->buffer;
             parser->length = fileLength;

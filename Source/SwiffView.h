@@ -53,6 +53,9 @@
 
 - (void) redisplay;
 
+- (void) forcePixelSize:(CGSize)size;
+- (void) resetForcedPixelSize;
+
 @property (nonatomic, weak) id<SwiffViewDelegate> delegate;
 
 @property (nonatomic, strong, readonly) SwiffMovie *movie;

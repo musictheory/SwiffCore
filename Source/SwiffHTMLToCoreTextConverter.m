@@ -392,7 +392,7 @@ static void sParseNode(SwiffHTMLToCoreTextConverter *self, xmlNodePtr node)
     UInt8 *buffer = (UInt8 *)malloc(length);
     CFStringGetBytes(cfString, range, kCFStringEncodingUTF8, 0, 0, buffer, length, &length);
     
-    htmlDocPtr htmlDoc = htmlReadMemory((const char *)buffer, length, NULL, "UTF-8", 0);
+    htmlDocPtr htmlDoc = htmlReadMemory((const char *)buffer, (int)length, NULL, "UTF-8", 0);
    
     _characters     = [[NSMutableString alloc] init];
     _output         = [[NSMutableAttributedString alloc] init];

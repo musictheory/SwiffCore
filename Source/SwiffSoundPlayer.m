@@ -87,7 +87,7 @@ static void sFillASBDForSoundDefinition(AudioStreamBasicDescription *asbd, Swiff
     
     if ((format == SwiffSoundFormatUncompressedNativeEndian) || (format == SwiffSoundFormatUncompressedLittleEndian)) {
         formatID    = kAudioFormatLinearPCM;
-        formatFlags = kAudioFormatFlagsCanonical;
+        formatFlags = (kAudioFormatFlagIsSignedInteger | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked);
 
 #if TARGET_RT_BIG_ENDIAN
         if ([definition format] == SwiffSoundFormatUncompressedLittleEndian) {
@@ -118,7 +118,7 @@ static void sFillASBDForSoundDefinition(AudioStreamBasicDescription *asbd, Swiff
     AudioQueueRef         _queue;
     AudioQueueBufferRef   _buffer[kNumberOfAudioBuffers];
     AudioStreamPacketDescription _packetDescription[kNumberOfAudioBuffers][kMaxPacketsPerAudioBuffer];
-    UInt32                _frameIndex;
+    CFIndex               _frameIndex;
     BOOL                  _isStopping;
 }
 
@@ -135,7 +135,7 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
     CFIndex firstOffset   = kCFNotFound;
     CFIndex bytesWritten  = 0;
     UInt32  framesWritten = 0;
-    UInt32  frameIndex    = channel->_frameIndex;
+    CFIndex frameIndex    = channel->_frameIndex;
 
     while (framesWritten < kMaxPacketsPerAudioBuffer) {
         CFIndex offset = SwiffSoundDefinitionGetOffsetForFrame(definition, frameIndex);
@@ -148,7 +148,7 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
         CFIndex length = SwiffSoundDefinitionGetLengthForFrame(definition, frameIndex);
         if ((bytesWritten + length) < inBuffer->mAudioDataBytesCapacity) {
             aspd[framesWritten].mStartOffset = bytesWritten;
-            aspd[framesWritten].mDataByteSize = length;
+            aspd[framesWritten].mDataByteSize = (UInt32)length;
             aspd[framesWritten].mVariableFramesInPacket = 0;
 
             bytesWritten += length;
@@ -165,7 +165,7 @@ static void sAudioQueueCallback(void *inUserData, AudioQueueRef inAQ, AudioQueue
             CFDataRef data = SwiffSoundDefinitionGetData(definition);
             CFDataGetBytes(data, CFRangeMake(firstOffset, bytesWritten), inBuffer->mAudioData);
 
-            inBuffer->mAudioDataByteSize = bytesWritten;
+            inBuffer->mAudioDataByteSize = (UInt32)bytesWritten;
 
             OSStatus err = AudioQueueEnqueueBuffer(inAQ, inBuffer, framesWritten, aspd);
             if (err != noErr) {

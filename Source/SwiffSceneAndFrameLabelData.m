@@ -108,10 +108,10 @@
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:[_offsetToSceneNameMap count]];
     NSArray        *keys   = [[_offsetToSceneNameMap allKeys] sortedArrayUsingSelector:@selector(compare:)];
 
-    NSString *lastName   = nil;
-    UInt32    lastOffset = 0;
+    NSString  *lastName   = nil;
+    NSUInteger lastOffset = 0;
 
-    void (^addScene)(UInt32, UInt32, NSString *) = ^(UInt32 startOffset, UInt32 endOffset, NSString *name) {
+    void (^addScene)(NSUInteger, NSUInteger, NSString *) = ^(NSUInteger startOffset, NSUInteger endOffset, NSString *name) {
         NSRange     range       = NSMakeRange(startOffset, endOffset - startOffset);
         NSArray    *sceneFrames = [frames subarrayWithRange:range];
 
@@ -120,7 +120,7 @@
     };
 
     for (NSNumber *key in keys) {
-        UInt32 offset = [key unsignedIntValue];
+        NSUInteger offset = [key unsignedIntegerValue];
 
         if (lastName) addScene(lastOffset, offset, lastName);
 
